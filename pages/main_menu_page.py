@@ -50,7 +50,6 @@ class MainMenuPage(QWidget):
 
 
     def showEvent(self, event, /):
-
         super().showEvent(event)
 
     def logout_button_handler(self):

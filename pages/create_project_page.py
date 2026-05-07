@@ -28,12 +28,13 @@ class CreateProjectPage(QWidget):
 
         self.main_layout.setRowStretch(2, 1)
 
-        self.create_button = QPushButton("SAVE")
-        self.main_layout.addWidget(self.create_button, 3, 0)
+        self.create_button = QPushButton("CREATE")
+        self.create_button.setStyleSheet("color: green;")
+        self.main_layout.addWidget(self.create_button, 3, 1)
         self.create_button.clicked.connect(lambda:self.create_project_handler())
 
         self.cancel_button = QPushButton("Cancel")
-        self.main_layout.addWidget(self.cancel_button, 3, 1)
+        self.main_layout.addWidget(self.cancel_button, 3, 0)
         self.cancel_button.clicked.connect(lambda _: self.cancel_signal.emit(self.user_id))
 
     def load_user(self, user_id):

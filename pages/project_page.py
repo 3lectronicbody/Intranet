@@ -1,5 +1,8 @@
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QPushButton
 from PySide6.QtCore import Signal
+from database.models import Projects
+
 
 class ProjectPage(QWidget):
     back_signal = Signal(int)
@@ -15,13 +18,21 @@ class ProjectPage(QWidget):
         self.label = QLabel(f"__load__")
         self.main_layout.addWidget(self.label, 0, 0)
 
+        self.main_layout.setRowStretch(1,1)
+
         self.back_button = QPushButton("Back")
-        self.main_layout.addWidget(self.back_button, 1, 0)
+        self.main_layout.addWidget(self.back_button, 2, 0)
         self.back_button.clicked.connect(lambda: self.back_signal.emit(self.user_id))
 
 
     def load_project(self, project_id, user_id):
+        with self.database.session() as session:
+            project = session.query(Projects).get(project_id)
+            if project is None:
+                return
         self.project_id = project_id
         self.user_id = user_id
 
-        self.label.setText(f"Project: {self.project_id}")
+        self.label.setText(f"PROJECT: {project.name.upper()}")
+        self.label.setStyleSheet(f"font-size: 24px; font-weight: bold;")
+        self.label.setAlignment(Qt.AlignCenter)

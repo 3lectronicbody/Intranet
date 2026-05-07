@@ -1,4 +1,6 @@
 from PySide6.QtWidgets import QStackedWidget, QGridLayout
+
+from database.models import Projects
 from pages.login_page import LoginPage
 from pages.main_menu_page import MainMenuPage
 from pages.projects_page import ProjectsPage
@@ -23,12 +25,14 @@ class MainFrame(QStackedWidget):
         self.login_page.login_signal.connect(self.show_main_menu_page)
         self.login_page.close_signal.connect(self.close)
         self.login_page.sign_up_signal.connect(self.show_sign_up_page)
+
         self.login_page_size = None
 
         self.main_menu_page = MainMenuPage(self.database)
         self.main_menu_page.logout_signal.connect(self.show_login_page)
         self.main_menu_page.projects_signal.connect(self.show_projects_page)
         self.main_menu_page.employees_signal.connect(self.show_employees_page)
+
 
         self.sign_up_page = SignUpPage(self.database)
         self.sign_up_page.cancel_signal.connect(self.show_login_page)
@@ -37,14 +41,14 @@ class MainFrame(QStackedWidget):
         self.projects_page = ProjectsPage(self.database)
         self.projects_page.back_signal.connect(self.show_main_menu_page)
         self.projects_page.create_signal.connect(self.show_create_project_page)
-        self.projects_page.open_signal.connect(self.show_project_page)
+        self.projects_page.open_signal.connect(self.show_project_page) # Signal takes project_id
+
+        self.project_page = ProjectPage(self.database)
+        self.project_page.back_signal.connect(self.show_projects_page)
 
         self.create_project_page = CreateProjectPage(self.database)
         self.create_project_page.cancel_signal.connect(self.show_projects_page)
         self.create_project_page.create_signal.connect(self.show_projects_page)
-
-        self.project_page = ProjectPage(self.database)
-        self.project_page.back_signal.connect(self.show_projects_page)
 
         self.employees_page = EmployeesPage(self.database)
         self.employees_page.back_signal.connect(self.show_main_menu_page)
@@ -61,6 +65,7 @@ class MainFrame(QStackedWidget):
         self.addWidget(self.employees_page)
 
         self.show_login_page()
+
 
 
 
@@ -89,7 +94,11 @@ class MainFrame(QStackedWidget):
         self.create_project_page.load_user(self.user_id)
         self.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
-        self.setWindowTitle("Create Project")
+        with self.database.session() as session:
+            project = session.query(Projects).get(project_id)
+            if project is None:
+                return
+            self.setWindowTitle(f"Project: {project.name}")
         self.project_id = project_id
         self.project_page.load_project(self.project_id, self.user_id)
         self.setCurrentWidget(self.project_page)

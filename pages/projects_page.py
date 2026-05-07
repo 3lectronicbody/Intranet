@@ -30,7 +30,7 @@ class ProjectsPage(QWidget):
         self.main_layout.addWidget(self.back_button, 2, 0)
         self.back_button.clicked.connect(lambda _:self.back_signal.emit())
 
-        self.create_button = QPushButton("Create")
+        self.create_button = QPushButton("Add Project")
         self.create_button.setStyleSheet("color: green;")
         self.main_layout.addWidget(self.create_button, 2, 1)
         self.create_button.clicked.connect(lambda _:self.create_signal.emit())
@@ -66,10 +66,14 @@ class ProjectsPage(QWidget):
                 project_name_label.setStyleSheet("font-weight: bold;")
                 self.data_layout.addWidget(project_name_label, counter, 0)
 
-                project_description_label = QLabel(project.description)
+
+                original_text = project.description
+                first_line = original_text.splitlines()[0]
+                project_description_label = QLabel(first_line)
                 project_description_label.setWordWrap(False)
+                project_description_label.setFixedHeight(project_description_label.fontMetrics().height())
                 project_description_label.setStyleSheet("font-style: italic;")
-                project_description_label.setToolTip(project.description)
+                project_description_label.setToolTip(original_text)
                 self.data_layout.addWidget(project_description_label, counter, 1)
 
                 open_project_button = QPushButton("Open")

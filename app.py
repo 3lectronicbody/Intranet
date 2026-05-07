@@ -28,7 +28,7 @@ themes = ['dark_amber.xml',
 if __name__ == "__main__":
     database = Database()
     app = QApplication(sys.argv)
-    qt_material.apply_stylesheet(app, theme=themes[1])
+    qt_material.apply_stylesheet(app, theme=themes[7])
 
     root = MainFrame.MainFrame(database)
     root.show()

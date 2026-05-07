@@ -11,6 +11,7 @@ class LoginPage(QWidget):
     login_signal = Signal(int)
     close_signal = Signal()
     sign_up_signal = Signal()
+
     def __init__(self, database):
         super().__init__()
 
@@ -80,8 +81,6 @@ class LoginPage(QWidget):
         # Adjust the widget to its minimum necessary size
         self.adjustSize()
 
-        # Lock the height so it doesn't expand further
-        self.setFixedHeight(self.layout().sizeHint().height())
 
 
 
@@ -108,7 +107,7 @@ class LoginPage(QWidget):
         self.password_input.setText("")
         self.sign_up_signal.emit()
 
-    '''def check_caps_lock(self):
+    def check_caps_lock(self):
         platform_name = platform.system()
         if platform_name == "Windows":
             if ctypes.windll.user32.GetKeyState(0x14) & 1 != 0:
@@ -116,13 +115,11 @@ class LoginPage(QWidget):
             else:
                 self.caps_on_label.setText("")
         elif platform_name == "Darwin":
-            pass'''
+            pass
+    def showEvent(self, event):
+        super().showEvent(event)
 
-    def check_caps_lock(self):
-        # This works on most platforms natively through Qt
-        modifiers = QGuiApplication.queryKeyboardModifiers()
-        if modifiers & Qt.CapsLockModifier:
-            self.caps_on_label.setText("Caps Lock is ON")
-        else:
-            self.caps_on_label.setText("")
+
+
+
 
