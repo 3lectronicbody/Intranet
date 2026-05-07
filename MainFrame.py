@@ -1,11 +1,10 @@
-from PySide6.QtWidgets import QStackedWidget, QGridLayout
+from PySide6.QtWidgets import QStackedWidget, QGraphicsBlurEffect
 
-from database.models import Projects
 from pages.login_page import LoginPage
 from pages.main_menu_page import MainMenuPage
 from pages.projects_page import ProjectsPage
 from pages.sign_up_page import SignUpPage
-from pages.project_page import ProjectPage
+from pages.project.ProjectWindow import ProjectPage
 from pages.create_project_page import CreateProjectPage
 from pages.employees_page import EmployeesPage
 
@@ -16,6 +15,8 @@ class MainFrame(QStackedWidget):
         self.user_id = None
         self.project_id = None
         self.database = database
+
+
 
 
         self.setMaximumSize(800, 1000)
@@ -43,8 +44,7 @@ class MainFrame(QStackedWidget):
         self.projects_page.create_signal.connect(self.show_create_project_page)
         self.projects_page.open_signal.connect(self.show_project_page) # Signal takes project_id
 
-        self.project_page = ProjectPage(self.database)
-        self.project_page.back_signal.connect(self.show_projects_page)
+
 
         self.create_project_page = CreateProjectPage(self.database)
         self.create_project_page.cancel_signal.connect(self.show_projects_page)
@@ -61,7 +61,6 @@ class MainFrame(QStackedWidget):
         self.addWidget(self.sign_up_page)
         self.addWidget(self.projects_page)
         self.addWidget(self.create_project_page)
-        self.addWidget(self.project_page)
         self.addWidget(self.employees_page)
 
         self.show_login_page()
@@ -94,14 +93,16 @@ class MainFrame(QStackedWidget):
         self.create_project_page.load_user(self.user_id)
         self.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
-        with self.database.session() as session:
-            project = session.query(Projects).get(project_id)
-            if project is None:
-                return
-            self.setWindowTitle(f"Project: {project.name}")
-        self.project_id = project_id
-        self.project_page.load_project(self.project_id, self.user_id)
-        self.setCurrentWidget(self.project_page)
+        project_window = ProjectPage(self.database, project_id=project_id, user_id=self.user_id)
+
+        blur_effect = QGraphicsBlurEffect(self)
+        blur_effect.setBlurRadius(10)
+        self.projects_page.setGraphicsEffect(blur_effect)
+
+        project_window.exec()
+        self.projects_page.refresh_data()
+        self.projects_page.setGraphicsEffect(None)
+
     def show_employees_page(self):
         self.setWindowTitle("Employees")
         self.employees_page.load_user(self.user_id)
