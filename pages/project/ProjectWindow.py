@@ -68,14 +68,28 @@ class ProjectPage(QDialog):
 
     def add_button_handler(self):
         current_tab_index = self.tab.currentIndex()
+
+        # 1. Determine the flag
         if current_tab_index == 0:
             flag = "item"
+            target_slot = self.items_tab.load_data
         elif current_tab_index == 1:
             flag = "activity"
+            target_slot = self.activities_tab.load_data
         else:
-            flag = None
-        self.add_item_activity_dialog = AddItemActivity(self.database, self.project_id, self.user_id, flag=flag)
+            return
+
+        # 2. Create the dialog once
+        self.add_item_activity_dialog = AddItemActivity(
+            self.database, self.project_id, self.user_id, flag=flag
+        )
+
+        # 3. Connect the signal to the correct slot
+        self.add_item_activity_dialog.save_signal.connect(target_slot)
+
+        # 4. Run the dialog once
         self.add_item_activity_dialog.exec()
+
 
 
 

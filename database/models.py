@@ -147,7 +147,7 @@ class ProjectDetails(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     activity: Mapped[str | None] = mapped_column(String, nullable=True)
     item: Mapped[str | None] = mapped_column(String, nullable=True)
-    item_code: Mapped[str] = mapped_column(String)
+    item_code: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[float] = mapped_column(Float, nullable=False)
 
     # relationship

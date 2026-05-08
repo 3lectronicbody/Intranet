@@ -37,6 +37,7 @@ class AddItemActivity(QDialog):
         self.database = database
         self.project_id = project_id
         self.user_id = user_id
+        self.flag = flag
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -48,7 +49,7 @@ class AddItemActivity(QDialog):
         self.data_layout.addWidget(self.name_label, 0, 0)
         self.name_input = QLineEdit()
         self.data_layout.addWidget(self.name_input, 0, 1)
-        if flag == "item":
+        if self.flag == "item":
             self.code_label = QLabel("Code: ")
             self.data_layout.addWidget(self.code_label, 1, 0)
             self.code_input = QLineEdit()
@@ -56,7 +57,7 @@ class AddItemActivity(QDialog):
             self.quantity_label = QLabel("Quantity: ")
             self.data_layout.addWidget(self.quantity_label, 2, 0)
             self.setWindowTitle("Add Item")
-        elif flag == "activity":
+        elif self.flag == "activity":
             self.setWindowTitle("Add Activity")
             self.quantity_label = QLabel("Time: ")
             self.data_layout.addWidget(self.quantity_label, 2, 0)
@@ -74,23 +75,36 @@ class AddItemActivity(QDialog):
         self.buttons_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.reject)
 
-    def save_button_handler(self, flag=None):
-        if flag == "item":
+    def save_button_handler(self, flag):
+        save_signal = Signal()
+        if self.flag == "item":
             name = self.name_input.text() or None
             code = self.code_input.text() or None
             quantity = self.quantity_input.text() or None
-        elif flag == "activity":
+            with self.database.session() as session:
+                new = ProjectDetails(project_id=self.project_id,
+                                     item=name,
+                                     item_code=code,
+                                     quantity=quantity)
+                session.add(new)
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
+        elif self.flag == "activity":
             name = self.name_input.text() or None
             code = None
             quantity = self.quantity_input.text() or None
+            with self.database.session() as session:
+                new = ProjectDetails(project_id=self.project_id,
+                                     activity=name,
+                                     item_code=code,
+                                     quantity=quantity)
+                session.add(new)
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
 
-        with self.database.session() as session:
-            new = ProjectDetails(project_id=self.project_id,
-                                name=name,
-                                code=code,
-                                quantity=quantity)
-            session.add(new)
-            session.commit()
+
 
 
 
