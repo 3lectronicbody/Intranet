@@ -1,7 +1,9 @@
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget
+from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout
 
 from database.models import Projects
+from pages.project.tabs import ItemsTab, ActivitiesTab
+from helper import AddItemActivity
 
 
 class ProjectPage(QDialog):
@@ -13,6 +15,7 @@ class ProjectPage(QDialog):
         self.database = database
         self.project_id = project_id
         self.user_id = user_id
+        self.add_item_activity_dialog = None
 
         with self.database.session() as session:
             project = session.query(Projects).get(project_id)
@@ -28,9 +31,6 @@ class ProjectPage(QDialog):
         self.main_layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.tab = QTabWidget()
-        self.tab.addTab(self.load_general_tab(), "GENERAL")
-        self.tab.addTab(QLabel(), "ITEMS")
-        self.tab.addTab(QLabel(), "ACTIVITIES")
 
         # EXPANDING TAB BAR TABS EVENLY
         # 1. Clear any fixed widths you set
@@ -47,12 +47,35 @@ class ProjectPage(QDialog):
 
         self.main_layout.addWidget(self.tab)
 
+        self.items_tab = ItemsTab(self.database, self.project_id, self.user_id)
+        self.tab.addTab(self.items_tab, "ITEMS")
+
+        self.activities_tab = ActivitiesTab(self.database, self.project_id, self.user_id)
+        self.tab.addTab(self.activities_tab, "ACTIVITIES")
 
 
+        # ADD and BACK buttons
+        self.buttons_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.buttons_layout)
+
+
+        self.add_button = QPushButton("Add")
+        self.buttons_layout.addWidget(self.add_button)
+        self.add_button.clicked.connect(self.add_button_handler)
         self.back_button = QPushButton("Back")
-        self.main_layout.addWidget(self.back_button)
-        self.back_button.clicked.connect(lambda: self.close())
+        self.buttons_layout.addWidget(self.back_button)
+        self.back_button.clicked.connect(lambda: self.reject())
 
+    def add_button_handler(self):
+        current_tab_index = self.tab.currentIndex()
+        if current_tab_index == 0:
+            flag = "item"
+        elif current_tab_index == 1:
+            flag = "activity"
+        else:
+            flag = None
+        self.add_item_activity_dialog = AddItemActivity(self.database, self.project_id, self.user_id, flag=flag)
+        self.add_item_activity_dialog.exec()
 
 
 
