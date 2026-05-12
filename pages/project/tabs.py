@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton
+from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame
 from database.models import ProjectDetails
-from helper import clear_layout
+from helper_functions import clear_layout
 
 
 class ItemsTab(QWidget):
@@ -18,8 +18,26 @@ class ItemsTab(QWidget):
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
+        # ADD HEADER
+        name_label = QLabel("Name")
+        name_label.setStyleSheet("font-weight: bold;")
+        code_label = QLabel("Code")
+        code_label.setStyleSheet("font-weight: bold;")
+        quantity_label = QLabel("Quantity")
+        quantity_label.setStyleSheet("font-weight: bold;")
+        self.main_layout.addWidget(name_label, 0, 0)
+        self.main_layout.addWidget(code_label, 0, 1)
+        self.main_layout.addWidget(quantity_label, 0, 2)
+        # ADD VERTICAL HORIZONTAL LINE
+        hor_line = QFrame()
+        hor_line.setFrameShape(QFrame.HLine)
+        hor_line.setFrameShadow(QFrame.Sunken)
+        self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
+
+
+
         with self.database.session() as session:
-            counter = 0
+            counter = 2
             project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
             items = [detail for detail in project_details if detail.item is not None]
             for item in items:
@@ -50,8 +68,21 @@ class ActivitiesTab(QWidget):
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
+
+        # ADD HEADER
+        name_label = QLabel("Name")
+        name_label.setStyleSheet("font-weight: bold;")
+        time_label = QLabel("Time")
+        time_label.setStyleSheet("font-weight: bold;")
+        self.main_layout.addWidget(name_label, 0, 0)
+        self.main_layout.addWidget(time_label, 0, 1)
+        # ADD VERTICAL HORIZONTAL LINE
+        hor_line = QFrame()
+        hor_line.setFrameShape(QFrame.HLine)
+        hor_line.setFrameShadow(QFrame.Sunken)
+        self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
         with self.database.session() as session:
-            counter = 0
+            counter = 2
             project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
             items = [detail for detail in project_details if detail.activity is not None]
             for item in items:

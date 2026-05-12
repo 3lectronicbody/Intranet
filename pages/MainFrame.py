@@ -16,6 +16,8 @@ class MainFrame(QStackedWidget):
         self.project_id = None
         self.database = database
 
+        self.project_window = None
+
 
 
 
@@ -93,13 +95,14 @@ class MainFrame(QStackedWidget):
         self.create_project_page.load_user(self.user_id)
         self.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
-        project_window = ProjectPage(self.database, project_id=project_id, user_id=self.user_id)
-
+        self.project_window = ProjectPage(self.database, project_id=project_id, user_id=self.user_id)
         blur_effect = QGraphicsBlurEffect(self)
         blur_effect.setBlurRadius(10)
         self.projects_page.setGraphicsEffect(blur_effect)
 
-        project_window.exec()
+
+        self.project_window.exec()
+
         self.projects_page.refresh_data()
         self.projects_page.setGraphicsEffect(None)
 

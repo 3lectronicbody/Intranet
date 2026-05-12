@@ -2,10 +2,11 @@ from functools import partial
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox
-from database.models import Role, Users
+from database.models import Role
+from PySide6.QtCore import Qt
 
 from database.models import Users
-from helper import clear_layout
+from helper_functions import clear_layout
 
 
 class EmployeesPage(QWidget):
@@ -38,8 +39,16 @@ class EmployeesPage(QWidget):
             employees = session.query(Users).all()
             counter = 0
             for emp in employees:
-
-                self.data_layout.addWidget(QLabel(f"{emp.name or "Unknown name"} : {emp.email}"), counter, 0)
+                label = QLabel(f"{emp.name or "Unknown name"} : {emp.email}")
+                label.setStyleSheet("""
+                    QLabel:hover { 
+                        color: blue; 
+                    }
+                """)
+                label.setToolTip(
+                    f"ID: {emp.id}, Role: {emp.role}, Email: {emp.email}"
+                )
+                self.data_layout.addWidget(label,counter, 0)
                 # Add dropdown menu
                 dropdown_menu = QComboBox()
                 dropdown_menu.addItems([role.value for role in Role])

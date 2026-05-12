@@ -1,9 +1,10 @@
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout
+from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
 
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab
-from helper import AddItemActivity
+from custom_widgets import AddItemActivity
+from helper_functions import confirmation_dialog
 
 
 class ProjectPage(QDialog):
@@ -27,8 +28,8 @@ class ProjectPage(QDialog):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.label = QLabel(f"Project: {self.project_name} ")
-        self.main_layout.addWidget(self.label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.project_name_label = QLabel(f"Project: {self.project_name} ")
+        self.main_layout.addWidget(self.project_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.tab = QTabWidget()
 
@@ -59,12 +60,16 @@ class ProjectPage(QDialog):
         self.main_layout.addLayout(self.buttons_layout)
 
 
-        self.add_button = QPushButton("Add")
+        self.add_button = QPushButton("Add Item")
         self.buttons_layout.addWidget(self.add_button)
         self.add_button.clicked.connect(self.add_button_handler)
         self.back_button = QPushButton("Back")
         self.buttons_layout.addWidget(self.back_button)
-        self.back_button.clicked.connect(lambda: self.reject())
+        self.back_button.clicked.connect(lambda: self.back_button_handler())
+
+        # Changing ADD BUTTON text based on the current tab
+
+        self.tab.currentChanged.connect(self.refresh_add_button)
 
     def add_button_handler(self):
         current_tab_index = self.tab.currentIndex()
@@ -89,6 +94,20 @@ class ProjectPage(QDialog):
 
         # 4. Run the dialog once
         self.add_item_activity_dialog.exec()
+    def back_button_handler(self):
+        text = "Are you sure you want to leave?"
+        dialog = confirmation_dialog(self, title="Confirmation", message=text)
+        if dialog == QMessageBox.Yes:
+            self.accept()
+        else:
+            return
+    def refresh_add_button(self):
+        if self.tab.currentIndex() == 0:
+            self.add_button.setText("Add Item")
+        elif self.tab.currentIndex() == 1:
+            self.add_button.setText("Add Activity")
+    def refresh_data(self):
+        pass
 
 
 

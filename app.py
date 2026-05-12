@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication
-import MainFrame
+from pages.MainFrame import MainFrame
 from database.database import Database
 import qt_material
 import sys
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     qt_material.apply_stylesheet(app, theme=themes[7])
 
-    root = MainFrame.MainFrame(database)
+    root = MainFrame(database)
     root.show()
 
     app.exec()

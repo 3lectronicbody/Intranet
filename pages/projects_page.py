@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QMessageBox, QGraphicsBlurEffect
 from database.models import Projects
-from helper import clear_layout, confirmation_dialog
+from helper_functions import clear_layout, confirmation_dialog
 
 
 class ProjectsPage(QWidget):
