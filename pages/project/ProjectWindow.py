@@ -50,6 +50,7 @@ class ProjectPage(QDialog):
 
         self.items_tab = ItemsTab(self.database, self.project_id, self.user_id)
         self.tab.addTab(self.items_tab, "ITEMS")
+        self.items_tab.setObjectName("items_tab")
 
         self.activities_tab = ActivitiesTab(self.database, self.project_id, self.user_id)
         self.tab.addTab(self.activities_tab, "ACTIVITIES")
@@ -107,6 +108,7 @@ class ProjectPage(QDialog):
         elif self.tab.currentIndex() == 1:
             self.add_button.setText("Add Activity")
     def refresh_data(self):
+        # For later use if main project window changes (for example name of the project changed in child dialog)
         pass
 
 

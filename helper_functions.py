@@ -1,7 +1,6 @@
-from PySide6.QtWidgets import QMessageBox, QDialog, QGridLayout, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
-    QPushButton
-from PySide6.QtCore import Signal
-from database.models import ProjectDetails
+from PySide6.QtWidgets import QMessageBox
+from pathlib import Path
+
 
 
 def clear_layout(layout, grid_layout=False):
@@ -30,6 +29,13 @@ def confirmation_dialog(parent, title, message,):
     dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     return dialog.exec()
 
+def load_css(file_path):
+    absolute_path = Path(file_path)
+    try:
+        with open(absolute_path, "r", encoding="utf-8") as file:
+            return file.read()
+    except FileNotFoundError:
+        print(f"File not found: {absolute_path}")
 
 
 

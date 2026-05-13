@@ -2,6 +2,7 @@ from PySide6.QtCore import Signal, Qt, QTimer
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
     QMessageBox
+from custom_widgets import CustomPushButton
 from database.models import Users
 import platform
 import ctypes
@@ -44,7 +45,7 @@ class LoginPage(QWidget):
         self.main_layout.addLayout(self.button_layout, 2,0,1,2)
 
 
-        self.login_button = QPushButton("LOGIN")
+        self.login_button = CustomPushButton("LOGIN")
         self.button_layout.addWidget(self.login_button)
         self.login_button.clicked.connect(self.login_handler)
 

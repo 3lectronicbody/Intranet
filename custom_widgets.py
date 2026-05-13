@@ -76,3 +76,18 @@ class AddItemActivity(QDialog):
                 session.commit()
                 self.accept()
                 self.save_signal.emit()
+class CustomPushButton(QPushButton):
+    # Added "Enter" key press event to the button"
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+
+        # "Enter" as default trigger key
+    def keyPressEvent(self,event):
+        if event.key() == 16777220:
+            self.clicked.emit()
+            return
+        super().keyPressEvent(event)
+
+
+
+
