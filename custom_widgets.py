@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox
 from PySide6.QtCore import Signal
 
 from database.models import ProjectDetails
@@ -30,7 +30,15 @@ class AddItemActivity(QDialog):
             self.data_layout.addWidget(self.code_input, 1, 1)
             self.quantity_label = QLabel("Quantity: ")
             self.data_layout.addWidget(self.quantity_label, 2, 0)
+            units = ["mtr", "psc"]
+            self.unit_label = QLabel("Unit: ")
+            self.data_layout.addWidget(self.unit_label, 3, 0)
+            self.unit_dropdown = QComboBox()
+            self.unit_dropdown.addItems(units)
+            self.data_layout.addWidget(self.unit_dropdown, 3, 1)
+            self.unit_dropdown.setCurrentText("mtr")
             self.setWindowTitle("Add Item")
+
         elif self.flag == "activity":
             self.setWindowTitle("Add Activity")
             self.quantity_label = QLabel("Time: ")
@@ -54,11 +62,13 @@ class AddItemActivity(QDialog):
             name = self.name_input.text() or None
             code = self.code_input.text() or None
             quantity = self.quantity_input.text() or None
+            unit = self.unit_dropdown.currentText()
             with self.database.session() as session:
                 new = ProjectDetails(project_id=self.project_id,
                                      item=name,
                                      item_code=code,
-                                     quantity=quantity)
+                                     quantity=quantity,
+                                     unit=unit)
                 session.add(new)
                 session.commit()
                 self.accept()

@@ -25,9 +25,12 @@ class ItemsTab(QWidget):
         code_label.setStyleSheet("font-weight: bold;")
         quantity_label = QLabel("Quantity")
         quantity_label.setStyleSheet("font-weight: bold;")
+        unit_label = QLabel("Unit")
+        unit_label.setStyleSheet("font-weight: bold;")
         self.main_layout.addWidget(name_label, 0, 0)
         self.main_layout.addWidget(code_label, 0, 1)
         self.main_layout.addWidget(quantity_label, 0, 2)
+        self.main_layout.addWidget(unit_label, 0, 3)
         # ADD VERTICAL HORIZONTAL LINE
         hor_line = QFrame()
         hor_line.setFrameShape(QFrame.HLine)
@@ -47,10 +50,12 @@ class ItemsTab(QWidget):
                 self.main_layout.addWidget(code_label, counter, 1)
                 quantity_label = QLabel(str(item.quantity))
                 self.main_layout.addWidget(quantity_label, counter, 2)
+                unit_label = QLabel(str(item.unit))
+                self.main_layout.addWidget(unit_label, counter, 3)
                 delete_button = QPushButton("Delete")
-                self.main_layout.addWidget(delete_button, counter, 3)
+                self.main_layout.addWidget(delete_button, counter, 4)
                 edit_button = QPushButton("Edit")
-                self.main_layout.addWidget(edit_button, counter, 4)
+                self.main_layout.addWidget(edit_button, counter, 5)
                 counter += 1
         self.main_layout.setRowStretch(counter, 1)
 

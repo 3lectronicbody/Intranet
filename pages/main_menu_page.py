@@ -23,13 +23,24 @@ class MainMenuPage(QWidget):
         self.welcome_label = QLabel("__load data__")
         self.main_layout.addWidget(self.welcome_label, 0, 0, alignment=Qt.AlignCenter)
 
+        self.menu_items = []
+
         self.projects_button = QPushButton("Projects", flat=True)
         self.main_layout.addWidget(self.projects_button, 1, 0)
         self.projects_button.clicked.connect(lambda: self.projects_signal.emit())
+        self.menu_items.append(self.projects_button)
 
         self.employees_button = QPushButton("Employees", flat=True)
         self.main_layout.addWidget(self.employees_button, 2, 0)
         self.employees_button.clicked.connect(self.employees_button_handler)
+        self.menu_items.append(self.employees_button)
+
+        for flat_button in self.menu_items:
+            flat_button.setStyleSheet("""
+                    :hover {
+                        background-color: darkgrey;
+                    }
+                """)
 
 
         self.main_layout.setRowStretch(3, 1)

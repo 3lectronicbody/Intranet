@@ -40,11 +40,26 @@ class EmployeesPage(QWidget):
             counter = 0
             for emp in employees:
                 label = QLabel(f"{emp.name or "Unknown name"} : {emp.email}")
-                label.setStyleSheet("""
-                    QLabel:hover { 
-                        color: blue; 
-                    }
-                """)
+                if emp.id == self.user_id:
+                    label.setStyleSheet("""
+                        QLabel:hover { 
+                            color: blue;
+                            background-color: darkgrey; 
+                        }
+                        QLabel {
+                        font-weight: bold;
+                        text-decoration: underline;
+                        color: lightblue;
+                        }
+                    """)
+                else:
+                    label.setStyleSheet("""
+                        QLabel:hover { 
+                            color: blue;
+                            background-color: darkgrey;  
+                        }
+                    """)
+
                 label.setToolTip(
                     f"ID: {emp.id}, Role: {emp.role}, Email: {emp.email}"
                 )
@@ -57,6 +72,7 @@ class EmployeesPage(QWidget):
                 dropdown_menu.currentTextChanged.connect(partial(self.dropdown_menu_handler, emp.id,))
                 if emp.id == self.user_id:
                     dropdown_menu.setEnabled(False)
+
                 counter += 1
     def dropdown_menu_handler(self, employee_id, new_role_text):
         with self.database.session() as session:

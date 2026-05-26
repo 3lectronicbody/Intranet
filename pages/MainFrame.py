@@ -95,16 +95,18 @@ class MainFrame(QStackedWidget):
         self.create_project_page.load_user(self.user_id)
         self.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
+        self.hide()
         self.project_window = ProjectPage(self.database, project_id=project_id, user_id=self.user_id)
-        blur_effect = QGraphicsBlurEffect(self)
+        """blur_effect = QGraphicsBlurEffect(self)
         blur_effect.setBlurRadius(10)
-        self.projects_page.setGraphicsEffect(blur_effect)
+        self.projects_page.setGraphicsEffect(blur_effect)"""
 
 
         self.project_window.exec()
 
         self.projects_page.refresh_data()
-        self.projects_page.setGraphicsEffect(None)
+        self.show()
+        # self.projects_page.setGraphicsEffect(None)
 
     def show_employees_page(self):
         self.setWindowTitle("Employees")
