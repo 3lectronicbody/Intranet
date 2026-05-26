@@ -95,13 +95,15 @@ class ProjectPage(QDialog):
 
         # 4. Run the dialog once
         self.add_item_activity_dialog.exec()
-    def back_button_handler(self):
+    def back_button_handler(self, event=None):
         text = "Are you sure you want to leave?"
         dialog = confirmation_dialog(self, title="Confirmation", message=text)
         if dialog == QMessageBox.Yes:
             self.accept()
         else:
-            return
+            if event:
+                event.ignore()
+
     def refresh_add_button(self):
         if self.tab.currentIndex() == 0:
             self.add_button.setText("Add Item")
@@ -110,6 +112,9 @@ class ProjectPage(QDialog):
     def refresh_data(self):
         # For later use if main project window changes (for example name of the project changed in child dialog)
         pass
+
+    def closeEvent(self, event, /):
+        self.back_button_handler(event=event)
 
 
 

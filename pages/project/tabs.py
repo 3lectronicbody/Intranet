@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame
 from database.models import ProjectDetails
 from helper_functions import clear_layout
+from custom_widgets import EditItemActivity
 
 
 class ItemsTab(QWidget):
@@ -53,11 +54,25 @@ class ItemsTab(QWidget):
                 unit_label = QLabel(str(item.unit))
                 self.main_layout.addWidget(unit_label, counter, 3)
                 delete_button = QPushButton("Delete")
+                delete_button.clicked.connect(lambda _, item_id=item.id: self.delete_button_handler(item_id))
                 self.main_layout.addWidget(delete_button, counter, 4)
                 edit_button = QPushButton("Edit")
+                edit_button.clicked.connect(lambda _, item_id=item.id: self.edit_button_handler(item_id))
                 self.main_layout.addWidget(edit_button, counter, 5)
                 counter += 1
         self.main_layout.setRowStretch(counter, 1)
+
+    def edit_button_handler(self, item_id):
+        edit_dialog = EditItemActivity(self.database,self.project_id, item_id, self.user_id, flag="item")
+        edit_dialog.exec()
+        self.load_data()
+
+    def delete_button_handler(self, item_id):
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(item_id)
+            session.delete(item)
+            session.commit()
+        self.load_data()
 
 class ActivitiesTab(QWidget):
     def __init__(self, database, project_id, user_id):
