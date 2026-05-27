@@ -114,7 +114,12 @@ class ProjectPage(QDialog):
         pass
 
     def closeEvent(self, event, /):
-        self.back_button_handler(event=event)
+        text = "Are you sure you want to leave?"
+        dialog = confirmation_dialog(self, title="Confirmation", message=text)
+        if dialog == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 
