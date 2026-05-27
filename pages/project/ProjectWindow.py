@@ -1,9 +1,9 @@
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
+from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox, QMenuBar
 
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab
-from custom_widgets import AddItemActivity
+from custom_widgets import AddItemActivity, ProjectWindowMenuBar
 from helper_functions import confirmation_dialog
 
 
@@ -27,6 +27,9 @@ class ProjectPage(QDialog):
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
+
+        self.menu_bar = ProjectWindowMenuBar(self)
+        self.main_layout.addWidget(self.menu_bar)
 
         self.project_name_label = QLabel(f"Project: {self.project_name} ")
         self.main_layout.addWidget(self.project_name_label, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -120,6 +123,7 @@ class ProjectPage(QDialog):
             event.accept()
         else:
             event.ignore()
+
 
 
 

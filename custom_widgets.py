@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox
-from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
+    QMenuBar, QFileDialog
+from PySide6.QtCore import Signal, Qt
 
 from database.models import ProjectDetails
 
@@ -186,6 +187,27 @@ class CustomPushButton(QPushButton):
             self.clicked.emit()
             return
         super().keyPressEvent(event)
+class ProjectWindowMenuBar(QMenuBar):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.parent = parent
+
+        self.file_menu = self.addMenu("File")
+        self.export_project = self.file_menu.addAction("Export Project...")
+        self.export_project.triggered.connect(self.export_project_handler)
+
+        self.exit_menu = self.addMenu("Exit")
+        self.exit_menu.triggered.connect(lambda: self.parent.close())
+
+
+
+    def export_project_handler(self):
+        file_browser_dialog = QFileDialog()
+        file_browser_dialog.exec()
+
+
+
 
 
 

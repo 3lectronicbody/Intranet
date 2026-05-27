@@ -36,7 +36,7 @@ class ItemsTab(QWidget):
         hor_line = QFrame()
         hor_line.setFrameShape(QFrame.HLine)
         hor_line.setFrameShadow(QFrame.Sunken)
-        self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
+        self.main_layout.addWidget(hor_line, 1, 0, 1, 6)
 
 
 
