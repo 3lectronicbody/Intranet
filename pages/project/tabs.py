@@ -121,6 +121,41 @@ class ActivitiesTab(QWidget):
                 counter += 1
         self.main_layout.setRowStretch(counter, 1)
 
+class ToDoTab(QWidget):
+    def __init__(self, database, project_id, user_id):
+        super().__init__()
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+
+        self.main_layout = QGridLayout()
+        self.setLayout(self.main_layout)
+
+    def refresh_data(self):
+        clear_layout(self.main_layout, grid_layout=True)
+        with self.database.session() as session:
+            project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
+            items = [detail for detail in project_details if detail.todo is not None]
+
+            for index, item in enumerate(items, start=1):
+                id_label = QLabel(str(index))
+                self.main_layout.addWidget(id_label, index-1,0)
+                todo_label = QLabel(item.todo)
+                self.main_layout.addWidget(todo_label, index-1,1)
+                complete_button = QPushButton("Complete")
+                complete_button.clicked.connect(lambda _, item_id = item.id: self.complete_button_handler(item_id))
+                self.main_layout.addWidget(complete_button, index-1,2)
+                edit_button = QPushButton("Edit")
+                self.main_layout.addWidget(edit_button, index-1,3)
+    def complete_button_handler(self, item_id):
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(item_id)
+            session.delete(item)
+            session.commit()
+        self.refresh_data()
+
+
+
 
 
 

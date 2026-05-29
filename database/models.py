@@ -150,6 +150,7 @@ class ProjectDetails(Base):
     item_code: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String, nullable=True)
+    todo: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # relationship
     project_id: Mapped[int] = mapped_column(

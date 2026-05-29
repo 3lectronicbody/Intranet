@@ -213,7 +213,7 @@ class ProjectWindowMenuBar(QMenuBar):
             pdf.set_font("Arial", size=12)
             with self.database.session() as session:
                 all_items = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
-                items = [item for item in all_items if item.activity is None]
+                items = [item for item in all_items if item.activity is None and item.todo is None]
                 activities = [item for item in all_items if item.activity is not None]
 
                 item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
