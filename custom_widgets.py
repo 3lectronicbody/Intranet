@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog
-from PySide6.QtCore import Signal, Qt
-
-from database.models import ProjectDetails
+from PySide6.QtCore import Signal
+from fpdf import FPDF
+from database.models import ProjectDetails, Projects
 
 
 class AddItemActivity(QDialog):
@@ -188,23 +188,59 @@ class CustomPushButton(QPushButton):
             return
         super().keyPressEvent(event)
 class ProjectWindowMenuBar(QMenuBar):
-    def __init__(self, parent):
+    def __init__(self, parent, database, project_id, user_id):
         super().__init__(parent)
 
         self.parent = parent
-
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+        # FILE MENU
         self.file_menu = self.addMenu("File")
         self.export_project = self.file_menu.addAction("Export Project...")
         self.export_project.triggered.connect(self.export_project_handler)
 
-        self.exit_menu = self.addMenu("Exit")
-        self.exit_menu.triggered.connect(lambda: self.parent.close())
-
+        # EXIT BUTTON MENU
+        self.exit = self.addAction("Exit")
+        self.exit.triggered.connect(lambda _: self.parent.close())
 
 
     def export_project_handler(self):
-        file_browser_dialog = QFileDialog()
-        file_browser_dialog.exec()
+        file_path, selected_filter = QFileDialog.getSaveFileName(self)
+        if file_path:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            with self.database.session() as session:
+                all_items = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
+                items = [item for item in all_items if item.activity is None]
+                activities = [item for item in all_items if item.activity is not None]
+
+                item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
+
+                pdf.cell(100, 10, txt=f"Project Name: {session.query(Projects).get(self.project_id).name}", ln=1)
+                pdf.cell(100, 10, txt="ITEMS", ln=1)
+
+                for i in items:
+                    pdf.cell(item_column_width["name"], 10, txt=i.item, ln=0)
+                    pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
+                    pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
+                    pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
+                    pdf.ln(10)
+
+                activity_column_width = {"name": 60, "quantity": 20}
+                pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
+
+                for i in activities:
+                    pdf.cell(activity_column_width["name"], 10, txt=i.activity, ln=0)
+                    pdf.cell(activity_column_width["quantity"], 10, txt=str(i.quantity), ln=1)
+
+            if file_path[-4:] != ".pdf":
+                file_path += ".pdf"
+
+            pdf.output(file_path)
+
+
 
 
 

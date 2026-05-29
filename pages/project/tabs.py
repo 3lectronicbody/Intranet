@@ -1,7 +1,9 @@
-from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame
+from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame, QMessageBox
 from database.models import ProjectDetails
 from helper_functions import clear_layout
 from custom_widgets import EditItemActivity
+from helper_functions import confirmation_dialog
+
 
 
 class ItemsTab(QWidget):
@@ -68,11 +70,13 @@ class ItemsTab(QWidget):
         self.load_data()
 
     def delete_button_handler(self, item_id):
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
-            session.delete(item)
-            session.commit()
-        self.load_data()
+        confirmation = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this item?")
+        if confirmation == QMessageBox.Yes:
+            with self.database.session() as session:
+                item = session.query(ProjectDetails).get(item_id)
+                session.delete(item)
+                session.commit()
+            self.load_data()
 
 class ActivitiesTab(QWidget):
     def __init__(self, database, project_id, user_id):

@@ -28,7 +28,7 @@ class ProjectPage(QDialog):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.menu_bar = ProjectWindowMenuBar(self)
+        self.menu_bar = ProjectWindowMenuBar(self, self.database, self.project_id, self.user_id)
         self.main_layout.addWidget(self.menu_bar)
 
         self.project_name_label = QLabel(f"Project: {self.project_name} ")
