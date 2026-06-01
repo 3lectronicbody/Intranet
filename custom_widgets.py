@@ -239,6 +239,12 @@ class ProjectWindowMenuBar(QMenuBar):
                 file_path += ".pdf"
 
             pdf.output(file_path)
+class AddEditToDo(QDialog):
+    save_signal = Signal()
+    def __init__(self):
+
+        super().__init__()
+
 
 
 

@@ -2,7 +2,7 @@ from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox, QMenuBar
 
 from database.models import Projects
-from pages.project.tabs import ItemsTab, ActivitiesTab
+from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
 from custom_widgets import AddItemActivity, ProjectWindowMenuBar
 from helper_functions import confirmation_dialog
 
@@ -58,6 +58,9 @@ class ProjectPage(QDialog):
         self.activities_tab = ActivitiesTab(self.database, self.project_id, self.user_id)
         self.tab.addTab(self.activities_tab, "ACTIVITIES")
 
+        self.todo_tab = ToDoTab(self.database, self.project_id, self.user_id)
+        self.tab.addTab(self.todo_tab, "TO DO")
+
 
         # ADD and BACK buttons
         self.buttons_layout = QHBoxLayout()
@@ -81,10 +84,13 @@ class ProjectPage(QDialog):
         # 1. Determine the flag
         if current_tab_index == 0:
             flag = "item"
-            target_slot = self.items_tab.load_data
+            triggerred_function = self.items_tab.load_data
         elif current_tab_index == 1:
             flag = "activity"
-            target_slot = self.activities_tab.load_data
+            triggerred_function = self.activities_tab.load_data
+        elif current_tab_index == 2:
+            flag = "todo"
+            triggerred_function = self.todo_tab.refresh_data
         else:
             return
 
@@ -94,7 +100,7 @@ class ProjectPage(QDialog):
         )
 
         # 3. Connect the signal to the correct slot
-        self.add_item_activity_dialog.save_signal.connect(target_slot)
+        self.add_item_activity_dialog.save_signal.connect(triggerred_function)
 
         # 4. Run the dialog once
         self.add_item_activity_dialog.exec()
@@ -112,6 +118,8 @@ class ProjectPage(QDialog):
             self.add_button.setText("Add Item")
         elif self.tab.currentIndex() == 1:
             self.add_button.setText("Add Activity")
+        elif self.tab.currentIndex() == 2:
+            self.add_button.setText("Add To Do")
     def refresh_data(self):
         # For later use if main project window changes (for example name of the project changed in child dialog)
         pass
