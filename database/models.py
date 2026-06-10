@@ -148,7 +148,7 @@ class ProjectDetails(Base):
     activity: Mapped[str | None] = mapped_column(String, nullable=True)
     item: Mapped[str | None] = mapped_column(String, nullable=True)
     item_code: Mapped[str] = mapped_column(String, nullable=True)
-    quantity: Mapped[float] = mapped_column(Float, nullable=False)
+    quantity: Mapped[float] = mapped_column(Float, nullable=True)
     unit: Mapped[str] = mapped_column(String, nullable=True)
     todo: Mapped[str | None] = mapped_column(String, nullable=True)
 

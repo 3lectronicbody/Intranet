@@ -131,12 +131,14 @@ class ToDoTab(QWidget):
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
 
+        self.refresh_data()
+
     def refresh_data(self):
         clear_layout(self.main_layout, grid_layout=True)
         with self.database.session() as session:
             project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
             items = [detail for detail in project_details if detail.todo is not None]
-
+            counter = 1
             for index, item in enumerate(items, start=1):
                 id_label = QLabel(str(index))
                 self.main_layout.addWidget(id_label, index-1,0)
@@ -147,6 +149,9 @@ class ToDoTab(QWidget):
                 self.main_layout.addWidget(complete_button, index-1,2)
                 edit_button = QPushButton("Edit")
                 self.main_layout.addWidget(edit_button, index-1,3)
+
+                counter += 1
+            self.main_layout.setRowStretch(counter, 1)
     def complete_button_handler(self, item_id):
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(item_id)

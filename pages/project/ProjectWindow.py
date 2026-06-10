@@ -59,7 +59,7 @@ class ProjectPage(QDialog):
         self.tab.addTab(self.activities_tab, "ACTIVITIES")
 
         self.todo_tab = ToDoTab(self.database, self.project_id, self.user_id)
-        self.tab.addTab(self.todo_tab, "TO DO")
+        self.tab.addTab(self.todo_tab, "TODO")
 
 
         # ADD and BACK buttons
