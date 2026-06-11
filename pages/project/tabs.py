@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame, QMessageBox
+from PySide6.QtCore import Signal
 from database.models import ProjectDetails
 from helper_functions import clear_layout
 from custom_widgets import EditItemActivity
@@ -131,9 +132,9 @@ class ToDoTab(QWidget):
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
 
-        self.refresh_data()
+        self.load_data()
 
-    def refresh_data(self):
+    def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
         with self.database.session() as session:
             project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
@@ -155,9 +156,12 @@ class ToDoTab(QWidget):
     def complete_button_handler(self, item_id):
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(item_id)
-            session.delete(item)
+            item.activity = item.todo
+            item.todo = None
+
             session.commit()
-        self.refresh_data()
+
+        self.load_data()
 
 
 

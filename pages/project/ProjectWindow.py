@@ -76,7 +76,7 @@ class ProjectPage(QDialog):
 
         # Changing ADD BUTTON text based on the current tab
 
-        self.tab.currentChanged.connect(self.refresh_add_button)
+        self.tab.currentChanged.connect(self.refresh_tab)
 
     def add_button_handler(self):
         current_tab_index = self.tab.currentIndex()
@@ -90,7 +90,7 @@ class ProjectPage(QDialog):
             triggerred_function = self.activities_tab.load_data
         elif current_tab_index == 2:
             flag = "todo"
-            triggerred_function = self.todo_tab.refresh_data
+            triggerred_function = self.todo_tab.load_data
         else:
             return
 
@@ -113,13 +113,18 @@ class ProjectPage(QDialog):
             if event:
                 event.ignore()
 
-    def refresh_add_button(self):
+    def refresh_tab(self):
+        # Changing ADD BUTTON text based on the current tab
+        # Refreshing data based on change of the current tab
         if self.tab.currentIndex() == 0:
             self.add_button.setText("Add Item")
+            self.items_tab.load_data()
         elif self.tab.currentIndex() == 1:
             self.add_button.setText("Add Activity")
+            self.activities_tab.load_data()
         elif self.tab.currentIndex() == 2:
             self.add_button.setText("Add To Do")
+            self.todo_tab.load_data()
     def refresh_data(self):
         # For later use if main project window changes (for example name of the project changed in child dialog)
         pass

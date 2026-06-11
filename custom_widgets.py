@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 
-from database.database import Database
+
 from database.models import ProjectDetails, Projects
 
 
@@ -219,7 +219,6 @@ class ProjectWindowMenuBar(QMenuBar):
         # EXIT BUTTON MENU
         self.exit = self.addAction("Exit")
         self.exit.triggered.connect(lambda _: self.parent.close())
-
 
     def export_project_handler(self):
         file_path, selected_filter = QFileDialog.getSaveFileName(self)
