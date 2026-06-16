@@ -114,7 +114,7 @@ class ActivitiesTab(QWidget):
                 name_label = QLabel(item.activity)
                 self.main_layout.addWidget(name_label, counter, 0)
                 quantity_label = QLabel(str(item.quantity))
-                self.main_layout.addWidget(quantity_label, counter, 2)
+                self.main_layout.addWidget(quantity_label, counter, 1)
                 delete_button = QPushButton("Delete")
                 self.main_layout.addWidget(delete_button, counter, 3)
                 edit_button = QPushButton("Edit")

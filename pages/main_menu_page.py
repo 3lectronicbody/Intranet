@@ -55,7 +55,7 @@ class MainMenuPage(QWidget):
         self.user_id = user_id
         with self.database.session() as session:
             self.user = session.query(Users).get(user_id)
-            is_authorized = self.user.role in [Role.DEVELOPER.value, Role.ADMIN.value]
+            is_authorized = self.user.role in [Role.DEVELOPER.value, Role.ADMIN.value, Role.USER.value]
             self.employees_button.setEnabled(is_authorized)
             self.welcome_label.setText(f"Welcome <b>{self.user.email}</b>")
 

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QStackedWidget, QGraphicsBlurEffect
+from PySide6.QtWidgets import QStackedWidget, QGraphicsBlurEffect, QMessageBox
 
 from pages.login_page import LoginPage
 from pages.main_menu_page import MainMenuPage
@@ -7,6 +7,7 @@ from pages.sign_up_page import SignUpPage
 from pages.project.ProjectWindow import ProjectPage
 from pages.create_project_page import CreateProjectPage
 from pages.employees_page import EmployeesPage
+from helper_functions import confirmation_dialog
 
 class MainFrame(QStackedWidget):
     def __init__(self, database=None):
@@ -17,8 +18,6 @@ class MainFrame(QStackedWidget):
         self.database = database
 
         self.project_window = None
-
-
 
 
         self.setMaximumSize(800, 1000)
@@ -68,8 +67,6 @@ class MainFrame(QStackedWidget):
         self.show_login_page()
 
 
-
-
     def show_main_menu_page(self, user_id = None):
         self.setWindowTitle("Main Menu")
         # If an ID is provided (from Login), save it!
@@ -107,11 +104,20 @@ class MainFrame(QStackedWidget):
         self.projects_page.refresh_data()
         self.show()
         # self.projects_page.setGraphicsEffect(None)
-
     def show_employees_page(self):
         self.setWindowTitle("Employees")
         self.employees_page.load_user(self.user_id)
         self.employees_page.refresh_data()
         self.setCurrentWidget(self.employees_page)
+
+    def closeEvent(self, event, /):
+        dialog = confirmation_dialog(self, title="Exit", message="Are you sure you want to exit?")
+        if dialog == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
+
+
+
 
 

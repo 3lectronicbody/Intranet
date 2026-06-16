@@ -51,7 +51,9 @@ class SignUpPage(QWidget):
                 QMessageBox.warning(self, "Error", "Email already exists")
                 session.rollback()
                 self.cancel_signal.emit()
-        self.name_input.setText("")
-        self.password_input.setText("")
+    def hideEvent(self, event):
+        self.name_input.clear()
+        self.password_input.clear()
+        super().hideEvent(event)
 
 
