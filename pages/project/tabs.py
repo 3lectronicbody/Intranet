@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame,
 from PySide6.QtCore import Signal
 from database.models import ProjectDetails
 from helper_functions import clear_layout
-from custom_widgets import EditItemActivity
+
 from helper_functions import confirmation_dialog
 
 
@@ -117,10 +117,22 @@ class ActivitiesTab(QWidget):
                 self.main_layout.addWidget(quantity_label, counter, 1)
                 delete_button = QPushButton("Delete")
                 self.main_layout.addWidget(delete_button, counter, 3)
+                delete_button.clicked.connect(lambda _, item_id=item.id: self.delete_button_handler(item_id))
                 edit_button = QPushButton("Edit")
                 self.main_layout.addWidget(edit_button, counter, 4)
+                edit_button.clicked.connect(lambda item_id=item.id: self.edit_button_handler(item_id))
                 counter += 1
         self.main_layout.setRowStretch(counter, 1)
+    def edit_button_handler(self, item_id):
+        dialog = EditItemActivity(self.database, self.project_id, item_id, self.user_id, flag="activity")
+        dialog.exec()
+        self.load_data()
+    def delete_button_handler(self, item_id):
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(item_id)
+            session.delete(item)
+            session.commit()
+        self.load_data()
 
 class ToDoTab(QWidget):
     def __init__(self, database, project_id, user_id):

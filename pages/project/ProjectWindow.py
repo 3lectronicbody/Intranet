@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWid
 
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
-from custom_widgets import AddItemActivity, ProjectWindowMenuBar
+from custom_widgets import AddActivity, AddItem, AddToDo, ProjectWindowMenuBar
 from helper_functions import confirmation_dialog
 
 
@@ -16,7 +16,9 @@ class ProjectPage(QDialog):
         self.database = database
         self.project_id = project_id
         self.user_id = user_id
-        self.add_item_activity_dialog = None
+        self.add_activity_dialog = None
+        self.add_item_dialog = None
+        self.add_todo_dialog = None
 
         with self.database.session() as session:
             project = session.query(Projects).get(project_id)
@@ -83,27 +85,21 @@ class ProjectPage(QDialog):
 
         # 1. Determine the flag
         if current_tab_index == 0:
-            flag = "item"
-            triggerred_function = self.items_tab.load_data
+            self.add_item_dialog = AddItem(self.database, self.project_id, self.user_id)
+            self.add_item_dialog.save_signal.connect(self.items_tab.load_data)
+            self.add_item_dialog.exec()
+
         elif current_tab_index == 1:
-            flag = "activity"
-            triggerred_function = self.activities_tab.load_data
+            self.add_activity_dialog = AddActivity(self.database, self.project_id, self.user_id)
+            self.add_activity_dialog.save_signal.connect(self.activities_tab.load_data)
+            self.add_activity_dialog.exec()
+
         elif current_tab_index == 2:
-            flag = "todo"
-            triggerred_function = self.todo_tab.load_data
-        else:
-            return
+            self.add_todo_dialog = AddToDo(self.database, self.project_id, self.user_id)
+            self.add_todo_dialog.save_signal.connect(self.todo_tab.load_data)
+            self.add_todo_dialog.exec()
 
-        # 2. Create the dialog once
-        self.add_item_activity_dialog = AddItemActivity(
-            self.database, self.project_id, self.user_id, flag=flag
-        )
 
-        # 3. Connect the signal to the correct slot
-        self.add_item_activity_dialog.save_signal.connect(triggerred_function)
-
-        # 4. Run the dialog once
-        self.add_item_activity_dialog.exec()
     def back_button_handler(self, event=None):
         text = "Are you sure you want to leave?"
         dialog = confirmation_dialog(self, title="Confirmation", message=text)
