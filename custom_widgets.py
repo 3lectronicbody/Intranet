@@ -2,8 +2,6 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
     QMenuBar, QFileDialog
 from PySide6.QtCore import Signal
 from fpdf import FPDF
-
-
 from database.models import ProjectDetails, Projects
 
 class AddItem(QDialog):
@@ -230,9 +228,60 @@ class EditItem(QDialog):
             session.commit()
             self.accept()
             self.save_signal.emit()
-
 class EditActivity(QDialog):
-    pass
+    save_signal = Signal()
+
+    def __init__(self, database, project_id, user_id, item_id):
+        super().__init__()
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+        self.item_id = item_id
+        self.setWindowTitle("Edit Item")
+
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(item_id)
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.data_layout = QGridLayout()
+        self.layout.addLayout(self.data_layout)
+
+        self.name_label = QLabel("Name: ")
+        self.data_layout.addWidget(self.name_label, 0, 0)
+
+        self.name_input = QLineEdit()
+        self.name_input.setText(item.activity)
+        self.data_layout.addWidget(self.name_input, 0, 1)
+
+
+        self.quantity_label = QLabel("Quantity: ")
+        self.data_layout.addWidget(self.quantity_label, 1, 0)
+
+        self.quantity_input = QLineEdit()
+        self.quantity_input.setText(str(item.quantity))
+        self.data_layout.addWidget(self.quantity_input, 1, 1)
+
+
+        self.button_layout = QHBoxLayout()
+        self.layout.addLayout(self.button_layout)
+
+        self.save_button = QPushButton("Save")
+        self.button_layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_button_handler)
+
+        self.cancel_button = QPushButton("Cancel")
+        self.button_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def save_button_handler(self):
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(self.item_id)
+            item.activity = self.name_input.text()
+            item.quantity = self.quantity_input.text()
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 class EditToDo(QDialog):
     pass
 
