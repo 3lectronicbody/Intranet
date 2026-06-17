@@ -162,6 +162,7 @@ class AddToDo(QDialog):
             self.save_signal.emit()
 
 class EditItem(QDialog):
+    save_signal = Signal()
     def __init__(self, database, project_id, user_id, item_id):
         super().__init__()
         self.database = database
@@ -172,6 +173,7 @@ class EditItem(QDialog):
 
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(item_id)
+
 
 
         self.layout = QVBoxLayout()
@@ -197,7 +199,7 @@ class EditItem(QDialog):
         self.data_layout.addWidget(self.quantity_label, 2, 0)
 
         self.quantity_input = QLineEdit()
-        self.quantity_input.setText(item.quantity)
+        self.quantity_input.setText(str(item.quantity))
         self.data_layout.addWidget(self.quantity_input, 2, 1)
 
         self.unit_label = QLabel("Unit: ")
@@ -219,7 +221,15 @@ class EditItem(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        pass
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(self.item_id)
+            item.item = self.name_input.text()
+            item.item_code = self.code_input.text()
+            item.quantity = self.quantity_input.text()
+            item.unit = self.unit_dropdown.currentText()
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 
 class EditActivity(QDialog):
     pass

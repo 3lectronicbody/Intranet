@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame,
 from PySide6.QtCore import Signal
 from database.models import ProjectDetails
 from helper_functions import clear_layout
-
+from custom_widgets import EditItem
 from helper_functions import confirmation_dialog
 
 
@@ -66,7 +66,8 @@ class ItemsTab(QWidget):
         self.main_layout.setRowStretch(counter, 1)
 
     def edit_button_handler(self, item_id):
-        edit_dialog = EditItemActivity(self.database,self.project_id, item_id, self.user_id, flag="item")
+        edit_dialog = EditItem(self.database, self.project_id,self.user_id, item_id)
+        edit_dialog.save_signal.connect(self.load_data)
         edit_dialog.exec()
         self.load_data()
 
