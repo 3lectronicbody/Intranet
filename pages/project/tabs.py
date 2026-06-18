@@ -1,5 +1,4 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame, QMessageBox, QVBoxLayout
-from PySide6.QtCore import Signal
 from database.models import ProjectDetails
 from helper_functions import clear_layout
 from custom_widgets import EditItem, EditActivity, EditToDo
@@ -143,30 +142,27 @@ class ToDoTab(QWidget):
         self.database = database
         self.project_id = project_id
         self.user_id = user_id
-        self.empty_list_label = None
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        self.empty_list_label = QLabel("No To-Do Items")
+        self.layout.addWidget(self.empty_list_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
 
         self.main_layout = QGridLayout()
         self.layout.addLayout(self.main_layout)
 
         self.load_data()
+        self.layout.addStretch()
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
         with self.database.session() as session:
             project_details = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
             items = [detail for detail in project_details if detail.todo is not None]
-            if not items and self.empty_list_label is None:
-                self.empty_list_label = QLabel("No To-Do List")
-                self.layout.addWidget(self.empty_list_label, alignment=Qt.AlignmentFlag.AlignCenter)
-                return
-            else:
-                if self.empty_list_label:
-                    self.layout.removeWidget(self.empty_list_label)
-                    self.empty_list_label.deleteLater()  # Safely wipe it from memory
-                    self.empty_list_label = None
+            if items:
+                self.empty_list_label.hide()
                 counter = 1
                 for index, item in enumerate(items, start=1):
                     id_label = QLabel(str(index))
@@ -184,6 +180,10 @@ class ToDoTab(QWidget):
 
                     counter += 1
                 self.main_layout.setRowStretch(counter, 1)
+
+
+            else:
+                self.empty_list_label.show()
     def complete_button_handler(self, item_id):
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(item_id)
