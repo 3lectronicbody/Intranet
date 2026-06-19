@@ -21,21 +21,12 @@ def clear_layout(layout, grid_layout=False):
         for j in range(layout.columnCount()):
             layout.setColumnStretch(j, 0)
             layout.setColumnMinimumWidth(j, 0)
-
 def confirmation_dialog(parent, title, message,):
     dialog = QMessageBox(parent)
     dialog.setWindowTitle(title)
     dialog.setText(message)
     dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     return dialog.exec()
-
-def load_css(file_path):
-    absolute_path = Path(file_path)
-    try:
-        with open(absolute_path, "r", encoding="utf-8") as file:
-            return file.read()
-    except FileNotFoundError:
-        print(f"File not found: {absolute_path}")
 
 
 
