@@ -54,7 +54,7 @@ class AddItem(QDialog):
         code = self.code_input.text() or None
         quantity = self.quantity_input.text() or None
         unit = self.unit_dropdown.currentText()
-        if quantity is not None and quantity.isdigit():
+        if quantity is not None and quantity.isnumeric():
             with self.database.session() as session:
                 new = ProjectDetails(project_id=self.project_id,
                                      item=name,
@@ -72,6 +72,7 @@ class AddItem(QDialog):
             warning.setIcon(QMessageBox.Warning)
             warning.exec()
             self.quantity_input.clear()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
 
 
@@ -358,6 +359,7 @@ class CustomPushButton(QPushButton):
             return
         super().keyPressEvent(event)
 class ProjectWindowMenuBar(QMenuBar):
+    exit_signal = Signal()
     def __init__(self, parent, database, project_id, user_id):
         super().__init__(parent)
 
