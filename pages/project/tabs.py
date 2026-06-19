@@ -18,6 +18,7 @@ class ItemsTab(QWidget):
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
 
+        # First data initialization
         self.load_data()
 
     def load_data(self):
