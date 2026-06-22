@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox
+    QMenuBar, QFileDialog, QMessageBox, QApplication
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
@@ -359,7 +359,6 @@ class CustomPushButton(QPushButton):
             return
         super().keyPressEvent(event)
 class ProjectWindowMenuBar(QMenuBar):
-    exit_signal = Signal()
     def __init__(self, parent, database, project_id, user_id):
         super().__init__(parent)
 
@@ -376,7 +375,7 @@ class ProjectWindowMenuBar(QMenuBar):
 
         # EXIT BUTTON MENU
         self.exit = self.addAction("Exit")
-        self.exit.triggered.connect(lambda _: self.parent.close())
+        self.exit.triggered.connect(lambda _: self.exit_button_handler())
 
     def export_project_handler(self):
         file_path, selected_filter = QFileDialog.getSaveFileName(self)
@@ -395,7 +394,7 @@ class ProjectWindowMenuBar(QMenuBar):
                 pdf.cell(100, 10, txt="ITEMS", ln=1)
 
                 for i in items:
-                    pdf.cell(item_column_width["name"], 10, txt=i.item, ln=0)
+                    pdf.cell(item_column_width["name"], 10, txt=i.item or "", ln=0)
                     pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
                     pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
                     pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
@@ -405,13 +404,18 @@ class ProjectWindowMenuBar(QMenuBar):
                 pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
 
                 for i in activities:
-                    pdf.cell(activity_column_width["name"], 10, txt=i.activity, ln=0)
+                    pdf.cell(activity_column_width["name"], 10, txt=i.activity or "", ln=0)
                     pdf.cell(activity_column_width["quantity"], 10, txt=str(i.quantity), ln=1)
 
             if file_path[-4:] != ".pdf":
                 file_path += ".pdf"
 
             pdf.output(file_path)
+    @staticmethod
+    def exit_button_handler():
+        app_instance = QApplication.instance()
+        if app_instance:
+            app_instance.quit()
 
 
 

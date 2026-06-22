@@ -11,7 +11,6 @@ import sys
 if __name__ == "__main__":
     database = Database()
     app = QApplication(sys.argv)
-    app.exit_signal.connect(app.quit)
 
     app.setStyle("Fusion")
     # 2. Apply the custom stylesheet

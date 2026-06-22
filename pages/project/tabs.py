@@ -131,11 +131,13 @@ class ActivitiesTab(QWidget):
         dialog.exec()
         # self.load_data()
     def delete_button_handler(self, item_id):
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
-            session.delete(item)
-            session.commit()
-        self.load_data()
+        confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this activity?")
+        if confirm == QMessageBox.Yes:
+            with self.database.session() as session:
+                item = session.query(ProjectDetails).get(item_id)
+                session.delete(item)
+                session.commit()
+            self.load_data()
 
 class ToDoTab(QWidget):
     def __init__(self, database, project_id, user_id):
@@ -186,12 +188,14 @@ class ToDoTab(QWidget):
             else:
                 self.empty_list_label.show()
     def complete_button_handler(self, item_id):
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
-            item.activity = item.todo
-            item.todo = None
-            session.commit()
-        self.load_data()
+        confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to complete this item?")
+        if confirm == QMessageBox.Yes:
+            with self.database.session() as session:
+                item = session.query(ProjectDetails).get(item_id)
+                item.activity = item.todo
+                item.todo = None
+                session.commit()
+            self.load_data()
     def edit_button_handler(self, item_id):
         dialog = EditToDo(self.database, self.project_id, self.user_id, item_id)
         dialog.save_signal.connect(self.load_data)
