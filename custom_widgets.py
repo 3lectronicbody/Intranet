@@ -50,31 +50,64 @@ class AddItem(QDialog):
         self.buttons_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.reject)
     def save_button_handler(self):
-        name = self.name_input.text() or None
-        code = self.code_input.text() or None
-        quantity = self.quantity_input.text() or None
+        self.name_input.setStyleSheet("")
+        self.code_input.setStyleSheet("")
+        self.quantity_input.setStyleSheet("")
+        name = self.name_input.text().strip()
+        code = self.code_input.text().strip()
+        quantity = self.quantity_input.text().replace(",", ".").strip()
         unit = self.unit_dropdown.currentText()
-        if quantity is not None and quantity.isnumeric():
-            with self.database.session() as session:
-                new = ProjectDetails(project_id=self.project_id,
-                                     item=name,
-                                     item_code=code,
-                                     quantity=quantity,
-                                     unit=unit)
-                session.add(new)
-                session.commit()
-                self.accept()
-                self.save_signal.emit()
-        else:
+        if not name:
             warning = QMessageBox()
-            warning.setText("Quantity must be a number")
+            warning.setText("Item name cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not code:
+            warning = QMessageBox()
+            warning.setText("Item code cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.code_input.setStyleSheet("border: 2px solid red;")
+            self.code_input.setFocus()
+            return
+
+        if not quantity:
+            warning = QMessageBox()
+            warning.setText("Quantity cannot be empty")
             warning.setWindowTitle("Warning")
             warning.setIcon(QMessageBox.Warning)
             warning.exec()
             self.quantity_input.clear()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
+            return
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
 
+        with self.database.session() as session:
+            new = ProjectDetails(project_id=self.project_id,
+                                 item=name,
+                                 item_code=code,
+                                 quantity=quantity,
+                                 unit=unit)
+            session.add(new)
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 
 class AddActivity(QDialog):
     save_signal = Signal()
@@ -115,14 +148,34 @@ class AddActivity(QDialog):
     def save_button_handler(self):
         name = self.name_input.text() or None
         quantity = self.quantity_input.text() or None
-        with self.database.session() as session:
-            new = ProjectDetails(project_id=self.project_id,
-                                 activity=name,
-                                 quantity=quantity)
-            session.add(new)
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+        if not name:
+            warning = QMessageBox()
+            warning.setText("Activity name cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not quantity or not quantity.isnumeric():
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
+        else:
+            with self.database.session() as session:
+                new = ProjectDetails(project_id=self.project_id,
+                                     activity=name,
+                                     quantity=quantity)
+                session.add(new)
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
 class AddToDo(QDialog):
     save_signal = Signal()
 
@@ -160,16 +213,36 @@ class AddToDo(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        name = self.name_input.text() or None
-        quantity = self.quantity_input.text() or None
-        with self.database.session() as session:
-            new = ProjectDetails(project_id=self.project_id,
-                                 todo=name,
-                                 quantity=quantity)
-            session.add(new)
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+        name = self.name_input.text()
+        quantity = self.quantity_input.text()
+        if not name:
+            warning = QMessageBox()
+            warning.setText("Todo name cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not quantity or not quantity.isnumeric():
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
+        else:
+            with self.database.session() as session:
+                new = ProjectDetails(project_id=self.project_id,
+                                     todo=name,
+                                     quantity=quantity)
+                session.add(new)
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
 
 class EditItem(QDialog):
     save_signal = Signal()
@@ -231,15 +304,31 @@ class EditItem(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(self.item_id)
-            item.item = self.name_input.text()
-            item.item_code = self.code_input.text()
-            item.quantity = self.quantity_input.text()
-            item.unit = self.unit_dropdown.currentText()
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+        name = self.name_input.text()
+        code = self.code_input.text()
+        quantity = self.quantity_input.text()
+        if not name:
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not code:
+            self.code_input.setStyleSheet("border: 2px solid red;")
+            self.code_input.setFocus()
+            return
+        if not quantity or not quantity.isnumeric():
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        else:
+            with self.database.session() as session:
+                item = session.query(ProjectDetails).get(self.item_id)
+                item.item = name
+                item.item_code = code
+                item.quantity = quantity
+                item.unit = self.unit_dropdown.currentText()
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
 class EditActivity(QDialog):
     save_signal = Signal()
 
