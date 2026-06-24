@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWid
 
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
-from custom_widgets import AddActivity, AddItem, AddToDo, ProjectWindowMenuBar
+from custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
 from helper_functions import confirmation_dialog
 
 
@@ -30,7 +30,7 @@ class ProjectPage(QDialog):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.menu_bar = ProjectWindowMenuBar(self, self.database, self.project_id, self.user_id)
+        self.menu_bar = MenuBar(self, self.database, self.user_id, self.project_id, flag="project")
         self.main_layout.addWidget(self.menu_bar)
 
         self.project_name_label = QLabel(f"Project: {self.project_name} ")

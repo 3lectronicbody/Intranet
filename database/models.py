@@ -16,13 +16,11 @@ from typing import Optional
 class Base(DeclarativeBase):
     pass
 
-
 class Role(Enum):
     DEVELOPER = "developer"
     ADMIN = "admin"
     USER = "user"
     GUEST = "guest"
-
 
 class Log(Enum):
     NORMAL = "normal"

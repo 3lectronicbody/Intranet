@@ -108,7 +108,6 @@ class AddItem(QDialog):
             session.commit()
             self.accept()
             self.save_signal.emit()
-
 class AddActivity(QDialog):
     save_signal = Signal()
 
@@ -447,19 +446,23 @@ class CustomPushButton(QPushButton):
             self.clicked.emit()
             return
         super().keyPressEvent(event)
-class ProjectWindowMenuBar(QMenuBar):
-    def __init__(self, parent, database, project_id, user_id):
+class MenuBar(QMenuBar):
+    def __init__(self, parent, database, user_id, project_id = None, flag=None):
+        # flag=project: Menu bar for project window
+        # flag=main: Menu bar for main menu
         super().__init__(parent)
 
         self.parent = parent
         self.database = database
         self.project_id = project_id
         self.user_id = user_id
+        self.flag = flag
         # ADD FILE MENU TO MENU BAR
         self.file_menu = self.addMenu("File")
 
-        self.export_project = self.file_menu.addAction("Export Project...")
-        self.export_project.triggered.connect(self.export_project_handler)
+        if self.flag == "project":
+            self.export_project = self.file_menu.addAction("Export Project...")
+            self.export_project.triggered.connect(self.export_project_handler)
 
 
         # EXIT BUTTON MENU

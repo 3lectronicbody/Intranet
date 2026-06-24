@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QStackedWidget, QGraphicsBlurEffect, QMessageBox
+from PySide6.QtWidgets import QStackedWidget, QMainWindow, QMessageBox, QWidget, QVBoxLayout
 
 from pages.login_page import LoginPage
 from pages.main_menu_page import MainMenuPage
@@ -9,7 +9,9 @@ from pages.create_project_page import CreateProjectPage
 from pages.employees_page import EmployeesPage
 from helper_functions import confirmation_dialog
 
-class MainFrame(QStackedWidget):
+from custom_widgets import MenuBar
+
+class MainFrame(QMainWindow):
     def __init__(self, database=None):
         super().__init__()
 
@@ -19,8 +21,20 @@ class MainFrame(QStackedWidget):
 
         self.project_window = None
 
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+
+        self.main_layout = QVBoxLayout()
+        self.central_widget.setLayout(self.main_layout)
+
+        self.menu_bar = MenuBar(self,self.database, self.project_id, self.user_id, flag="main")
+        self.main_layout.addWidget(self.menu_bar)
+
 
         self.setMaximumSize(800, 1000)
+
+        self.frame = QStackedWidget()
+        self.main_layout.addWidget(self.frame)
 
 
         self.login_page = LoginPage(self.database)
@@ -57,12 +71,12 @@ class MainFrame(QStackedWidget):
 
 
 
-        self.addWidget(self.login_page)
-        self.addWidget(self.main_menu_page)
-        self.addWidget(self.sign_up_page)
-        self.addWidget(self.projects_page)
-        self.addWidget(self.create_project_page)
-        self.addWidget(self.employees_page)
+        self.frame.addWidget(self.login_page)
+        self.frame.addWidget(self.main_menu_page)
+        self.frame.addWidget(self.sign_up_page)
+        self.frame.addWidget(self.projects_page)
+        self.frame.addWidget(self.create_project_page)
+        self.frame.addWidget(self.employees_page)
 
         self.show_login_page()
 
@@ -74,23 +88,23 @@ class MainFrame(QStackedWidget):
             self.user_id = user_id
         self.main_menu_page.load_user(self.user_id)
 
-        self.setCurrentWidget(self.main_menu_page)
+        self.frame.setCurrentWidget(self.main_menu_page)
     def show_login_page(self):
         self.setWindowTitle("Login")
         self.user_id = None
-        self.setCurrentWidget(self.login_page)
+        self.frame.setCurrentWidget(self.login_page)
     def show_sign_up_page(self):
         self.setWindowTitle("Sign Up")
-        self.setCurrentWidget(self.sign_up_page)
+        self.frame.setCurrentWidget(self.sign_up_page)
     def show_projects_page(self):
         self.setWindowTitle("Projects")
         self.projects_page.load_user(self.user_id)
         self.projects_page.refresh_data()
-        self.setCurrentWidget(self.projects_page)
+        self.frame.setCurrentWidget(self.projects_page)
     def show_create_project_page(self):
         self.setWindowTitle("Create Project")
         self.create_project_page.load_user(self.user_id)
-        self.setCurrentWidget(self.create_project_page)
+        self.frame.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
         self.hide()
         self.project_window = ProjectPage(self.database, project_id=project_id, user_id=self.user_id)
@@ -108,7 +122,7 @@ class MainFrame(QStackedWidget):
         self.setWindowTitle("Employees")
         self.employees_page.load_user(self.user_id)
         self.employees_page.refresh_data()
-        self.setCurrentWidget(self.employees_page)
+        self.frame.setCurrentWidget(self.employees_page)
 
     def closeEvent(self, event, /):
         dialog = confirmation_dialog(self, title="Exit", message="Are you sure you want to exit?")

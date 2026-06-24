@@ -3,7 +3,6 @@ from .models import Base
 from sqlalchemy import create_engine
 
 
-
 class Database:
     def __init__(self):
         self.engine = create_engine("sqlite:///database.db", echo=True, future=True)
