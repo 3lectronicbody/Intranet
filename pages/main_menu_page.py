@@ -26,6 +26,7 @@ class MainMenuPage(QWidget):
         self.menu_items = []
 
         self.projects_button = QPushButton("Projects", flat=True)
+        # self.projects_button.setStyleSheet("background-color:#2c3e50; border-radius: 4px;")
         self.main_layout.addWidget(self.projects_button, 1, 0)
         self.projects_button.clicked.connect(lambda: self.projects_signal.emit())
         self.menu_items.append(self.projects_button)

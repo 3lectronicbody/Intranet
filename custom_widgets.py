@@ -457,6 +457,8 @@ class MenuBar(QMenuBar):
         self.project_id = project_id
         self.user_id = user_id
         self.flag = flag
+
+        self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
         # ADD FILE MENU TO MENU BAR
         self.file_menu = self.addMenu("File")
 
