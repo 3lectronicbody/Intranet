@@ -242,7 +242,6 @@ class AddToDo(QDialog):
                 session.commit()
                 self.accept()
                 self.save_signal.emit()
-
 class EditItem(QDialog):
     save_signal = Signal()
     def __init__(self, database, project_id, user_id, item_id):
@@ -339,6 +338,8 @@ class EditActivity(QDialog):
         self.item_id = item_id
         self.setWindowTitle("Edit Item")
 
+
+
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(item_id)
 
@@ -375,10 +376,46 @@ class EditActivity(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
+        activity = self.name_input.text()
+        quantity = self.quantity_input.text().strip().replace(",", ".")
+
+        self.quantity_input.setStyleSheet("")
+        self.name_input.setStyleSheet("")
+
+        if not activity:
+            message = QMessageBox()
+            message.setText("Please enter a name")
+            message.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            return
+        if not quantity:
+            message = QMessageBox()
+            message.setText(f"Please enter a quantity")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            return
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            message = QMessageBox()
+            message.setText("Please enter a number")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            return
+        if quantity <= 0:
+            message = QMessageBox()
+            message.setText("Quantity value must be greater than zero")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
+
         with self.database.session() as session:
+
             item = session.query(ProjectDetails).get(self.item_id)
-            item.activity = self.name_input.text()
-            item.quantity = self.quantity_input.text()
+            item.activity = activity
+            item.quantity = quantity
             session.commit()
             self.accept()
             self.save_signal.emit()
