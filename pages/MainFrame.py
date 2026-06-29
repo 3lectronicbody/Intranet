@@ -50,6 +50,7 @@ class MainFrame(QMainWindow):
         self.main_menu_page.logout_signal.connect(self.show_login_page)
         self.main_menu_page.projects_signal.connect(self.show_projects_page)
         self.main_menu_page.employees_signal.connect(self.show_employees_page)
+        self.main_menu_page.service_projects_signal.connect(self.show_service_projects_page)
 
 
         self.sign_up_page = SignUpPage(self.database)
@@ -69,6 +70,7 @@ class MainFrame(QMainWindow):
         self.employees_page.back_signal.connect(self.show_main_menu_page)
 
         self.service_projects_page = ServiceProjectsPage(self.database)
+
 
 
 

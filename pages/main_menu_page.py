@@ -8,7 +8,7 @@ class MainMenuPage(QWidget):
     logout_signal = Signal()
     projects_signal = Signal()
     employees_signal = Signal()
-    service_projects_signal =Signal()
+    service_projects_signal = Signal()
     def __init__(self, database):
         super().__init__()
 
@@ -81,5 +81,5 @@ class MainMenuPage(QWidget):
     def employees_button_handler(self):
         self.employees_signal.emit()
     def service_projects_button_handler(self):
-        pass
+        self.service_projects_signal.emit()
 
