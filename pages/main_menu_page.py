@@ -8,14 +8,13 @@ class MainMenuPage(QWidget):
     logout_signal = Signal()
     projects_signal = Signal()
     employees_signal = Signal()
+    service_projects_signal =Signal()
     def __init__(self, database):
         super().__init__()
 
         self.user_id = None
         self.user = None
         self.database = database
-
-
 
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -36,6 +35,11 @@ class MainMenuPage(QWidget):
         self.employees_button.clicked.connect(self.employees_button_handler)
         self.menu_items.append(self.employees_button)
 
+        self.service_projects_button = QPushButton("Service Projects", flat=True)
+        self.main_layout.addWidget(self.service_projects_button, 3, 0)
+        self.service_projects_button.clicked.connect(self.service_projects_button_handler)
+        self.menu_items.append(self.service_projects_button)
+
         for flat_button in self.menu_items:
             flat_button.setStyleSheet("""
                     :hover {
@@ -44,12 +48,12 @@ class MainMenuPage(QWidget):
                 """)
 
 
-        self.main_layout.setRowStretch(3, 1)
+        self.main_layout.setRowStretch(4, 1)
 
 
 
         self.logout_button = QPushButton("Logout")
-        self.main_layout.addWidget(self.logout_button, 4, 0)
+        self.main_layout.addWidget(self.logout_button, 5, 0)
         self.logout_button.clicked.connect(self.logout_button_handler)
 
     def load_user(self, user_id):
@@ -76,4 +80,6 @@ class MainMenuPage(QWidget):
             return
     def employees_button_handler(self):
         self.employees_signal.emit()
+    def service_projects_button_handler(self):
+        pass
 

@@ -30,8 +30,8 @@ class ProjectPage(QDialog):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.menu_bar = MenuBar(self, self.database, self.user_id, self.project_id, flag="project")
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.menu_bar = MenuBar(self, self.database, self.user_id, project_id=self.project_id, flag="project")
+        self.main_layout.setContentsMargins(0, 0, 0, 1)
         self.main_layout.addWidget(self.menu_bar)
 
         self.project_name_label = QLabel(f"Project: {self.project_name} ")

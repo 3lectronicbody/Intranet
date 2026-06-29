@@ -7,6 +7,7 @@ from pages.sign_up_page import SignUpPage
 from pages.project.ProjectWindow import ProjectPage
 from pages.create_project_page import CreateProjectPage
 from pages.employees_page import EmployeesPage
+from pages.service_projects_page import ServiceProjectsPage
 from helper_functions import confirmation_dialog
 
 from custom_widgets import MenuBar
@@ -60,14 +61,15 @@ class MainFrame(QMainWindow):
         self.projects_page.create_signal.connect(self.show_create_project_page)
         self.projects_page.open_signal.connect(self.show_project_page) # Signal takes project_id
 
-
-
         self.create_project_page = CreateProjectPage(self.database)
         self.create_project_page.cancel_signal.connect(self.show_projects_page)
         self.create_project_page.create_signal.connect(self.show_projects_page)
 
         self.employees_page = EmployeesPage(self.database)
         self.employees_page.back_signal.connect(self.show_main_menu_page)
+
+        self.service_projects_page = ServiceProjectsPage(self.database)
+
 
 
 
@@ -78,6 +80,7 @@ class MainFrame(QMainWindow):
         self.frame.addWidget(self.projects_page)
         self.frame.addWidget(self.create_project_page)
         self.frame.addWidget(self.employees_page)
+        self.frame.addWidget(self.service_projects_page)
 
         self.show_login_page()
 
@@ -124,6 +127,10 @@ class MainFrame(QMainWindow):
         self.employees_page.load_user(self.user_id)
         self.employees_page.refresh_data()
         self.frame.setCurrentWidget(self.employees_page)
+    def show_service_projects_page(self):
+        self.setWindowTitle("Service Projects")
+        self.service_projects_page.refresh_data()
+        self.frame.setCurrentWidget(self.service_projects_page)
 
     def closeEvent(self, event, /):
         dialog = confirmation_dialog(self, title="Exit", message="Are you sure you want to exit?")

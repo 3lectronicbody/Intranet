@@ -108,6 +108,123 @@ class AddItem(QDialog):
             session.commit()
             self.accept()
             self.save_signal.emit()
+class EditItem(QDialog):
+    save_signal = Signal()
+
+    def __init__(self, database, project_id, user_id, item_id):
+        super().__init__()
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+        self.item_id = item_id
+        self.setWindowTitle("Edit Item")
+
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(item_id)
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.data_layout = QGridLayout()
+        self.layout.addLayout(self.data_layout)
+
+        self.name_label = QLabel("Name: ")
+        self.data_layout.addWidget(self.name_label, 0, 0)
+
+        self.name_input = QLineEdit()
+        self.name_input.setText(item.item)
+        self.data_layout.addWidget(self.name_input, 0, 1)
+
+        self.code_label = QLabel("Code: ")
+        self.data_layout.addWidget(self.code_label, 1, 0)
+
+        self.code_input = QLineEdit()
+        self.code_input.setText(item.item_code)
+        self.data_layout.addWidget(self.code_input, 1, 1)
+
+        self.quantity_label = QLabel("Quantity: ")
+        self.data_layout.addWidget(self.quantity_label, 2, 0)
+
+        self.quantity_input = QLineEdit()
+        self.quantity_input.setText(str(item.quantity))
+        self.data_layout.addWidget(self.quantity_input, 2, 1)
+
+        self.unit_label = QLabel("Unit: ")
+        self.data_layout.addWidget(self.unit_label, 3, 0)
+
+        self.unit_dropdown = QComboBox()
+        units = ["mtr", "psc"]
+        self.unit_dropdown.addItems(units)
+        if item.unit in units:
+            self.unit_dropdown.setCurrentText(item.unit)
+        else:
+            self.unit_dropdown.setCurrentIndex(0)
+        self.data_layout.addWidget(self.unit_dropdown, 3, 1)
+
+        self.button_layout = QHBoxLayout()
+        self.layout.addLayout(self.button_layout)
+
+        self.save_button = QPushButton("Save")
+        self.button_layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_button_handler)
+
+        self.cancel_button = QPushButton("Cancel")
+        self.button_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def save_button_handler(self):
+        name = self.name_input.text()
+        quantity = self.quantity_input.text()
+        code = self.code_input.text()
+        unit = self.unit_dropdown.currentText()
+        if not name:
+            warning = QMessageBox()
+            warning.setText("Item name cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not code:
+            warning = QMessageBox()
+            warning.setText("Item code cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.code_input.setStyleSheet("border: 2px solid red;")
+            self.code_input.setFocus()
+            return
+
+        if not quantity:
+            warning = QMessageBox()
+            warning.setText("Quantity cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.clear()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        with self.database.session() as session:
+            item = session.query(ProjectDetails).get(self.item_id)
+            item.name = name
+            item.quantity = quantity
+            item.unit = unit
+            item.item_code = code
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 class AddActivity(QDialog):
     save_signal = Signal()
 
@@ -242,91 +359,7 @@ class AddToDo(QDialog):
                 session.commit()
                 self.accept()
                 self.save_signal.emit()
-class EditItem(QDialog):
-    save_signal = Signal()
-    def __init__(self, database, project_id, user_id, item_id):
-        super().__init__()
-        self.database = database
-        self.project_id = project_id
-        self.user_id = user_id
-        self.item_id = item_id
-        self.setWindowTitle("Edit Item")
 
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
-
-
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        self.data_layout = QGridLayout()
-        self.layout.addLayout(self.data_layout)
-
-        self.name_label = QLabel("Name: ")
-        self.data_layout.addWidget(self.name_label, 0, 0)
-
-        self.name_input = QLineEdit()
-        self.name_input.setText(item.item)
-        self.data_layout.addWidget(self.name_input, 0, 1)
-
-        self.code_label = QLabel("Code: ")
-        self.data_layout.addWidget(self.code_label, 1, 0)
-
-        self.code_input = QLineEdit()
-        self.code_input.setText(item.item_code)
-        self.data_layout.addWidget(self.code_input, 1, 1)
-
-        self.quantity_label = QLabel("Quantity: ")
-        self.data_layout.addWidget(self.quantity_label, 2, 0)
-
-        self.quantity_input = QLineEdit()
-        self.quantity_input.setText(str(item.quantity))
-        self.data_layout.addWidget(self.quantity_input, 2, 1)
-
-        self.unit_label = QLabel("Unit: ")
-        self.data_layout.addWidget(self.unit_label, 3, 0)
-
-        self.unit_dropdown = QComboBox()
-        self.unit_dropdown.addItems(["mtr", "psc"])
-        self.unit_dropdown.setCurrentText(item.unit)
-
-        self.button_layout = QHBoxLayout()
-        self.layout.addLayout(self.button_layout)
-
-        self.save_button = QPushButton("Save")
-        self.button_layout.addWidget(self.save_button)
-        self.save_button.clicked.connect(self.save_button_handler)
-
-        self.cancel_button = QPushButton("Cancel")
-        self.button_layout.addWidget(self.cancel_button)
-        self.cancel_button.clicked.connect(self.reject)
-
-    def save_button_handler(self):
-        name = self.name_input.text()
-        code = self.code_input.text()
-        quantity = self.quantity_input.text()
-        if not name:
-            self.name_input.setStyleSheet("border: 2px solid red;")
-            self.name_input.setFocus()
-            return
-        if not code:
-            self.code_input.setStyleSheet("border: 2px solid red;")
-            self.code_input.setFocus()
-            return
-        if not quantity or not quantity.isnumeric():
-            self.quantity_input.setStyleSheet("border: 2px solid red;")
-            self.quantity_input.setFocus()
-            return
-        else:
-            with self.database.session() as session:
-                item = session.query(ProjectDetails).get(self.item_id)
-                item.item = name
-                item.item_code = code
-                item.quantity = quantity
-                item.unit = self.unit_dropdown.currentText()
-                session.commit()
-                self.accept()
-                self.save_signal.emit()
 class EditActivity(QDialog):
     save_signal = Signal()
 
@@ -484,7 +517,7 @@ class CustomPushButton(QPushButton):
             return
         super().keyPressEvent(event)
 class MenuBar(QMenuBar):
-    def __init__(self, parent, database, user_id, project_id = None, flag=None):
+    def __init__(self, parent, database, user_id, project_id=None, flag=None):
         # flag=project: Menu bar for project window
         # flag=main: Menu bar for main menu
         super().__init__(parent)
@@ -502,6 +535,9 @@ class MenuBar(QMenuBar):
         if self.flag == "project":
             self.export_project = self.file_menu.addAction("Export Project...")
             self.export_project.triggered.connect(self.export_project_handler)
+
+            self.main_menu = self.addAction("Main Menu")
+            self.main_menu.triggered.connect(self.main_menu_handler)
 
 
         # EXIT BUTTON MENU
@@ -529,7 +565,7 @@ class MenuBar(QMenuBar):
                     pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
                     pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
                     pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
-                    pdf.ln(10)
+
 
                 activity_column_width = {"name": 60, "quantity": 20}
                 pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
@@ -547,6 +583,10 @@ class MenuBar(QMenuBar):
         app_instance = QApplication.instance()
         if app_instance:
             app_instance.quit()
+    def main_menu_handler(self):
+        if self.parent:
+            self.parent.accept()
+
 
 
 

@@ -6,6 +6,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     LargeBinary,
+    JSON
 )
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
@@ -137,6 +138,26 @@ class Projects(Base):
         self.is_active = is_active
         self.beginning = beginning
         self.end = end
+
+class ServiceProjects(Base):
+    __tablename__ = "service_projects"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    number: Mapped[int] = mapped_column(Integer, nullable=False)
+    owner: Mapped[str] = mapped_column(String, nullable=False)
+    start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    phone_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    manufacturer: Mapped[str] = mapped_column(String, nullable=False)
+    model: Mapped[str] = mapped_column(String, nullable=True)
+    code: Mapped[str] = mapped_column(String, nullable=True)
+    serial_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    repair_time: Mapped[float] = mapped_column(Float, nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    tasks: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    service_parts: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+
+    # tasks scheme
+    # service_parts scheme
 
 
 class ProjectDetails(Base):
