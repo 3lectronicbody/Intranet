@@ -608,7 +608,7 @@ class CreateServiceProject(QDialog):
         self.number_title_label = QLabel("Number: ")
         self.layout.addWidget(self.number_title_label, 1, 0)
         with (self.database.session() as session):
-            last_project = session.query(Projects).order_by(Projects.id.desc()).first()
+            last_project = session.query(ServiceProjects).order_by(ServiceProjects.id.desc()).first()
 
             if last_project:
                 last_number = int(last_project.number[-3:])
@@ -622,6 +622,12 @@ class CreateServiceProject(QDialog):
         self.number_input.setReadOnly(True)
         self.layout.addWidget(self.number_input, 1, 1)
 
+        self.receive_date_label = QLabel("Receive date:")
+        self.layout.addWidget(self.receive_date_label, 2, 0)
+        self.receive_date_input = QLineEdit()
+        actual_date = datetime.now().strftime("%d-%m-%Y")
+        self.receive_date_input.setText(actual_date)
+        self.layout.addWidget(self.receive_date_input, 2, 1)
 
 
 

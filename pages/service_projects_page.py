@@ -3,14 +3,16 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
 from database.models import ServiceProjects
 from helper_functions import clear_layout
+from custom_widgets import CreateServiceProject
 
 
 class ServiceProjectsPage(QWidget):
     back_signal = Signal()
-    def __init__(self, database,parent=None):
+    def __init__(self, database,user_id,parent=None):
         super().__init__(parent)
 
         self.database = database
+        self.user_id = user_id
         self.parent = parent
 
         self.main_layout = QVBoxLayout()
@@ -82,7 +84,8 @@ class ServiceProjectsPage(QWidget):
     def searchbar_change_handler(self):
         self.refresh_data()
     def create_project_button_handler(self):
-        pass
+        dialog = CreateServiceProject(self.database, self.user_id)
+        dialog.exec()
     def cancel_button_handler(self):
         self.back_signal.emit()
 

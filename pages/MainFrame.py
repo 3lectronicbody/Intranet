@@ -69,7 +69,7 @@ class MainFrame(QMainWindow):
         self.employees_page = EmployeesPage(self.database)
         self.employees_page.back_signal.connect(self.show_main_menu_page)
 
-        self.service_projects_page = ServiceProjectsPage(self.database)
+        self.service_projects_page = ServiceProjectsPage(self.database, self.user_id)
         self.service_projects_page.back_signal.connect(self.show_main_menu_page)
 
 
