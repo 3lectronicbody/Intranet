@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox, QApplication
+    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget
 from PySide6.QtCore import Signal
 from fpdf import FPDF
-from database.models import ProjectDetails, Projects
+from database.models import ProjectDetails, Projects, ServiceProjects
+from datetime import datetime
 
 class AddItem(QDialog):
     save_signal = Signal()
@@ -292,74 +293,6 @@ class AddActivity(QDialog):
                 session.commit()
                 self.accept()
                 self.save_signal.emit()
-class AddToDo(QDialog):
-    save_signal = Signal()
-
-    def __init__(self, database, project_id, user_id):
-        super().__init__()
-        self.database = database
-        self.project_id = project_id
-        self.user_id = user_id
-
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        self.data_layout = QGridLayout()
-        self.layout.addLayout(self.data_layout)
-
-        self.name_label = QLabel("Name: ")
-        self.data_layout.addWidget(self.name_label, 0, 0)
-        self.name_input = QLineEdit()
-        self.data_layout.addWidget(self.name_input, 0, 1)
-
-        self.quantity_label = QLabel("Time: ")
-        self.data_layout.addWidget(self.quantity_label, 1, 0)
-        self.quantity_input = QLineEdit()
-        self.data_layout.addWidget(self.quantity_input, 1, 1)
-
-        self.setWindowTitle("Add Todo")
-
-        self.buttons_layout = QHBoxLayout()
-        self.layout.addLayout(self.buttons_layout)
-        self.save_button = QPushButton("Save")
-        self.buttons_layout.addWidget(self.save_button)
-        self.save_button.clicked.connect(self.save_button_handler)
-        self.cancel_button = QPushButton("Cancel")
-        self.buttons_layout.addWidget(self.cancel_button)
-        self.cancel_button.clicked.connect(self.reject)
-
-    def save_button_handler(self):
-        name = self.name_input.text()
-        quantity = self.quantity_input.text()
-        if not name:
-            warning = QMessageBox()
-            warning.setText("Todo name cannot be empty")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
-            self.name_input.setStyleSheet("border: 2px solid red;")
-            self.name_input.setFocus()
-            return
-        if not quantity or not quantity.isnumeric():
-            warning = QMessageBox()
-            warning.setText("Quantity must be a number")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
-            self.quantity_input.setStyleSheet("border: 2px solid red;")
-            self.quantity_input.setFocus()
-            return
-
-        else:
-            with self.database.session() as session:
-                new = ProjectDetails(project_id=self.project_id,
-                                     todo=name,
-                                     quantity=quantity)
-                session.add(new)
-                session.commit()
-                self.accept()
-                self.save_signal.emit()
-
 class EditActivity(QDialog):
     save_signal = Signal()
 
@@ -452,6 +385,73 @@ class EditActivity(QDialog):
             session.commit()
             self.accept()
             self.save_signal.emit()
+class AddToDo(QDialog):
+    save_signal = Signal()
+
+    def __init__(self, database, project_id, user_id):
+        super().__init__()
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        self.data_layout = QGridLayout()
+        self.layout.addLayout(self.data_layout)
+
+        self.name_label = QLabel("Name: ")
+        self.data_layout.addWidget(self.name_label, 0, 0)
+        self.name_input = QLineEdit()
+        self.data_layout.addWidget(self.name_input, 0, 1)
+
+        self.quantity_label = QLabel("Time: ")
+        self.data_layout.addWidget(self.quantity_label, 1, 0)
+        self.quantity_input = QLineEdit()
+        self.data_layout.addWidget(self.quantity_input, 1, 1)
+
+        self.setWindowTitle("Add Todo")
+
+        self.buttons_layout = QHBoxLayout()
+        self.layout.addLayout(self.buttons_layout)
+        self.save_button = QPushButton("Save")
+        self.buttons_layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_button_handler)
+        self.cancel_button = QPushButton("Cancel")
+        self.buttons_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.reject)
+
+    def save_button_handler(self):
+        name = self.name_input.text()
+        quantity = self.quantity_input.text()
+        if not name:
+            warning = QMessageBox()
+            warning.setText("Todo name cannot be empty")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not quantity or not quantity.isnumeric():
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.setIcon(QMessageBox.Warning)
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
+        else:
+            with self.database.session() as session:
+                new = ProjectDetails(project_id=self.project_id,
+                                     todo=name,
+                                     quantity=quantity)
+                session.add(new)
+                session.commit()
+                self.accept()
+                self.save_signal.emit()
 class EditToDo(QDialog):
     save_signal = Signal()
 
@@ -516,6 +516,7 @@ class CustomPushButton(QPushButton):
             self.clicked.emit()
             return
         super().keyPressEvent(event)
+
 class MenuBar(QMenuBar):
     def __init__(self, parent, database, user_id, project_id=None, flag=None):
         # flag=project: Menu bar for project window
@@ -586,6 +587,44 @@ class MenuBar(QMenuBar):
     def main_menu_handler(self):
         if self.parent:
             self.parent.accept()
+
+class CreateServiceProject(QDialog):
+    def __init__(self, database, user_id, parent=None):
+        # if create_flag = False -> edit mode
+        super().__init__(parent)
+        self.database = database
+        self.user_id = user_id
+        self.parent = parent
+
+        self.setWindowTitle("Create Service Project")
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+
+        self.owner_label = QLabel("Owner: ")
+        self.layout.addWidget(self.owner_label, 0, 0)
+        self.owner_input = QLineEdit()
+        self.layout.addWidget(self.owner_input, 0, 1)
+
+        self.number_title_label = QLabel("Number: ")
+        self.layout.addWidget(self.number_title_label, 1, 0)
+        with (self.database.session() as session):
+            last_project = session.query(Projects).order_by(Projects.id.desc()).first()
+
+            if last_project:
+                last_number = int(last_project.number[-3:])
+                actual_number = last_number + 1
+                formatted_actual_number = f"{actual_number:03d}"
+                actual_number = str(datetime.now().year)+"/"+str(formatted_actual_number)
+            else:
+                actual_number = str(datetime.now().year)+"/001"
+        self.number_input = QLineEdit()
+        self.number_input.setText(actual_number)
+        self.number_input.setReadOnly(True)
+        self.layout.addWidget(self.number_input, 1, 1)
+
+
+
+
 
 
 

@@ -1,10 +1,12 @@
 from PySide6.QtCore import Qt
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
 from database.models import ServiceProjects
 from helper_functions import clear_layout
 
 
 class ServiceProjectsPage(QWidget):
+    back_signal = Signal()
     def __init__(self, database,parent=None):
         super().__init__(parent)
 
@@ -39,17 +41,12 @@ class ServiceProjectsPage(QWidget):
         self.create_button = QPushButton("NEW PROJECT")
         self.create_button.setStyleSheet("color: green;")
         self.button_layout.addWidget(self.create_button)
-        self.create_button.clicked.connect(self.create_button_handler)
+        self.create_button.clicked.connect(self.create_project_button_handler)
         self.cancel_button = QPushButton("CANCEL")
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
 
         self.refresh_data()
-
-    def create_button_handler(self):
-        pass
-    def cancel_button_handler(self):
-        pass
 
     def refresh_data(self):
         clear_layout(self.data_layout, grid_layout=True)
@@ -65,7 +62,7 @@ class ServiceProjectsPage(QWidget):
             elif selected_filter == "complete":
                 projects = session.query(ServiceProjects).filter_by(active=False).all()
 
-            projects = [project for project in projects if searched_text == project.owner[:len(searched_text)] or searched_text in str(project.number)]
+            projects = [project for project in projects if searched_text in project.owner or searched_text in str(project.number)]
 
             if not projects:
                 no_projects_label = QLabel("No projects found")
@@ -79,10 +76,15 @@ class ServiceProjectsPage(QWidget):
                 item = project.manufacturer + " " + project.model
                 item_label = QLabel(item)
                 self.data_layout.addWidget(item_label, index, 1)
+
     def dropdown_change_handler(self):
         self.refresh_data()
     def searchbar_change_handler(self):
         self.refresh_data()
+    def create_project_button_handler(self):
+        pass
+    def cancel_button_handler(self):
+        self.back_signal.emit()
 
 
 
