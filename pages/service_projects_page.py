@@ -92,7 +92,9 @@ class ServiceProjectsPage(QWidget):
 
             if not projects:
                 no_projects_label = QLabel("No projects found")
-                self.data_layout.addWidget(no_projects_label, 1, 0, alignment=Qt.AlignCenter)
+                self.data_layout.addWidget(no_projects_label, 1, 0, 1, 5)
+                no_projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
 
             for index, project in enumerate(projects, start=1):
 
@@ -151,7 +153,9 @@ class ServiceProjectsPage(QWidget):
     def edit_project_button_handler(self, project_id):
         pass
     def details_project_button_handler(self, project_id):
-        pass
+        self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id)
+        self.dialog.save_signal.connect(self.refresh_data)
+        self.dialog.exec()
     def complete_button_handler(self, project_id):
         with self.database.session() as session:
             project = session.query(ServiceProjects).get(project_id)

@@ -590,14 +590,18 @@ class MenuBar(QMenuBar):
 
 class CreateServiceProject(QDialog):
     save_signal = Signal()
-    def __init__(self, database, user_id, parent=None):
+    def __init__(self, database, user_id, project_id= None, parent=None):
         super().__init__(parent)
         self.database = database
         self.user_id = user_id
+        self.project_id = project_id
+        if self.project_id:
+            with self.database.session() as session:
+                self.project = session.query(ServiceProjects).get(self.project_id)
         self.parent = parent
 
-
         self.setWindowTitle("Create Service Project")
+
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
@@ -676,9 +680,29 @@ class CreateServiceProject(QDialog):
         self.cancel_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
+    @classmethod
+    def details(cls, database, user_id, project_id, parent=None):
+        instance = cls(database, user_id, parent)
+        with database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            instance.setWindowTitle("Service Project Details")
+            instance.receive_date_input.setText(project.start_date.strftime("%d-%m-%Y"))
+            instance.owner_input.setText(project.owner)
+            instance.phone_number_input.setText(project.phone_number)
+            instance.manufacturer_input.setText(project.manufacturer)
+            instance.model_input.setText(project.model)
+            instance.code_input.setText(project.code)
+            instance.serial_number_input.setText(project.serial_number)
+            instance.description_input.setText(project.description)
+        for widget in instance.findChildren(QLineEdit)+instance.findChildren(QTextEdit):
+            widget.setReadOnly(True)
+        instance.create_button.hide()
+        instance.cancel_button.setText("Back")
+        return instance
 
-
-
+    @classmethod
+    def edit(cls):
+        pass
     def create_button_handler(self):
         formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
         with self.database.session() as session:
