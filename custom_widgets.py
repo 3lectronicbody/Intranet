@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget
+    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects, ServiceProjects
@@ -589,6 +589,7 @@ class MenuBar(QMenuBar):
             self.parent.accept()
 
 class CreateServiceProject(QDialog):
+    save_signal = Signal()
     def __init__(self, database, user_id, parent=None):
         # if create_flag = False -> edit mode
         super().__init__(parent)
@@ -597,16 +598,15 @@ class CreateServiceProject(QDialog):
         self.parent = parent
 
         self.setWindowTitle("Create Service Project")
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
 
-        self.owner_label = QLabel("Owner: ")
-        self.layout.addWidget(self.owner_label, 0, 0)
-        self.owner_input = QLineEdit()
-        self.layout.addWidget(self.owner_input, 0, 1)
+
+        self.layout = QGridLayout()
+        self.main_layout.addLayout(self.layout)
 
         self.number_title_label = QLabel("Number: ")
-        self.layout.addWidget(self.number_title_label, 1, 0)
+        self.layout.addWidget(self.number_title_label, 0, 0)
         with (self.database.session() as session):
             last_project = session.query(ServiceProjects).order_by(ServiceProjects.id.desc()).first()
 
@@ -614,20 +614,94 @@ class CreateServiceProject(QDialog):
                 last_number = int(last_project.number[-3:])
                 actual_number = last_number + 1
                 formatted_actual_number = f"{actual_number:03d}"
-                actual_number = str(datetime.now().year)+"/"+str(formatted_actual_number)
+                actual_number = str(datetime.now().year) + "/" + str(formatted_actual_number)
             else:
-                actual_number = str(datetime.now().year)+"/001"
+                actual_number = str(datetime.now().year) + "/001"
         self.number_input = QLineEdit()
         self.number_input.setText(actual_number)
         self.number_input.setReadOnly(True)
-        self.layout.addWidget(self.number_input, 1, 1)
+        self.layout.addWidget(self.number_input, 0, 1)
 
-        self.receive_date_label = QLabel("Receive date:")
-        self.layout.addWidget(self.receive_date_label, 2, 0)
+        self.receive_date_label = QLabel("Date:")
+        self.layout.addWidget(self.receive_date_label, 1, 0)
         self.receive_date_input = QLineEdit()
         actual_date = datetime.now().strftime("%d-%m-%Y")
         self.receive_date_input.setText(actual_date)
-        self.layout.addWidget(self.receive_date_input, 2, 1)
+        self.receive_date_input.setReadOnly(True)
+        self.layout.addWidget(self.receive_date_input, 1, 1)
+
+        self.owner_label = QLabel("Owner: ")
+        self.layout.addWidget(self.owner_label, 2, 0)
+        self.owner_input = QLineEdit()
+        self.layout.addWidget(self.owner_input, 2, 1)
+
+        self.phone_number_label = QLabel("Phone Number: ")
+        self.layout.addWidget(self.phone_number_label, 3, 0)
+        self.phone_number_input = QLineEdit()
+        self.layout.addWidget(self.phone_number_input, 3, 1)
+
+        self.manufacturer_label = QLabel("Manufacturer: ")
+        self.layout.addWidget(self.manufacturer_label, 4, 0)
+        self.manufacturer_input = QLineEdit()
+        self.layout.addWidget(self.manufacturer_input, 4, 1)
+
+        self.model_label = QLabel("Model: ")
+        self.layout.addWidget(self.model_label, 5, 0)
+        self.model_input = QLineEdit()
+        self.layout.addWidget(self.model_input, 5, 1)
+
+        self.code_label = QLabel("Code: ")
+        self.layout.addWidget(self.code_label, 6, 0)
+        self.code_input = QLineEdit()
+        self.layout.addWidget(self.code_input, 6, 1)
+
+        self.serial_number_label = QLabel("Serial Number: ")
+        self.layout.addWidget(self.serial_number_label, 7, 0)
+        self.serial_number_input = QLineEdit()
+        self.layout.addWidget(self.serial_number_input, 7, 1)
+
+        self.description_label = QLabel("Description: ")
+        self.layout.addWidget(self.description_label, 8, 0)
+        self.description_input = QTextEdit()
+        self.layout.addWidget(self.description_input, 8, 1)
+
+        self.main_layout.addStretch(1)
+
+        self.button_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.button_layout)
+
+        self.create_button = QPushButton("Create")
+        self.button_layout.addWidget(self.create_button)
+        self.create_button.clicked.connect(self.create_button_handler)
+        self.cancel_button = QPushButton("Cancel")
+        self.button_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.cancel_button_handler)
+
+    def create_button_handler(self):
+        formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
+        with self.database.session() as session:
+            new_project = ServiceProjects(number=self.number_input.text(),
+                                         start_date=formatted_date,
+                                         owner=self.owner_input.text(),
+                                         phone_number=self.phone_number_input.text(),
+                                         manufacturer=self.manufacturer_input.text(),
+                                         model=self.model_input.text(),
+                                         code=self.code_input.text(),
+                                         serial_number=self.serial_number_input.text(),
+                                         description=self.description_input.toPlainText(),
+            )
+            session.add(new_project)
+            session.commit()
+            self.save_signal.emit()
+            self.accept()
+    def cancel_button_handler(self):
+        self.reject()
+
+
+
+
+
+
 
 
 

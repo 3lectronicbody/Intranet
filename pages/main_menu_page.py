@@ -20,7 +20,10 @@ class MainMenuPage(QWidget):
         self.setLayout(self.main_layout)
 
         self.welcome_label = QLabel("__load data__")
-        self.main_layout.addWidget(self.welcome_label, 0, 0, alignment=Qt.AlignCenter)
+        self.welcome_label.setStyleSheet("border: 1px white; border-radius: 4px; font-size: 20px;")
+
+        self.main_layout.addWidget(self.welcome_label, 0, 0)
+        self.welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.menu_items = []
 

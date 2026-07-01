@@ -151,6 +151,7 @@ class ServiceProjects(Base):
     model: Mapped[str] = mapped_column(String, nullable=True)
     code: Mapped[str] = mapped_column(String, nullable=True)
     serial_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str] = mapped_column(String, nullable=False)
     repair_time: Mapped[float] = mapped_column(Float, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     tasks: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
