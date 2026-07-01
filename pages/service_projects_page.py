@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLab
 from database.models import ServiceProjects
 from helper_functions import clear_layout
 from custom_widgets import CreateServiceProject
+from datetime import datetime
 
 
 class ServiceProjectsPage(QWidget):
@@ -115,15 +116,23 @@ class ServiceProjectsPage(QWidget):
                 self.data_layout.addWidget(end_date_label, index, 4)
 
                 details_button = QPushButton("Details")
-                details_button.clicked.connect(lambda project_id=project.id: self.details_project_button_handler(project_id))
+                details_button.clicked.connect(lambda _,project_id=project.id: self.details_project_button_handler(project_id))
                 self.data_layout.addWidget(details_button, index, 5)
 
                 edit_button = QPushButton("Edit")
-                edit_button.clicked.connect(lambda project_id=project.id: self.edit_project_button_handler(project_id))
+                if not project.active:
+                    edit_button.setDisabled(True)
+                    edit_button.setFlat(True)
+                edit_button.clicked.connect(lambda _,project_id=project.id: self.edit_project_button_handler(project_id))
                 self.data_layout.addWidget(edit_button, index, 6)
 
                 complete_button = QPushButton("Complete")
-                complete_button.clicked.connect(lambda project_id=project.id: self.complete_button_handler(project_id))
+                if not project.active:
+                    complete_button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                    complete_button.setDisabled(True)
+                    complete_button.setFlat(True)
+
+                complete_button.clicked.connect(lambda _,project_id=project.id: self.complete_button_handler(project_id))
                 self.data_layout.addWidget(complete_button, index, 7)
 
 
@@ -142,9 +151,17 @@ class ServiceProjectsPage(QWidget):
     def edit_project_button_handler(self, project_id):
         pass
     def details_project_button_handler(self, project_id):
-        pass
+        details_dialog = CreateServiceProject(self.database, self.user_id, project_id, editable=False)
+        details_dialog.exec()
     def complete_button_handler(self, project_id):
-        pass
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            print(project.number)
+            project.active = False
+            project.end_date = datetime.now()
+            session.commit()
+
+        self.refresh_data()
 
 
 
