@@ -590,13 +590,13 @@ class MenuBar(QMenuBar):
 
 class CreateServiceProject(QDialog):
     save_signal = Signal()
-    def __init__(self, database, user_id, parent=None, editable_flag=False, details_flag=False):
+    def __init__(self, database, user_id, parent=None):
         super().__init__(parent)
         self.database = database
         self.user_id = user_id
         self.parent = parent
-        self.editable_flag = editable_flag
-        self.details_flag = details_flag
+
+
 
         self.setWindowTitle("Create Service Project")
         self.main_layout = QVBoxLayout()
@@ -678,11 +678,7 @@ class CreateServiceProject(QDialog):
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
 
-        if not editable:
-            all_inputs = self.findChildren(QLineEdit)
 
-            for line_edit in all_inputs:
-                line_edit.setReadOnly(True)
 
     def create_button_handler(self):
         formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
