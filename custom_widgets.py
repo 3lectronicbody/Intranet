@@ -597,7 +597,6 @@ class CreateServiceProject(QDialog):
         self.parent = parent
 
 
-
         self.setWindowTitle("Create Service Project")
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
