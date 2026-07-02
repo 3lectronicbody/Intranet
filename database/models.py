@@ -147,6 +147,7 @@ class ServiceProjects(Base):
     start_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     phone_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(String, nullable=True)
     manufacturer: Mapped[str] = mapped_column(String, nullable=False)
     model: Mapped[str] = mapped_column(String, nullable=True)
     code: Mapped[str] = mapped_column(String, nullable=True)

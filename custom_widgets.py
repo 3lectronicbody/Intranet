@@ -646,30 +646,35 @@ class CreateServiceProject(QDialog):
         self.phone_number_input = QLineEdit()
         self.layout.addWidget(self.phone_number_input, 3, 1)
 
+        self.email_label = QLabel("Email: ")
+        self.layout.addWidget(self.email_label, 4, 0)
+        self.email_input = QLineEdit()
+        self.layout.addWidget(self.email_input, 4, 1)
+
         self.manufacturer_label = QLabel("Manufacturer: ")
-        self.layout.addWidget(self.manufacturer_label, 4, 0)
+        self.layout.addWidget(self.manufacturer_label, 5, 0)
         self.manufacturer_input = QLineEdit()
-        self.layout.addWidget(self.manufacturer_input, 4, 1)
+        self.layout.addWidget(self.manufacturer_input, 5, 1)
 
         self.model_label = QLabel("Model: ")
-        self.layout.addWidget(self.model_label, 5, 0)
+        self.layout.addWidget(self.model_label, 6, 0)
         self.model_input = QLineEdit()
-        self.layout.addWidget(self.model_input, 5, 1)
+        self.layout.addWidget(self.model_input, 6, 1)
 
         self.code_label = QLabel("Code: ")
-        self.layout.addWidget(self.code_label, 6, 0)
+        self.layout.addWidget(self.code_label, 7, 0)
         self.code_input = QLineEdit()
-        self.layout.addWidget(self.code_input, 6, 1)
+        self.layout.addWidget(self.code_input, 7, 1)
 
         self.serial_number_label = QLabel("Serial Number: ")
-        self.layout.addWidget(self.serial_number_label, 7, 0)
+        self.layout.addWidget(self.serial_number_label, 8, 0)
         self.serial_number_input = QLineEdit()
-        self.layout.addWidget(self.serial_number_input, 7, 1)
+        self.layout.addWidget(self.serial_number_input, 8, 1)
 
         self.description_label = QLabel("Description: ")
-        self.layout.addWidget(self.description_label, 8, 0)
+        self.layout.addWidget(self.description_label, 9, 0)
         self.description_input = QTextEdit()
-        self.layout.addWidget(self.description_input, 8, 1)
+        self.layout.addWidget(self.description_input, 9 ,1)
 
         self.main_layout.addStretch(1)
 
@@ -691,6 +696,7 @@ class CreateServiceProject(QDialog):
             instance.receive_date_input.setText(project.start_date.strftime("%d-%m-%Y"))
             instance.owner_input.setText(project.owner)
             instance.phone_number_input.setText(project.phone_number)
+            instance.email_input.setText(project.email)
             instance.manufacturer_input.setText(project.manufacturer)
             instance.model_input.setText(project.model)
             instance.code_input.setText(project.code)
@@ -729,6 +735,7 @@ class CreateServiceProject(QDialog):
                                          start_date=formatted_date,
                                          owner=self.owner_input.text(),
                                          phone_number=self.phone_number_input.text(),
+                                         email=self.email_input.text(),
                                          manufacturer=self.manufacturer_input.text(),
                                          model=self.model_input.text(),
                                          code=self.code_input.text(),
@@ -746,6 +753,7 @@ class CreateServiceProject(QDialog):
             project = session.query(ServiceProjects).get(project_id)
             project.owner = self.owner_input.text()
             project.phone_number = self.phone_number_input.text()
+            project.email = self.email_input.text()
             project.manufacturer = self.manufacturer_input.text()
             project.model = self.model_input.text()
             project.code = self.code_input.text()

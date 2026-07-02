@@ -105,6 +105,8 @@ class ServiceProjectsPage(QWidget):
                 self.data_layout.addWidget(number_label, index, 0)
 
                 owner_label = QLabel(project.owner)
+                tooltip_content = f"Phone: {project.phone_number}\nEmail: {project.email}"
+                owner_label.setToolTip(tooltip_content)
                 self.data_layout.addWidget(owner_label, index, 1)
 
                 item = project.manufacturer + " " + project.model
