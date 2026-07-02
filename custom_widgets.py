@@ -274,25 +274,34 @@ class AddActivity(QDialog):
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity or not quantity.isnumeric():
+        if not quantity:
             warning = QMessageBox()
-            warning.setText("Quantity must be a number")
+            warning.setText("Quantity field can't be empty")
             warning.setWindowTitle("Warning")
             warning.setIcon(QMessageBox.Warning)
             warning.exec()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
+        try:
+            quantity = float(quantity.strip().replace(",", "."))
+        except ValueError:
+            warning = QMessageBox()
+            warning.setText("Quantity must be a number")
+            warning.setWindowTitle("Warning")
+            warning.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
 
-        else:
-            with self.database.session() as session:
-                new = ProjectDetails(project_id=self.project_id,
-                                     activity=name,
-                                     quantity=quantity)
-                session.add(new)
-                session.commit()
-                self.accept()
-                self.save_signal.emit()
+        with self.database.session() as session:
+            new = ProjectDetails(project_id=self.project_id,
+                                 activity=name,
+                                 quantity= quantity)
+            session.add(new)
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 class EditActivity(QDialog):
     save_signal = Signal()
 
