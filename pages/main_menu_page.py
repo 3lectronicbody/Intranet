@@ -27,18 +27,20 @@ class MainMenuPage(QWidget):
 
         self.menu_items = []
 
-        self.projects_button = QPushButton("Projects", flat=True)
-        # self.projects_button.setStyleSheet("background-color:#2c3e50; border-radius: 4px;")
+        self.projects_button = QPushButton("Projects".upper())
+        self.projects_button.setStyleSheet("background-color:#2c3e50; border-radius: 4px;")
         self.main_layout.addWidget(self.projects_button, 1, 0)
         self.projects_button.clicked.connect(lambda: self.projects_signal.emit())
         self.menu_items.append(self.projects_button)
 
-        self.employees_button = QPushButton("Employees", flat=True)
+        self.employees_button = QPushButton("Employees".upper())
+        self.employees_button.setStyleSheet("background-color:#2c3e50; border-radius: 4px;")
         self.main_layout.addWidget(self.employees_button, 2, 0)
         self.employees_button.clicked.connect(self.employees_button_handler)
         self.menu_items.append(self.employees_button)
 
-        self.service_projects_button = QPushButton("Service Projects", flat=True)
+        self.service_projects_button = QPushButton("Service Projects".upper())
+        self.service_projects_button.setStyleSheet("background-color:#2c3e50; border-radius: 4px;")
         self.main_layout.addWidget(self.service_projects_button, 3, 0)
         self.service_projects_button.clicked.connect(self.service_projects_button_handler)
         self.menu_items.append(self.service_projects_button)

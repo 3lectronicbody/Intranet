@@ -623,6 +623,7 @@ class CreateServiceProject(QDialog):
                 actual_number = str(datetime.now().year) + "/001"
         self.number_input = QLineEdit()
         self.number_input.setText(actual_number)
+        self.number_input.setStyleSheet("color: #3498db;")
         self.number_input.setReadOnly(True)
         self.layout.addWidget(self.number_input, 0, 1)
 
@@ -631,6 +632,7 @@ class CreateServiceProject(QDialog):
         self.receive_date_input = QLineEdit()
         actual_date = datetime.now().strftime("%d-%m-%Y")
         self.receive_date_input.setText(actual_date)
+        self.receive_date_input.setStyleSheet("color: #3498db;")
         self.receive_date_input.setReadOnly(True)
         self.layout.addWidget(self.receive_date_input, 1, 1)
 
@@ -700,6 +702,12 @@ class CreateServiceProject(QDialog):
         instance.create_button.hide()
         instance.cancel_button.setText("Back")
 
+        if not editable:
+            activate_button = QPushButton("Activate")
+            instance.main_layout.addWidget(activate_button)
+            activate_button.clicked.connect(lambda _, pid=project_id: instance.activate_button_handler(pid))
+            if project.active:
+                activate_button.setEnabled(False)
         if editable:
             instance.create_button.show()
             instance.create_button.clicked.disconnect()
@@ -743,6 +751,14 @@ class CreateServiceProject(QDialog):
             project.code = self.code_input.text()
             project.serial_number = self.serial_number_input.text()
             project.description = self.description_input.toPlainText()
+            session.commit()
+            self.save_signal.emit()
+            self.accept()
+    def activate_button_handler(self, project_id):
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            project.active = True
+            project.end_date = None
             session.commit()
             self.save_signal.emit()
             self.accept()

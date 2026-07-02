@@ -1,8 +1,9 @@
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton, \
+    QMessageBox
 from database.models import ServiceProjects
-from helper_functions import clear_layout
+from helper_functions import clear_layout, confirmation_dialog
 from custom_widgets import CreateServiceProject
 from datetime import datetime
 
@@ -128,7 +129,7 @@ class ServiceProjectsPage(QWidget):
                 edit_button.clicked.connect(lambda _,project_id=project.id: self.edit_project_button_handler(project_id))
                 self.data_layout.addWidget(edit_button, index, 6)
 
-                complete_button = QPushButton("Complete")
+                complete_button = QPushButton("Complete...")
                 if not project.active:
                     complete_button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
                     complete_button.setDisabled(True)
@@ -159,6 +160,10 @@ class ServiceProjectsPage(QWidget):
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def complete_button_handler(self, project_id):
+        confirmation = confirmation_dialog(self, title="Confirmation",
+                                           message="Are you sure you want to complete this project?")
+        if confirmation == QMessageBox.No:
+            return
         with self.database.session() as session:
             project = session.query(ServiceProjects).get(project_id)
             print(project.number)
