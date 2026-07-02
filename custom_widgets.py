@@ -263,8 +263,10 @@ class AddActivity(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        name = self.name_input.text() or None
-        quantity = self.quantity_input.text() or None
+        name = self.name_input.text().strip() or None
+        quantity = self.quantity_input.text().strip() or None
+        self.name_input.setStyleSheet("")
+        self.quantity_input.setStyleSheet("")
         if not name:
             warning = QMessageBox()
             warning.setText("Activity name cannot be empty")
@@ -284,7 +286,7 @@ class AddActivity(QDialog):
             self.quantity_input.setFocus()
             return
         try:
-            quantity = float(quantity.strip().replace(",", "."))
+            quantity = float(quantity.replace(",", "."))
         except ValueError:
             warning = QMessageBox()
             warning.setText("Quantity must be a number")
@@ -293,6 +295,14 @@ class AddActivity(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
+        if quantity <= 0:
+            message = QMessageBox()
+            message.setText("Quantity value must be greater than zero")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
 
         with self.database.session() as session:
             new = ProjectDetails(project_id=self.project_id,
@@ -300,8 +310,8 @@ class AddActivity(QDialog):
                                  quantity= quantity)
             session.add(new)
             session.commit()
-            self.accept()
             self.save_signal.emit()
+            self.accept()
 class EditActivity(QDialog):
     save_signal = Signal()
 
@@ -351,7 +361,7 @@ class EditActivity(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        activity = self.name_input.text()
+        activity = self.name_input.text().strip()
         quantity = self.quantity_input.text().strip().replace(",", ".")
 
         self.quantity_input.setStyleSheet("")
@@ -362,12 +372,14 @@ class EditActivity(QDialog):
             message.setText("Please enter a name")
             message.exec()
             self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
             return
         if not quantity:
             message = QMessageBox()
             message.setText(f"Please enter a quantity")
             message.exec()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
             return
         try:
             quantity = float(quantity)
@@ -376,6 +388,7 @@ class EditActivity(QDialog):
             message.setText("Please enter a number")
             message.exec()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
             return
         if quantity <= 0:
             message = QMessageBox()
@@ -431,8 +444,10 @@ class AddToDo(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        name = self.name_input.text()
-        quantity = self.quantity_input.text()
+        name = self.name_input.text().strip()
+        quantity = self.quantity_input.text().strip().replace(",", ".")
+        self.name_input.setStyleSheet("")
+        self.quantity_input.setStyleSheet("")
         if not name:
             warning = QMessageBox()
             warning.setText("Todo name cannot be empty")
