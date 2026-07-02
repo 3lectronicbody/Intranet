@@ -681,8 +681,8 @@ class CreateServiceProject(QDialog):
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
     @classmethod
-    def details(cls, database, user_id, project_id, parent=None):
-        instance = cls(database, user_id, parent)
+    def details(cls, database, user_id, project_id, parent=None, editable=False):
+        instance = cls(database, user_id,project_id, parent)
         with database.session() as session:
             project = session.query(ServiceProjects).get(project_id)
             instance.setWindowTitle("Service Project Details")
@@ -694,15 +694,26 @@ class CreateServiceProject(QDialog):
             instance.code_input.setText(project.code)
             instance.serial_number_input.setText(project.serial_number)
             instance.description_input.setText(project.description)
+
         for widget in instance.findChildren(QLineEdit)+instance.findChildren(QTextEdit):
             widget.setReadOnly(True)
         instance.create_button.hide()
         instance.cancel_button.setText("Back")
+
+        if editable:
+            instance.create_button.show()
+            instance.create_button.clicked.disconnect()
+            instance.create_button.setText("Save")
+            instance.create_button.clicked.connect(lambda _, pid=project_id  :instance.save_button_handler(pid))
+            for widget in instance.findChildren(QLineEdit) + instance.findChildren(QTextEdit):
+                widget.setReadOnly(False)
+            instance.number_input.setReadOnly(True)
+            instance.receive_date_input.setReadOnly(True)
+
+
         return instance
 
-    @classmethod
-    def edit(cls):
-        pass
+
     def create_button_handler(self):
         formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
         with self.database.session() as session:
@@ -722,6 +733,19 @@ class CreateServiceProject(QDialog):
             self.accept()
     def cancel_button_handler(self):
         self.reject()
+    def save_button_handler(self, project_id):
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            project.owner = self.owner_input.text()
+            project.phone_number = self.phone_number_input.text()
+            project.manufacturer = self.manufacturer_input.text()
+            project.model = self.model_input.text()
+            project.code = self.code_input.text()
+            project.serial_number = self.serial_number_input.text()
+            project.description = self.description_input.toPlainText()
+            session.commit()
+            self.save_signal.emit()
+            self.accept()
 
 
 

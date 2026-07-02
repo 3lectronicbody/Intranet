@@ -151,7 +151,9 @@ class ServiceProjectsPage(QWidget):
         self.back_signal.emit()
 
     def edit_project_button_handler(self, project_id):
-        pass
+        self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id, editable=True)
+        self.dialog.save_signal.connect(self.refresh_data)
+        self.dialog.exec()
     def details_project_button_handler(self, project_id):
         self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id)
         self.dialog.save_signal.connect(self.refresh_data)
