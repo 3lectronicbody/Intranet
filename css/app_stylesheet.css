@@ -1,3 +1,8 @@
 QTabBar::tab:selected {
     background-color: grey;
 }
+
+/* This forces the dropdown to always open downwards */
+QComboBox {
+    combobox-popup: 0;
+}

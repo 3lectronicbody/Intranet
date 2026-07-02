@@ -590,7 +590,7 @@ class MenuBar(QMenuBar):
 
 class CreateServiceProject(QDialog):
     save_signal = Signal()
-    def __init__(self, database, user_id, project_id= None, parent=None):
+    def __init__(self, database, user_id, project_id=None, parent=None):
         super().__init__(parent)
         self.database = database
         self.user_id = user_id

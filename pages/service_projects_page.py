@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton, \
-    QMessageBox
+    QMessageBox, QListView
 from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 from custom_widgets import CreateServiceProject
@@ -22,6 +22,8 @@ class ServiceProjectsPage(QWidget):
         self.setLayout(self.main_layout)
 
         self.dropdown_service_projects = QComboBox()
+        # self.dropdown_service_projects.setView(QListView())
+
         self.options = [ "All", "Active", "Complete",]
         self.dropdown_service_projects.addItems(self.options)
         self.dropdown_service_projects.setCurrentIndex(0)
