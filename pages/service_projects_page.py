@@ -156,7 +156,6 @@ class ServiceProjectsPage(QWidget):
         self.dialog.exec()
     def cancel_button_handler(self):
         self.back_signal.emit()
-
     def edit_project_button_handler(self, project_id):
         self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id, editable=True)
         self.dialog.save_signal.connect(self.refresh_data)
@@ -172,7 +171,6 @@ class ServiceProjectsPage(QWidget):
             return
         with self.database.session() as session:
             project = session.query(ServiceProjects).get(project_id)
-            print(project.number)
             project.active = False
             project.end_date = datetime.now()
             session.commit()

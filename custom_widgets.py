@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
     QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit
 from PySide6.QtCore import Signal
 from fpdf import FPDF
+from pypdf import PdfReader, PdfWriter
 from database.models import ProjectDetails, Projects, ServiceProjects
 from datetime import datetime
 

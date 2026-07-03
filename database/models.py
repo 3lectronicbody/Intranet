@@ -11,7 +11,8 @@ from sqlalchemy import (
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, TypedDict, Dict
+
 
 
 class Base(DeclarativeBase):
@@ -139,6 +140,7 @@ class Projects(Base):
         self.beginning = beginning
         self.end = end
 
+
 class ServiceProjects(Base):
     __tablename__ = "service_projects"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -155,11 +157,13 @@ class ServiceProjects(Base):
     description: Mapped[str] = mapped_column(String, nullable=False)
     repair_time: Mapped[float] = mapped_column(Float, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    tasks: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    tasks: Mapped[dict| list | None] = mapped_column(JSON, nullable=True)
     service_parts: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
 
     # tasks scheme
+    # {"task1" : [task_name, time]}
     # service_parts scheme
+    # {part: {name: name, code: code, quantity: quantity}
 
 
 class ProjectDetails(Base):
