@@ -444,38 +444,51 @@ class AddToDo(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        name = self.name_input.text().strip()
+        todo = self.name_input.text().strip()
         quantity = self.quantity_input.text().strip().replace(",", ".")
-        self.name_input.setStyleSheet("")
+
         self.quantity_input.setStyleSheet("")
-        if not name:
-            warning = QMessageBox()
-            warning.setText("Todo name cannot be empty")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
+        self.name_input.setStyleSheet("")
+
+        if not todo:
+            message = QMessageBox()
+            message.setText("Please enter a name")
+            message.exec()
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity or not quantity.isnumeric():
-            warning = QMessageBox()
-            warning.setText("Quantity must be a number")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
+        if not quantity:
+            message = QMessageBox()
+            message.setText(f"Please enter a quantity")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            message = QMessageBox()
+            message.setText("Please enter a number")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        if quantity <= 0:
+            message = QMessageBox()
+            message.setText("Quantity value must be greater than zero")
+            message.exec()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
 
-        else:
-            with self.database.session() as session:
-                new = ProjectDetails(project_id=self.project_id,
-                                     todo=name,
-                                     quantity=quantity)
-                session.add(new)
-                session.commit()
-                self.accept()
-                self.save_signal.emit()
+        with self.database.session() as session:
+            todo = self.name_input.text().strip()
+            quantity = self.quantity_input.text().strip().replace(",", ".")
+            new = ProjectDetails(todo=todo,quantity=quantity, project_id=self.project_id)
+            session.add(new)
+            session.commit()
+            self.accept()
+            self.save_signal.emit()
 class EditToDo(QDialog):
     save_signal = Signal()
 
@@ -521,10 +534,48 @@ class EditToDo(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
+        todo = self.name_input.text().strip()
+        quantity = self.quantity_input.text().strip().replace(",", ".")
+
+        self.quantity_input.setStyleSheet("")
+        self.name_input.setStyleSheet("")
+
+        if not todo:
+            message = QMessageBox()
+            message.setText("Please enter a name")
+            message.exec()
+            self.name_input.setStyleSheet("border: 2px solid red;")
+            self.name_input.setFocus()
+            return
+        if not quantity:
+            message = QMessageBox()
+            message.setText(f"Please enter a quantity")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        try:
+            quantity = float(quantity)
+        except ValueError:
+            message = QMessageBox()
+            message.setText("Please enter a number")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+        if quantity <= 0:
+            message = QMessageBox()
+            message.setText("Quantity value must be greater than zero")
+            message.exec()
+            self.quantity_input.setStyleSheet("border: 2px solid red;")
+            self.quantity_input.setFocus()
+            return
+
         with self.database.session() as session:
+
             item = session.query(ProjectDetails).get(self.item_id)
-            item.todo = self.name_input.text()
-            item.quantity = self.quantity_input.text()
+            item.todo = todo
+            item.quantity = quantity
             session.commit()
             self.accept()
             self.save_signal.emit()

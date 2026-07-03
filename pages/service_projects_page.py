@@ -118,8 +118,10 @@ class ServiceProjectsPage(QWidget):
 
                 if project.end_date:
                     end_date_label = QLabel(project.end_date.strftime("%d/%m/%Y"))
+                    end_date_label.setStyleSheet("font-weight: bold;")
                 else:
                     end_date_label = QLabel("Pending...")
+                    end_date_label.setStyleSheet("color: green;")
                 self.data_layout.addWidget(end_date_label, index, 4)
 
                 details_button = QPushButton("Details")
