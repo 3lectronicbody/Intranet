@@ -34,7 +34,7 @@ def create_pdf_form(database,project_id):
     import pypdf
     with database.session() as session:
         project = session.query(ServiceProjects).get(project_id)
-        empty_pdf_form_path = Path("files/service form.pdf")
+        empty_pdf_form_path = Path("files/service_form.pdf")
         reader = pypdf.PdfReader(empty_pdf_form_path)
         writer = pypdf.PdfWriter()
         writer.append(reader)

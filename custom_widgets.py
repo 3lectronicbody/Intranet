@@ -1,14 +1,18 @@
+from _pyrepl import reader
 from functools import partial
 
+from PySide6 import QtGui, QtCore
+from PySide6.QtPdfWidgets import QPdfView
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit, QFrame
 from PySide6.QtCore import Signal
 from fpdf import FPDF
-from pypdf import PdfReader, PdfWriter
 from database.models import ProjectDetails, Projects, ServiceProjects
 from datetime import datetime
-
-from helper_functions import confirmation_dialog, create_pdf_form
+from helper_functions import confirmation_dialog
+import io
+import pypdf
+import tempfile
 
 
 class AddItem(QDialog):
@@ -680,6 +684,7 @@ class CreateServiceProject(QDialog):
             with self.database.session() as session:
                 self.project = session.query(ServiceProjects).get(self.project_id)
         self.parent = parent
+        self.pdf_button = None
 
         self.setWindowTitle("Create Service Project")
 
@@ -784,22 +789,22 @@ class CreateServiceProject(QDialog):
             instance.code_input.setText(project.code)
             instance.serial_number_input.setText(project.serial_number)
             instance.description_input.setText(project.description)
-            # Pdf Form
+
+            # Pdf FORM
             pdf_form_frame = QFrame()
             pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
             pdf_form_layout = QHBoxLayout()
             pdf_form_frame.setLayout(pdf_form_layout)
-
             instance.pdf_label = QLabel("Pdf Form: ")
             pdf_form_layout.addWidget(instance.pdf_label, 0)
             instance.pdf_button = QPushButton()
             if project.pdf_form:
                 instance.pdf_button.setText("Open...")
+                instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.open_pdf_form(pid))
             else:
                 instance.pdf_button.setText("Create")
-            instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.pdf_button_handler(pid))
+                instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.create_pdf_form(pid))
             pdf_form_layout.addWidget(instance.pdf_button, 1)
-
             instance.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
 
 
@@ -870,10 +875,41 @@ class CreateServiceProject(QDialog):
             session.commit()
             self.save_signal.emit()
             self.accept()
-    def pdf_button_handler(self, project_id):
+    def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
         if confirmation == QMessageBox.StandardButton.Yes:
-            create_pdf_form(self.database, project_id)
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                empty_pdf_form_path = "files/service_form.pdf"
+                reader = pypdf.PdfReader(empty_pdf_form_path)
+                writer = pypdf.PdfWriter()
+                writer.append(reader)
+                data = {"number": project.number,
+                        "owner": project.owner,
+                        "phone_number": project.phone_number}
+                writer.update_page_form_field_values(writer.pages[0], data)
+                # Saving the Pdf to a BytesIO object and then to a database field
+                bytes_stream = io.BytesIO()  # create a BytesIO object
+                writer.write(bytes_stream)  # write pdf content to the BytesIO object
+                project.pdf_form = bytes_stream.getvalue()  # get the content of the BytesIO object
+                session.commit()
+                self.pdf_button.setText("Open...")
+                self.pdf_button.clicked.disconnect()
+                self.pdf_button.clicked.connect(lambda _, pid=project_id: self.open_pdf_form(pid))
+    def open_pdf_form(self, project_id):
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            if project and project.pdf_form:
+                with tempfile.NamedTemporaryFile(suffix=".pdf",delete=False) as temp_file:
+                    temp_file.write(project.pdf_form)
+                    temp_path = temp_file.name
+                    QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
+
+
+
+
+
+
 
 
 

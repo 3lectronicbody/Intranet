@@ -60,19 +60,24 @@ class ServiceProjectsPage(QWidget):
 
         # HEADER
         headers =[]
-        number_header = QLabel("Number")
+        number_header = QPushButton("Number",flat=True)
+        number_header.clicked.connect(self.number_header_clicked)
         headers.append(number_header)
         self.data_layout.addWidget(number_header, 0, 0)
-        owner_header = QLabel("Owner")
+        owner_header = QPushButton("Owner", flat=True)
+        owner_header.clicked.connect(self.owner_header_clicked)
         headers.append(owner_header)
         self.data_layout.addWidget(owner_header, 0, 1)
-        item_header = QLabel("Item")
+        item_header = QPushButton("Item", flat=True)
+        item_header.clicked.connect(self.item_header_clicked)
         headers.append(item_header)
         self.data_layout.addWidget(item_header, 0, 2)
-        start_date_header = QLabel("Start Date")
+        start_date_header = QPushButton("Start Date", flat=True)
+        start_date_header.clicked.connect(self.start_date_header_clicked)
         headers.append(start_date_header)
         self.data_layout.addWidget(start_date_header, 0, 3)
-        end_date_header = QLabel("End Date")
+        end_date_header = QPushButton("End Date", flat=True)
+        end_date_header.clicked.connect(self.end_date_header_clicked)
         headers.append(end_date_header)
         self.data_layout.addWidget(end_date_header, 0, 4)
         for header in headers:
@@ -176,6 +181,16 @@ class ServiceProjectsPage(QWidget):
             session.commit()
 
         self.refresh_data()
+    def number_header_clicked(self):
+        pass
+    def owner_header_clicked(self):
+        pass
+    def item_header_clicked(self):
+        pass
+    def start_date_header_clicked(self):
+        pass
+    def end_date_header_clicked(self):
+        pass
 
 
 
