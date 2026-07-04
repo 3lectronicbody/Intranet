@@ -1,3 +1,5 @@
+from functools import partial
+
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit, QFrame
 from PySide6.QtCore import Signal
@@ -795,7 +797,7 @@ class CreateServiceProject(QDialog):
                 instance.pdf_button.setText("Open...")
             else:
                 instance.pdf_button.setText("Create")
-            instance.pdf_button.clicked.connect(instance.pdf_button_handler)
+            instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.pdf_button_handler(pid))
             pdf_form_layout.addWidget(instance.pdf_button, 1)
 
             instance.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
@@ -870,9 +872,8 @@ class CreateServiceProject(QDialog):
             self.accept()
     def pdf_button_handler(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
-        confirmation.exec()
-        if confirmation.QMessageBox.StandardButton.Yes:
-            create_pdf_form(project_id)
+        if confirmation == QMessageBox.StandardButton.Yes:
+            create_pdf_form(self.database, project_id)
 
 
 
