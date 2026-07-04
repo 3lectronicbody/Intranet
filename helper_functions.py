@@ -1,8 +1,6 @@
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
 
-
-
 def clear_layout(layout, grid_layout=False):
     # grid_layout=False will delete all widgets in the layout
     # grid_layout=True will delete all widgets and clear stretch factors if layout is QGridLayout
@@ -27,6 +25,8 @@ def confirmation_dialog(parent, title, message,):
     dialog.setText(message)
     dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     return dialog.exec()
+def create_pdf_form(project_id):
+    pass
 
 
 

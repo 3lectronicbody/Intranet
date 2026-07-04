@@ -1,10 +1,13 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit
+    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit, QFrame
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 from pypdf import PdfReader, PdfWriter
 from database.models import ProjectDetails, Projects, ServiceProjects
 from datetime import datetime
+
+from helper_functions import confirmation_dialog, create_pdf_form
+
 
 class AddItem(QDialog):
     save_signal = Signal()
@@ -752,6 +755,7 @@ class CreateServiceProject(QDialog):
         self.description_input = QTextEdit()
         self.layout.addWidget(self.description_input, 9 ,1)
 
+
         self.main_layout.addStretch(1)
 
         self.button_layout = QHBoxLayout()
@@ -778,6 +782,24 @@ class CreateServiceProject(QDialog):
             instance.code_input.setText(project.code)
             instance.serial_number_input.setText(project.serial_number)
             instance.description_input.setText(project.description)
+            # Pdf Form
+            pdf_form_frame = QFrame()
+            pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
+            pdf_form_layout = QHBoxLayout()
+            pdf_form_frame.setLayout(pdf_form_layout)
+
+            instance.pdf_label = QLabel("Pdf Form: ")
+            pdf_form_layout.addWidget(instance.pdf_label, 0)
+            instance.pdf_button = QPushButton()
+            if project.pdf_form:
+                instance.pdf_button.setText("Open...")
+            else:
+                instance.pdf_button.setText("Create")
+            instance.pdf_button.clicked.connect(instance.pdf_button_handler)
+            pdf_form_layout.addWidget(instance.pdf_button, 1)
+
+            instance.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
+
 
         for widget in instance.findChildren(QLineEdit)+instance.findChildren(QTextEdit):
             widget.setReadOnly(True)
@@ -846,7 +868,11 @@ class CreateServiceProject(QDialog):
             session.commit()
             self.save_signal.emit()
             self.accept()
-
+    def pdf_button_handler(self, project_id):
+        confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
+        confirmation.exec()
+        if confirmation.QMessageBox.StandardButton.Yes:
+            create_pdf_form(project_id)
 
 
 

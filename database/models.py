@@ -11,7 +11,7 @@ from sqlalchemy import (
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
 from datetime import datetime, timezone
-from typing import Optional, TypedDict, Dict
+from typing import Optional
 
 
 
@@ -159,9 +159,10 @@ class ServiceProjects(Base):
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     tasks: Mapped[dict| list | None] = mapped_column(JSON, nullable=True)
     service_parts: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    pdf_form: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
     # tasks scheme
-    # {"task1" : [task_name, time]}
+    # {task1: [task_name, time]}
     # service_parts scheme
     # {part: {name: name, code: code, quantity: quantity}
 
