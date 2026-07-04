@@ -1,1 +1,3 @@
-In custom_widgets.py (AddTodo, EditTodo) correct quantity validation
+Class ServiceProjectsPage.refresh_data()
+    - remove headers buttons outside of refresh()
+    - move toggling sort_mode to headers button handlers

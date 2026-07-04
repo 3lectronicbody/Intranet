@@ -17,6 +17,8 @@ class ServiceProjectsPage(QWidget):
         self.user_id = user_id
         self.parent = parent
         self.dialog = None
+        self.sort = None
+        self.sort_mode = "asc"
 
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
@@ -97,6 +99,43 @@ class ServiceProjectsPage(QWidget):
             projects = [project for project in projects if searched_text in
                         project.owner.lower() or searched_text in str(project.number).lower() or
                         searched_text in project.manufacturer.lower() or searched_text in project.model.lower()]
+            if self.sort == "number":
+                if self.sort_mode == "asc":
+                    projects.sort(key=lambda x: x.number, reverse=False)
+                    self.sort_mode = "desc"
+                else:
+                    projects.sort(key=lambda x: x.number, reverse=True)
+                    self.sort_mode = "asc"
+            elif self.sort == "owner":
+                if self.sort_mode == "asc":
+                    projects.sort(key=lambda x: x.owner, reverse=False)
+                    self.sort_mode = "desc"
+                else:
+                    projects.sort(key=lambda x: x.owner, reverse=True)
+                    self.sort_mode = "asc"
+            elif self.sort == "item":
+                if self.sort_mode == "asc":
+                    projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=False)
+                    self.sort_mode = "desc"
+                else:
+                    projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=True)
+                    self.sort_mode = "asc"
+            elif self.sort == "start_date":
+                if self.sort_mode == "asc":
+                    projects.sort(key=lambda x: x.start_date, reverse=False)
+                    self.sort_mode = "desc"
+                else:
+                    projects.sort(key=lambda x: x.start_date, reverse=True)
+                    self.sort_mode = "asc"
+            elif self.sort == "end_date":
+                if self.sort_mode == "asc":
+                    projects.sort(key=lambda x:
+                    (x.end_date if x.end_date is not None else datetime(9999,12,1)), reverse=False)
+                    self.sort_mode = "desc"
+                else:
+                    projects.sort(key=lambda x:
+                    (x.end_date if x.end_date is not None else datetime(9999, 12, 1)), reverse=True)
+                    self.sort_mode = "asc"
 
             if not projects:
                 no_projects_label = QLabel("No projects found")
@@ -182,15 +221,22 @@ class ServiceProjectsPage(QWidget):
 
         self.refresh_data()
     def number_header_clicked(self):
-        pass
+        self.sort = "number"
+
+        self.refresh_data()
     def owner_header_clicked(self):
-        pass
+        self.sort = "owner"
+
+        self.refresh_data()
     def item_header_clicked(self):
-        pass
+        self.sort = "item"
+        self.refresh_data()
     def start_date_header_clicked(self):
-        pass
+        self.sort = "start_date"
+        self.refresh_data()
     def end_date_header_clicked(self):
-        pass
+        self.sort = "end_date"
+        self.refresh_data()
 
 
 
