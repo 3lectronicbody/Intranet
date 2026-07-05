@@ -17,7 +17,8 @@ class ServiceProjectsPage(QWidget):
         self.user_id = user_id
         self.parent = parent
         self.dialog = None
-        self.sort = None
+        # set sorting conditions (to sort by number by default and ascending)
+        self.sort_header = 'number'
         self.sort_mode = "asc"
 
         self.main_layout = QVBoxLayout()
@@ -99,50 +100,47 @@ class ServiceProjectsPage(QWidget):
             projects = [project for project in projects if searched_text in
                         project.owner.lower() or searched_text in str(project.number).lower() or
                         searched_text in project.manufacturer.lower() or searched_text in project.model.lower()]
-            if self.sort == "number":
+            if self.sort_header == "number":
                 if self.sort_mode == "asc":
                     projects.sort(key=lambda x: x.number, reverse=False)
-                    self.sort_mode = "desc"
                 else:
                     projects.sort(key=lambda x: x.number, reverse=True)
-                    self.sort_mode = "asc"
-            elif self.sort == "owner":
+
+            elif self.sort_header == "owner":
                 if self.sort_mode == "asc":
                     projects.sort(key=lambda x: x.owner, reverse=False)
-                    self.sort_mode = "desc"
                 else:
                     projects.sort(key=lambda x: x.owner, reverse=True)
-                    self.sort_mode = "asc"
-            elif self.sort == "item":
+
+            elif self.sort_header == "item":
                 if self.sort_mode == "asc":
                     projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=False)
-                    self.sort_mode = "desc"
                 else:
                     projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=True)
-                    self.sort_mode = "asc"
-            elif self.sort == "start_date":
+
+            elif self.sort_header == "start_date":
                 if self.sort_mode == "asc":
                     projects.sort(key=lambda x: x.start_date, reverse=False)
-                    self.sort_mode = "desc"
                 else:
                     projects.sort(key=lambda x: x.start_date, reverse=True)
-                    self.sort_mode = "asc"
-            elif self.sort == "end_date":
+
+            elif self.sort_header == "end_date":
                 if self.sort_mode == "asc":
                     projects.sort(key=lambda x:
                     (x.end_date if x.end_date is not None else datetime(9999,12,1)), reverse=False)
-                    self.sort_mode = "desc"
+
                 else:
                     projects.sort(key=lambda x:
                     (x.end_date if x.end_date is not None else datetime(9999, 12, 1)), reverse=True)
-                    self.sort_mode = "asc"
 
+
+            # no projects label
             if not projects:
                 no_projects_label = QLabel("No projects found")
                 self.data_layout.addWidget(no_projects_label, 1, 0, 1, 5)
                 no_projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-
+            # data load
             for index, project in enumerate(projects, start=1):
 
                 number_label = QLabel(str(project.number))
@@ -221,21 +219,41 @@ class ServiceProjectsPage(QWidget):
 
         self.refresh_data()
     def number_header_clicked(self):
-        self.sort = "number"
-
+        if self.sort_header == "number":
+            self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
+        else:
+            self.sort_header = 'number'
+            self.sort_mode = 'asc'
         self.refresh_data()
+
     def owner_header_clicked(self):
-        self.sort = "owner"
-
+        if self.sort_header == "owner":
+            self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
+        else:
+            self.sort_header = 'owner'
+            self.sort_mode = 'asc'
         self.refresh_data()
+
     def item_header_clicked(self):
-        self.sort = "item"
+        if self.sort_header == "item":
+            self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
+        else:
+            self.sort_header = 'item'
+            self.sort_mode = 'asc'
         self.refresh_data()
     def start_date_header_clicked(self):
-        self.sort = "start_date"
+        if self.sort_header == "start_date":
+            self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
+        else:
+            self.sort_header = 'start_date'
+            self.sort_mode = 'asc'
         self.refresh_data()
     def end_date_header_clicked(self):
-        self.sort = "end_date"
+        if self.sort_header == "end_date":
+            self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
+        else:
+            self.sort_header = 'end_date'
+            self.sort_mode = 'asc'
         self.refresh_data()
 
 
