@@ -30,13 +30,14 @@ class SignUpPage(QWidget):
         self.button_layout = QHBoxLayout()
         self.main_layout.addLayout(self.button_layout, 3, 0, 1, 2)
 
+        self.create_button = QPushButton("Create")
+        self.button_layout.addWidget(self.create_button)
+        self.create_button.clicked.connect(self.create_button_handler)
+
         self.cancel_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_signal.emit)
 
-        self.create_button = QPushButton("Create")
-        self.button_layout.addWidget(self.create_button)
-        self.create_button.clicked.connect(self.create_button_handler)
 
     def create_button_handler(self):
         email = self.name_input.text()

@@ -13,10 +13,13 @@ class ServiceProjectsPage(QWidget):
     def __init__(self, database,user_id,parent=None):
         super().__init__(parent)
 
+
         self.database = database
         self.user_id = user_id
         self.parent = parent
         self.dialog = None
+
+
         # default sorting conditions
         self.sort_header = 'number'
         self.sort_mode = "asc"
@@ -198,15 +201,19 @@ class ServiceProjectsPage(QWidget):
         self.dialog.exec()
     def cancel_button_handler(self):
         self.back_signal.emit()
+    # Service project
     def edit_project_button_handler(self, project_id):
-        self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id, editable=True)
+        # Edit service project
+        self.dialog = CreateServiceProject.details_view(self.database, self.user_id, project_id, editable=True)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def details_project_button_handler(self, project_id):
-        self.dialog = CreateServiceProject.details(self.database,self.user_id,project_id)
+        # Service project details
+        self.dialog = CreateServiceProject.details_view(self.database, self.user_id, project_id)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def complete_button_handler(self, project_id):
+        # Deactivate the project
         confirmation = confirmation_dialog(self, title="Confirmation",
                                            message="Are you sure you want to complete this project?")
         if confirmation == QMessageBox.No:

@@ -685,6 +685,7 @@ class CreateServiceProject(QDialog):
                 self.project = session.query(ServiceProjects).get(self.project_id)
         self.parent = parent
         self.pdf_button = None
+        self.activate_button = None
 
         self.setWindowTitle("Create Service Project")
 
@@ -775,11 +776,12 @@ class CreateServiceProject(QDialog):
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
     @classmethod
-    def details(cls, database, user_id, project_id, parent=None, editable=False):
+    def details_view(cls, database, user_id, project_id, parent=None, editable=False):
         instance = cls(database, user_id,project_id, parent)
         with database.session() as session:
             project = session.query(ServiceProjects).get(project_id)
             instance.setWindowTitle("Service Project Details")
+            instance.number_input.setText(project.number)
             instance.receive_date_input.setText(project.start_date.strftime("%d-%m-%Y"))
             instance.owner_input.setText(project.owner)
             instance.phone_number_input.setText(project.phone_number)
@@ -814,11 +816,11 @@ class CreateServiceProject(QDialog):
         instance.cancel_button.setText("Back")
 
         if not editable:
-            activate_button = QPushButton("Activate")
-            instance.main_layout.addWidget(activate_button)
-            activate_button.clicked.connect(lambda _, pid=project_id: instance.activate_button_handler(pid))
+            instance.activate_button = QPushButton("Activate")
+            instance.main_layout.addWidget(instance.activate_button)
+            instance.activate_button.clicked.connect(lambda _, pid=project_id: instance.activate_button_handler(pid))
             if project.active:
-                activate_button.setEnabled(False)
+                instance.activate_button.setEnabled(False)
         if editable:
             instance.create_button.show()
             instance.create_button.clicked.disconnect()
@@ -831,8 +833,6 @@ class CreateServiceProject(QDialog):
 
 
         return instance
-
-
     def create_button_handler(self):
         formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
         with self.database.session() as session:
@@ -868,26 +868,42 @@ class CreateServiceProject(QDialog):
             self.save_signal.emit()
             self.accept()
     def activate_button_handler(self, project_id):
-        with self.database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
-            project.active = True
-            project.end_date = None
-            session.commit()
+        confirmation = confirmation_dialog(self, "Activate Service Project",
+                                           f"Are you sure you want to activate Service Project "
+                                           f"{self.number_input.text()}?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                project.active = True
+                project.end_date = None
+                session.commit()
+                self.activate_button.setEnabled(False)
             self.save_signal.emit()
-            self.accept()
+            return
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
         if confirmation == QMessageBox.StandardButton.Yes:
             with self.database.session() as session:
                 project = session.query(ServiceProjects).get(project_id)
                 empty_pdf_form_path = "files/service_form.pdf"
-                reader = pypdf.PdfReader(empty_pdf_form_path)
+                pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
                 writer = pypdf.PdfWriter()
-                writer.append(reader)
-                data = {"number": project.number,
+                writer.append(pdf_reader)
+                data = {"number": project.number[-3:],
+                        "year": project.number[2:4],
+                        "start_date": project.start_date.strftime("%d-%m-%Y"),
                         "owner": project.owner,
-                        "phone_number": project.phone_number}
+                        "phone_number": project.phone_number,
+                        "email": project.email,
+                        "manufacturer": project.manufacturer,
+                        "model": project.model,
+                        "code": project.code,
+                        "serial_number": project.serial_number,
+                        "description": project.description
+                        }
+                # Fulfill form values with data
                 writer.update_page_form_field_values(writer.pages[0], data)
+
                 # Saving the Pdf to a BytesIO object and then to a database field
                 bytes_stream = io.BytesIO()  # create a BytesIO object
                 writer.write(bytes_stream)  # write pdf content to the BytesIO object
