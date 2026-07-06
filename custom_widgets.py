@@ -879,6 +879,7 @@ class CreateServiceProject(QDialog):
                 session.commit()
                 self.activate_button.setEnabled(False)
             self.save_signal.emit()
+            self.close()
             return
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
