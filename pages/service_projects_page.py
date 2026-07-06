@@ -17,7 +17,7 @@ class ServiceProjectsPage(QWidget):
         self.user_id = user_id
         self.parent = parent
         self.dialog = None
-        # set sorting conditions (to sort by number by default and ascending)
+        # default sorting conditions
         self.sort_header = 'number'
         self.sort_mode = "asc"
 
@@ -218,6 +218,8 @@ class ServiceProjectsPage(QWidget):
             session.commit()
 
         self.refresh_data()
+
+    # Headers sorting functions
     def number_header_clicked(self):
         if self.sort_header == "number":
             self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
@@ -225,7 +227,6 @@ class ServiceProjectsPage(QWidget):
             self.sort_header = 'number'
             self.sort_mode = 'asc'
         self.refresh_data()
-
     def owner_header_clicked(self):
         if self.sort_header == "owner":
             self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
@@ -233,7 +234,6 @@ class ServiceProjectsPage(QWidget):
             self.sort_header = 'owner'
             self.sort_mode = 'asc'
         self.refresh_data()
-
     def item_header_clicked(self):
         if self.sort_header == "item":
             self.sort_mode = 'desc' if self.sort_mode == 'asc' else 'asc'
