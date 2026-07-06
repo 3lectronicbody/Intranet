@@ -710,7 +710,7 @@ class CreateServiceProject(QDialog):
                 actual_number = str(datetime.now().year) + "/001"
         self.number_input = QLineEdit()
         self.number_input.setText(actual_number)
-        self.number_input.setStyleSheet("color: #3498db;")
+        self.number_input.setStyleSheet("color: #3498db; font-weight: bold;")
         self.number_input.setReadOnly(True)
         self.layout.addWidget(self.number_input, 0, 1)
 
@@ -889,7 +889,7 @@ class CreateServiceProject(QDialog):
                 pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
                 writer = pypdf.PdfWriter()
                 writer.append(pdf_reader)
-                data = {"number": project.number[-3:],
+                data = {"number": (project.number[-3:], None, None),
                         "year": project.number[2:4],
                         "start_date": project.start_date.strftime("%d-%m-%Y"),
                         "owner": project.owner,
