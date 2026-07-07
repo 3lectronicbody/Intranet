@@ -1,10 +1,6 @@
-from _pyrepl import reader
-from functools import partial
-
 from PySide6 import QtGui, QtCore
-from PySide6.QtPdfWidgets import QPdfView
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox, QApplication, QWidget, QTextEdit, QFrame
+    QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit, QFrame
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects, ServiceProjects
@@ -775,64 +771,8 @@ class CreateServiceProject(QDialog):
         self.cancel_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.cancel_button)
         self.cancel_button.clicked.connect(self.cancel_button_handler)
-    @classmethod
-    def details_view(cls, database, user_id, project_id, parent=None, editable=False):
-        instance = cls(database, user_id,project_id, parent)
-        with database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
-            instance.setWindowTitle("Service Project Details")
-            instance.number_input.setText(project.number)
-            instance.receive_date_input.setText(project.start_date.strftime("%d-%m-%Y"))
-            instance.owner_input.setText(project.owner)
-            instance.phone_number_input.setText(project.phone_number)
-            instance.email_input.setText(project.email)
-            instance.manufacturer_input.setText(project.manufacturer)
-            instance.model_input.setText(project.model)
-            instance.code_input.setText(project.code)
-            instance.serial_number_input.setText(project.serial_number)
-            instance.description_input.setText(project.description)
-
-            # Pdf FORM
-            pdf_form_frame = QFrame()
-            pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
-            pdf_form_layout = QHBoxLayout()
-            pdf_form_frame.setLayout(pdf_form_layout)
-            instance.pdf_label = QLabel("Pdf Form: ")
-            pdf_form_layout.addWidget(instance.pdf_label, 0)
-            instance.pdf_button = QPushButton()
-            if project.pdf_form:
-                instance.pdf_button.setText("Open...")
-                instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.open_pdf_form(pid))
-            else:
-                instance.pdf_button.setText("Create")
-                instance.pdf_button.clicked.connect(lambda _, pid=project_id: instance.create_pdf_form(pid))
-            pdf_form_layout.addWidget(instance.pdf_button, 1)
-            instance.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
 
 
-        for widget in instance.findChildren(QLineEdit)+instance.findChildren(QTextEdit):
-            widget.setReadOnly(True)
-        instance.create_button.hide()
-        instance.cancel_button.setText("Back")
-
-        if not editable:
-            instance.activate_button = QPushButton("Activate")
-            instance.main_layout.addWidget(instance.activate_button)
-            instance.activate_button.clicked.connect(lambda _, pid=project_id: instance.activate_button_handler(pid))
-            if project.active:
-                instance.activate_button.setEnabled(False)
-        if editable:
-            instance.create_button.show()
-            instance.create_button.clicked.disconnect()
-            instance.create_button.setText("Save")
-            instance.create_button.clicked.connect(lambda _, pid=project_id  :instance.save_button_handler(pid))
-            for widget in instance.findChildren(QLineEdit) + instance.findChildren(QTextEdit):
-                widget.setReadOnly(False)
-            instance.number_input.setReadOnly(True)
-            instance.receive_date_input.setReadOnly(True)
-
-
-        return instance
     def create_button_handler(self):
         formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
         with self.database.session() as session:
@@ -853,77 +793,11 @@ class CreateServiceProject(QDialog):
             self.accept()
     def cancel_button_handler(self):
         self.reject()
-    def save_button_handler(self, project_id):
-        with self.database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
-            project.owner = self.owner_input.text()
-            project.phone_number = self.phone_number_input.text()
-            project.email = self.email_input.text()
-            project.manufacturer = self.manufacturer_input.text()
-            project.model = self.model_input.text()
-            project.code = self.code_input.text()
-            project.serial_number = self.serial_number_input.text()
-            project.description = self.description_input.toPlainText()
-            session.commit()
-            self.save_signal.emit()
-            self.accept()
-    def activate_button_handler(self, project_id):
-        confirmation = confirmation_dialog(self, "Activate Service Project",
-                                           f"Are you sure you want to activate Service Project "
-                                           f"{self.number_input.text()}?")
-        if confirmation == QMessageBox.StandardButton.Yes:
-            with self.database.session() as session:
-                project = session.query(ServiceProjects).get(project_id)
-                project.active = True
-                project.end_date = None
-                session.commit()
-                self.activate_button.setEnabled(False)
-            self.save_signal.emit()
-            self.close()
-            return
-    def create_pdf_form(self, project_id):
-        confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
-        if confirmation == QMessageBox.StandardButton.Yes:
-            with self.database.session() as session:
-                project = session.query(ServiceProjects).get(project_id)
-                empty_pdf_form_path = "files/service_form.pdf"
-                pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
-                writer = pypdf.PdfWriter()
-                writer.append(pdf_reader)
-                data = {"number": (project.number[-3:], None, None),
-                        "year": project.number[2:4],
-                        "start_date": project.start_date.strftime("%d-%m-%Y"),
-                        "owner": project.owner,
-                        "phone_number": project.phone_number,
-                        "email": project.email,
-                        "manufacturer": project.manufacturer,
-                        "model": project.model,
-                        "code": project.code,
-                        "serial_number": project.serial_number,
-                        "description": project.description
-                        }
-                # Fulfill form values with data
-                writer.update_page_form_field_values(writer.pages[0], data)
 
-                # Saving the Pdf to a BytesIO object and then to a database field
-                bytes_stream = io.BytesIO()  # create a BytesIO object
-                writer.write(bytes_stream)  # write pdf content to the BytesIO object
-                project.pdf_form = bytes_stream.getvalue()  # get the content of the BytesIO object
-                session.commit()
-                self.pdf_button.setText("Open...")
-                self.pdf_button.clicked.disconnect()
-                self.pdf_button.clicked.connect(lambda _, pid=project_id: self.open_pdf_form(pid))
-    def open_pdf_form(self, project_id):
-        with self.database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
-            if project and project.pdf_form:
-                with tempfile.NamedTemporaryFile(suffix=".pdf",delete=False) as temp_file:
-                    temp_file.write(project.pdf_form)
-                    temp_path = temp_file.name
-                    QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
+
 
 class EditServiceProject(QDialog):
-    save_signal = Signal
+    save_signal = Signal()
     def __init__(self, database, user_id, project_id, parent=None, editable=True):
         super().__init__(parent)
         self.database = database
@@ -1011,7 +885,24 @@ class EditServiceProject(QDialog):
             for i in self.inputs:
                 i.setReadOnly(True)
 
+        pdf_form_frame = QFrame()
+        pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
+        pdf_form_layout = QHBoxLayout()
+        pdf_form_frame.setLayout(pdf_form_layout)
+        self.pdf_label = QLabel("Pdf Form: ")
+        pdf_form_layout.addWidget(self.pdf_label, 0)
+        self.pdf_button = QPushButton()
+
+        pdf_form_layout.addWidget(self.pdf_button, 1)
+        self.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
+
+
+
         self.main_layout.addStretch(1)
+        self.activate_button = QPushButton("Activate")
+        self.main_layout.addWidget(self.activate_button)
+        self.activate_button.clicked.connect(lambda _, pid=project_id: self.activate_button_handler(pid))
+
 
         self.button_layout = QHBoxLayout()
         self.main_layout.addLayout(self.button_layout)
@@ -1029,7 +920,92 @@ class EditServiceProject(QDialog):
                 self.code_input.setText(self.project.code)
                 self.serial_number_input.setText(self.project.serial_number)
                 self.description_input.setText(self.project.description)
+            if self.project.pdf_form:
+                self.pdf_button.setText("Open...")
+                self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.open_pdf_form(pid))
+            else:
+                self.pdf_button.setText("Create")
+                self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
+            self.activate_button = QPushButton("Activate")
+            self.main_layout.addWidget(self.activate_button)
+            self.activate_button.clicked.connect(lambda _, pid=self.project_id: self.activate_button_handler(pid))
+            if self.project.active:
+                self.activate_button.setDisabled(True)
+
+    def save_button_handler(self, project_id):
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            project.owner = self.owner_input.text()
+            project.phone_number = self.phone_number_input.text()
+            project.email = self.email_input.text()
+            project.manufacturer = self.manufacturer_input.text()
+            project.model = self.model_input.text()
+            project.code = self.code_input.text()
+            project.serial_number = self.serial_number_input.text()
+            project.description = self.description_input.toPlainText()
+            session.commit()
+            self.save_signal.emit()
+            self.accept()
+    def cancel_button_handler(self):
+        self.reject()
+
+    def activate_button_handler(self, project_id):
+        confirmation = confirmation_dialog(self, "Activate Service Project",
+                                           f"Are you sure you want to activate Service Project "
+                                           f"{self.number_input.text()}?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                project.active = True
+                project.end_date = None
+                session.commit()
+                self.activate_button.setEnabled(False)
+            self.save_signal.emit()
+            self.close()
+            return
+
+    def create_pdf_form(self, project_id):
+        confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                empty_pdf_form_path = "files/service_form.pdf"
+                pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
+                writer = pypdf.PdfWriter()
+                writer.append(pdf_reader)
+                data = {"number": (project.number[-3:], None, None),
+                        "year": project.number[2:4],
+                        "start_date": project.start_date.strftime("%d-%m-%Y"),
+                        "owner": project.owner,
+                        "phone_number": project.phone_number,
+                        "email": project.email,
+                        "manufacturer": project.manufacturer,
+                        "model": project.model,
+                        "code": project.code,
+                        "serial_number": project.serial_number,
+                        "description": project.description
+                        }
+                # Fulfill form values with data
+                writer.update_page_form_field_values(writer.pages[0], data)
+
+                # Saving the Pdf to a BytesIO object and then to a database field
+                bytes_stream = io.BytesIO()  # create a BytesIO object
+                writer.write(bytes_stream)  # write pdf content to the BytesIO object
+                project.pdf_form = bytes_stream.getvalue()  # get the content of the BytesIO object
+                session.commit()
+                self.pdf_button.setText("Open...")
+                self.pdf_button.clicked.disconnect()
+                self.pdf_button.clicked.connect(lambda _, pid=project_id: self.open_pdf_form(pid))
+
+    def open_pdf_form(self, project_id):
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(project_id)
+            if project and project.pdf_form:
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
+                    temp_file.write(project.pdf_form)
+                    temp_path = temp_file.name
+                    QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
 
 
 

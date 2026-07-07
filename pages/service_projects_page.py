@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLab
     QMessageBox, QListView
 from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
-from custom_widgets import CreateServiceProject
+from custom_widgets import CreateServiceProject, EditServiceProject
 from datetime import datetime
 
 
@@ -12,7 +12,6 @@ class ServiceProjectsPage(QWidget):
     back_signal = Signal()
     def __init__(self, database,user_id,parent=None):
         super().__init__(parent)
-
 
         self.database = database
         self.user_id = user_id
@@ -204,12 +203,12 @@ class ServiceProjectsPage(QWidget):
     # Service project
     def edit_project_button_handler(self, project_id):
         # Edit service project
-        self.dialog = CreateServiceProject.details_view(self.database, self.user_id, project_id, editable=True)
+        self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=True)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def details_project_button_handler(self, project_id):
         # Service project details
-        self.dialog = CreateServiceProject.details_view(self.database, self.user_id, project_id)
+        self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=False)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def complete_button_handler(self, project_id):
