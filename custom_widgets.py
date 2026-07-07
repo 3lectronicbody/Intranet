@@ -809,11 +809,11 @@ class EditServiceProject(QDialog):
             self.project = session.query(ServiceProjects).get(self.project_id)
         self.setWindowTitle("Edit Service Project")
 
-        self.main_layout = QVBoxLayout()
-        self.setLayout(self.main_layout)
+        self.main_layout_vertical = QVBoxLayout()
+        self.setLayout(self.main_layout_vertical)
 
         self.layout = QGridLayout()
-        self.main_layout.addLayout(self.layout)
+        self.main_layout_vertical.addLayout(self.layout)
         self.number_title_label = QLabel("Number: ")
         self.layout.addWidget(self.number_title_label, 0, 0)
 
@@ -898,14 +898,14 @@ class EditServiceProject(QDialog):
 
 
 
-        self.main_layout.addStretch(1)
+        self.main_layout_vertical.addStretch(1)
         self.activate_button = QPushButton("Activate")
-        self.main_layout.addWidget(self.activate_button)
+        self.main_layout_vertical.addWidget(self.activate_button)
         self.activate_button.clicked.connect(lambda _, pid=project_id: self.activate_button_handler(pid))
 
 
         self.button_layout = QHBoxLayout()
-        self.main_layout.addLayout(self.button_layout)
+        self.main_layout_vertical.addLayout(self.button_layout)
 
         self.refresh()
 
@@ -927,9 +927,6 @@ class EditServiceProject(QDialog):
                 self.pdf_button.setText("Create")
                 self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
-            self.activate_button = QPushButton("Activate")
-            self.main_layout.addWidget(self.activate_button)
-            self.activate_button.clicked.connect(lambda _, pid=self.project_id: self.activate_button_handler(pid))
             if self.project.active:
                 self.activate_button.setDisabled(True)
 
@@ -974,7 +971,7 @@ class EditServiceProject(QDialog):
                 pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
                 writer = pypdf.PdfWriter()
                 writer.append(pdf_reader)
-                data = {"number": (project.number[-3:], None, None),
+                data = {"number": (project.number[-3:]),
                         "year": project.number[2:4],
                         "start_date": project.start_date.strftime("%d-%m-%Y"),
                         "owner": project.owner,
