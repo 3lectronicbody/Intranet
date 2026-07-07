@@ -807,7 +807,9 @@ class EditServiceProject(QDialog):
 
         with self.database.session() as session:
             self.project = session.query(ServiceProjects).get(self.project_id)
+
         self.setWindowTitle("Edit Service Project")
+        self.setWindowTitle("View Service Project") if not editable else self.setWindowTitle("Edit Service Project")
 
         self.main_layout_vertical = QVBoxLayout()
         self.setLayout(self.main_layout_vertical)
@@ -908,18 +910,23 @@ class EditServiceProject(QDialog):
         self.main_layout_vertical.addLayout(self.button_layout)
         if editable:
             self.save_button = QPushButton("Save")
+            self.save_button.setDisabled(True)
             self.button_layout.addWidget(self.save_button)
             self.save_button.clicked.connect(self.save_button_handler)
             self.cancel_button = QPushButton("Cancel")
             self.button_layout.addWidget(self.cancel_button)
             self.cancel_button.clicked.connect(self.cancel_button_handler)
+
         else:
             self.cancel_button = QPushButton("Close")
             self.main_layout_vertical.addWidget(self.cancel_button)
             self.cancel_button.clicked.connect(self.cancel_button_handler)
 
-
         self.refresh()
+
+        # self.inputs.append(self.description_input)
+        for i in self.inputs:
+            i.textChanged.connect(self.save_button_enabler)
 
     def refresh(self):
             with self.database.session() as session:
@@ -942,9 +949,10 @@ class EditServiceProject(QDialog):
             if self.project.active:
                 self.activate_button.setDisabled(True)
 
-    def save_button_handler(self, project_id):
+    def save_button_handler(self):
+
         with self.database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
+            project = session.query(ServiceProjects).get(self.project_id)
             project.owner = self.owner_input.text()
             project.phone_number = self.phone_number_input.text()
             project.email = self.email_input.text()
@@ -1016,6 +1024,20 @@ class EditServiceProject(QDialog):
                     temp_path = temp_file.name
                     QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
 
+    def save_button_enabler(self, *args):
+        # compare state with state after textchange signal triggered in input
+
+        if self.project.owner.strip() != self.owner_input.text().strip() or \
+            self.project.phone_number.strip() != self.phone_number_input.text().strip() or \
+            self.project.email.strip() != self.email_input.text().strip() or \
+            self.project.manufacturer.strip() != self.manufacturer_input.text().strip() or \
+            self.project.model.strip() != self.model_input.text().strip() or \
+            self.project.code.strip() != self.code_input.text().strip() or \
+            self.project.serial_number.strip() != self.serial_number_input.text().strip() or \
+            self.project.description.strip() != self.description_input.toPlainText().strip():
+                self.save_button.setEnabled(True)
+        else:
+            self.save_button.setEnabled(False)
 
 
         
