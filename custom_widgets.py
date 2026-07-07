@@ -1027,7 +1027,7 @@ class EditServiceProject(QDialog):
     def save_button_enabler(self, *args):
         # compare state with state after textchange signal triggered in input
 
-        if self.project.owner.strip() != self.owner_input.text().strip() or \
+        if (self.project.owner or "").strip() != self.owner_input.text().strip() or \
             self.project.phone_number.strip() != self.phone_number_input.text().strip() or \
             self.project.email.strip() != self.email_input.text().strip() or \
             self.project.manufacturer.strip() != self.manufacturer_input.text().strip() or \
