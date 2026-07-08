@@ -11,6 +11,77 @@ import pypdf
 import tempfile
 
 
+class MenuBar(QMenuBar):
+    def __init__(self, parent, database, user_id, project_id=None, flag=None):
+        # flag=project: Menu bar for project window
+        # flag=main: Menu bar for main menu
+        super().__init__(parent)
+
+        self.parent = parent
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+        self.flag = flag
+
+        self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
+        # ADD FILE MENU TO MENU BAR
+        self.file_menu = self.addMenu("File")
+
+        if self.flag == "project":
+            self.export_project = self.file_menu.addAction("Export Project...")
+            self.export_project.triggered.connect(self.export_project_handler)
+
+            self.main_menu = self.addAction("Main Menu")
+            self.main_menu.triggered.connect(self.main_menu_handler)
+
+
+        # EXIT BUTTON MENU
+        self.exit = self.addAction("Exit")
+        self.exit.triggered.connect(lambda _: self.exit_button_handler())
+
+    def export_project_handler(self):
+        file_path, selected_filter = QFileDialog.getSaveFileName(self)
+        if file_path:
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
+            with self.database.session() as session:
+                all_items = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
+                items = [item for item in all_items if item.activity is None and item.todo is None]
+                activities = [item for item in all_items if item.activity is not None]
+
+                item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
+
+                pdf.cell(100, 10, txt=f"Project Name: {session.query(Projects).get(self.project_id).name}", ln=1)
+                pdf.cell(100, 10, txt="ITEMS", ln=1)
+
+                for i in items:
+                    pdf.cell(item_column_width["name"], 10, txt=i.item or "", ln=0)
+                    pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
+                    pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
+                    pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
+
+
+                activity_column_width = {"name": 60, "quantity": 20}
+                pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
+
+                for i in activities:
+                    pdf.cell(activity_column_width["name"], 10, txt=i.activity or "", ln=0)
+                    pdf.cell(activity_column_width["quantity"], 10, txt=str(i.quantity), ln=1)
+
+            if file_path[-4:] != ".pdf":
+                file_path += ".pdf"
+
+            pdf.output(file_path)
+    @staticmethod
+    def exit_button_handler():
+        app_instance = QApplication.instance()
+        if app_instance:
+            app_instance.quit()
+    def main_menu_handler(self):
+        if self.parent:
+            self.parent.accept()
+
 class AddItem(QDialog):
     save_signal = Signal()
     def __init__(self, database, project_id, user_id):
@@ -598,77 +669,6 @@ class CustomPushButton(QPushButton):
             return
         super().keyPressEvent(event)
 
-class MenuBar(QMenuBar):
-    def __init__(self, parent, database, user_id, project_id=None, flag=None):
-        # flag=project: Menu bar for project window
-        # flag=main: Menu bar for main menu
-        super().__init__(parent)
-
-        self.parent = parent
-        self.database = database
-        self.project_id = project_id
-        self.user_id = user_id
-        self.flag = flag
-
-        self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
-        # ADD FILE MENU TO MENU BAR
-        self.file_menu = self.addMenu("File")
-
-        if self.flag == "project":
-            self.export_project = self.file_menu.addAction("Export Project...")
-            self.export_project.triggered.connect(self.export_project_handler)
-
-            self.main_menu = self.addAction("Main Menu")
-            self.main_menu.triggered.connect(self.main_menu_handler)
-
-
-        # EXIT BUTTON MENU
-        self.exit = self.addAction("Exit")
-        self.exit.triggered.connect(lambda _: self.exit_button_handler())
-
-    def export_project_handler(self):
-        file_path, selected_filter = QFileDialog.getSaveFileName(self)
-        if file_path:
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", size=12)
-            with self.database.session() as session:
-                all_items = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
-                items = [item for item in all_items if item.activity is None and item.todo is None]
-                activities = [item for item in all_items if item.activity is not None]
-
-                item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
-
-                pdf.cell(100, 10, txt=f"Project Name: {session.query(Projects).get(self.project_id).name}", ln=1)
-                pdf.cell(100, 10, txt="ITEMS", ln=1)
-
-                for i in items:
-                    pdf.cell(item_column_width["name"], 10, txt=i.item or "", ln=0)
-                    pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
-                    pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
-                    pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
-
-
-                activity_column_width = {"name": 60, "quantity": 20}
-                pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
-
-                for i in activities:
-                    pdf.cell(activity_column_width["name"], 10, txt=i.activity or "", ln=0)
-                    pdf.cell(activity_column_width["quantity"], 10, txt=str(i.quantity), ln=1)
-
-            if file_path[-4:] != ".pdf":
-                file_path += ".pdf"
-
-            pdf.output(file_path)
-    @staticmethod
-    def exit_button_handler():
-        app_instance = QApplication.instance()
-        if app_instance:
-            app_instance.quit()
-    def main_menu_handler(self):
-        if self.parent:
-            self.parent.accept()
-
 class CreateServiceProject(QDialog):
     save_signal = Signal()
     def __init__(self, database, user_id, project_id=None, parent=None):
@@ -793,8 +793,6 @@ class CreateServiceProject(QDialog):
             self.accept()
     def cancel_button_handler(self):
         self.reject()
-
-
 
 class EditServiceProject(QDialog):
     save_signal = Signal()
