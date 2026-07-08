@@ -1,4 +1,5 @@
 from PySide6 import QtGui, QtCore
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit, QFrame
 from PySide6.QtCore import Signal
@@ -803,6 +804,7 @@ class EditServiceProject(QDialog):
         self.project_id = project_id
         self.parent = parent
 
+
         with self.database.session() as session:
             self.project = session.query(ServiceProjects).get(self.project_id)
 
@@ -885,16 +887,16 @@ class EditServiceProject(QDialog):
             for i in self.inputs:
                 i.setReadOnly(True)
 
-        pdf_form_frame = QFrame()
-        pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
-        pdf_form_layout = QHBoxLayout()
-        pdf_form_frame.setLayout(pdf_form_layout)
+        self.pdf_form_frame = QFrame()
+        self.pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
+        self.pdf_form_layout = QHBoxLayout()
+        self.pdf_form_frame.setLayout(self.pdf_form_layout)
         self.pdf_label = QLabel("Pdf Form: ")
-        pdf_form_layout.addWidget(self.pdf_label, 0)
+        self.pdf_form_layout.addWidget(self.pdf_label, 0)
         self.pdf_button = QPushButton()
 
-        pdf_form_layout.addWidget(self.pdf_button, 1)
-        self.layout.addWidget(pdf_form_frame, 10, 0, 1, 2)
+        self.pdf_form_layout.addWidget(self.pdf_button, 1)
+        self.layout.addWidget(self.pdf_form_frame, 10, 0, 1, 2)
 
 
 
@@ -927,25 +929,29 @@ class EditServiceProject(QDialog):
             i.textChanged.connect(self.save_button_enabler)
 
     def refresh(self):
-            with self.database.session() as session:
-                self.project = session.query(ServiceProjects).get(self.project_id)
-                self.owner_input.setText(self.project.owner)
-                self.phone_number_input.setText(self.project.phone_number)
-                self.email_input.setText(self.project.email)
-                self.manufacturer_input.setText(self.project.manufacturer)
-                self.model_input.setText(self.project.model)
-                self.code_input.setText(self.project.code)
-                self.serial_number_input.setText(self.project.serial_number)
-                self.description_input.setText(self.project.description)
-            if self.project.pdf_form:
-                self.pdf_button.setText("Open...")
-                self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.open_pdf_form(pid))
-            else:
-                self.pdf_button.setText("Create")
-                self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
+        with self.database.session() as session:
+            self.project = session.query(ServiceProjects).get(self.project_id)
+            self.owner_input.setText(self.project.owner)
+            self.phone_number_input.setText(self.project.phone_number)
+            self.email_input.setText(self.project.email)
+            self.manufacturer_input.setText(self.project.manufacturer)
+            self.model_input.setText(self.project.model)
+            self.code_input.setText(self.project.code)
+            self.serial_number_input.setText(self.project.serial_number)
+            self.description_input.setText(self.project.description)
+        if self.project.pdf_form:
+            self.pdf_button.setText("Open...")
+            self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.open_pdf_form(pid))
+        else:
+            self.pdf_button.setText("Create")
+            self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
-            if self.project.active:
-                self.activate_button.setDisabled(True)
+        if self.project.active:
+            self.activate_button.setDisabled(True)
+
+
+
+
 
     def save_button_handler(self):
 

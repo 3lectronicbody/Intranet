@@ -146,6 +146,23 @@ class ServiceProjectsPage(QWidget):
             for index, project in enumerate(projects, start=1):
 
                 number_label = QLabel(str(project.number))
+                number_label.setStyleSheet("font-weight: bold;")
+                if project.service_parts:
+                    service_parts = ""
+                    for i in range(len(project.service_parts)):
+                        service_parts += (f"Name: {project.service_parts[i][0]}<br>Code: {project.service_parts[i][1]}<br>"
+                                          f"Quantity: {project.service_parts[i][2]}<br>")
+                else:
+                    service_parts = "No service parts"
+
+
+                tooltip_content = (
+                    f"<b>Code:</b> {project.code}<br>"
+                    f"<b>Serial Number:</b> {project.serial_number}<br>"
+                    f"<b>Description:</b> {project.description}"
+                    f"<b>SERVICE PARTS:</b> {service_parts}"
+                )
+                number_label.setToolTip(tooltip_content)
                 self.data_layout.addWidget(number_label, index, 0)
 
                 owner_label = QLabel(project.owner)

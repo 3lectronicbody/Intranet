@@ -158,13 +158,13 @@ class ServiceProjects(Base):
     repair_time: Mapped[float] = mapped_column(Float, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     tasks: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    service_parts: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
+    service_parts: Mapped[list[tuple] | None] = mapped_column(JSON, nullable=True)
     pdf_form: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
-    # tasks scheme
-    # {task1: [task_name, time]}
-    # service_parts scheme
-    # {part: {name: name, code: code, quantity: quantity}
+    # tasks scheme -> # {task_name:time}
+
+    # service_parts scheme ->[(part_name, code, quantity)]
+
 
 
 class ProjectDetails(Base):
