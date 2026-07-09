@@ -1,11 +1,11 @@
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel
+    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox
 )
 from PySide6.QtCore import Qt
 
 from database.models import ServiceProjects
-from helper_functions import clear_layout
+from helper_functions import clear_layout, confirmation_dialog
 
 
 class ServiceProjectDialog(QDialog):
@@ -41,8 +41,6 @@ class ServiceProjectDialog(QDialog):
         self.tasks_list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         tasks_scroll.setWidget(self.tasks_container)
-
-
 
         # Bottom of task frame button
         self.btn_add_task = QPushButton("Add Task")
@@ -94,6 +92,7 @@ class ServiceProjectDialog(QDialog):
                     edit_button = QPushButton("Edit")
                     self.tasks_list_layout.addWidget(edit_button, counter, 1)
                     delete_button = QPushButton("Delete")
+                    delete_button.clicked.connect(lambda _, task_name=name: self.delete_task(task_name))
                     self.tasks_list_layout.addWidget(delete_button, counter, 2)
                     counter += 1
             else:
@@ -117,12 +116,80 @@ class ServiceProjectDialog(QDialog):
                     edit_button = QPushButton("Edit")
                     self.items_list_layout.addWidget(edit_button, counter, 3)
                     delete_button = QPushButton("Delete")
+                    delete_button.clicked.connect(lambda _, part_id=counter: self.delete_service_part(part_id))
                     self.items_list_layout.addWidget(delete_button, counter, 4)
                     counter += 1
             else:
                 no_items_label = QLabel("No items added yet.")
                 no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
+    def delete_task(self, task_name):
+
+        with self.database.session() as session:
+            confirmation = confirmation_dialog(self, "Delete Task", "Are you sure you want to delete this task?")
+            if confirmation == QMessageBox.StandardButton.No:
+                return
+            project = session.query(ServiceProjects).get(self.project_id)
+            project.tasks.pop(task_name)
+
+            session.commit()
+            self.refresh_tasks()
+    def delete_service_part(self, part_id):
+        confirmation = confirmation_dialog(self, "Delete Item", "Are you sure you want to delete this item?")
+        if confirmation == QMessageBox.StandardButton.No:
+            return
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(self.project_id)
+            project.service_parts.pop(part_id)
+            session.commit()
+            self.refresh_items()
+    def add_task(self):
+        dialog = AddTaskDialog(self.database,self.project_id)
+        dialog.exec()
+        if dialog.result() == QDialog.DialogCode.Accepted:
+            self.refresh_tasks()
+
+class AddTaskDialog(QDialog):
+    def __init__(self, database,project_id,parent=None):
+        super().__init__(parent)
+        self.database = database
+        self.project_id=project_id
+        self.parent = parent
+
+        self.setWindowTitle("Add Task")
+        self_layout = QGridLayout()
+        self.setLayout(self_layout)
+        self.task_name_input = QLineEdit()
+        self.task_name_input.setPlaceholderText("Task Name")
+        self_layout.addWidget(self.task_name_input, 0, 0)
+        self.task_time_input = QLineEdit()
+        self.task_time_input.setPlaceholderText("Task Time (hours)")
+        self_layout.addWidget(self.task_time_input, 1, 0)
+        self.save_button = QPushButton("Save")
+        self_layout.addWidget(self.save_button, 2, 0)
+        self.cancel_button = QPushButton("Cancel")
+        self_layout.addWidget(self.cancel_button, 2, 1)
+    def save_button_handler(self):
+        task_name = self.task_name_input.text()
+        task_time = self.task_time_input.text()
+        if not task_name or not task_time:
+            QMessageBox.warning(self, "Error", "Task name and time are required.")
+            return
+        task_time = task_time.replace(",", ".").strip()
+        try:
+            task_time = float(task_time)
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Invalid time format. Please use a number.")
+            return
+        with self.database.session() as session:
+            project = session.query(ServiceProjects).get(self.project_id)
+            project.tasks[task_name] = float(task_time)
+            session.commit()
+            self.accept()
+    def cancel_button_handler(self):
+        self.reject()
+
+
 
 
 
