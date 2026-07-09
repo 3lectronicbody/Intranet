@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox
+    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout
 )
 from PySide6.QtCore import Qt
 
@@ -28,14 +28,18 @@ class ServiceProjectDialog(QDialog):
         tasks_group.setLayout(tasks_layout)
 
         # Square container frame for task rows
-        self.tasks_container = QFrame()
-        self.tasks_list_layout = QVBoxLayout(self.tasks_container)
-        self.tasks_list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
         tasks_scroll = QScrollArea()
         tasks_scroll.setWidgetResizable(True)
-        tasks_scroll.setWidget(self.tasks_container)
         tasks_layout.addWidget(tasks_scroll)
+
+        self.tasks_container = QFrame()
+        self.tasks_list_layout = QGridLayout()
+        self.tasks_container.setLayout(self.tasks_list_layout)
+        self.tasks_list_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        tasks_scroll.setWidget(self.tasks_container)
+
+
 
         # Bottom of task frame button
         self.btn_add_task = QPushButton("Add Task")
@@ -72,43 +76,3 @@ class ServiceProjectDialog(QDialog):
         self.button_box.button(QDialogButtonBox.Cancel).setText("Exit")
         main_layout.addWidget(self.button_box)
 
-    # --- Row UI Component Generators ---
-
-    def create_task_row_ui(self):
-        """Generates a layout containing the task widgets."""
-        row_widget = QWidget()
-        row_layout = QHBoxLayout(row_widget)
-        row_layout.setContentsMargins(0, 5, 0, 5)
-
-        task_name = QLineEdit()
-        task_name.setPlaceholderText("Task Name")
-        task_time = QLineEdit()
-        task_time.setPlaceholderText("Time (hrs)")
-        btn_delete = QPushButton("Delete")
-
-        row_layout.addWidget(task_name)
-        row_layout.addWidget(task_time)
-        row_layout.addWidget(btn_delete)
-
-        return row_widget
-
-    def create_item_row_ui(self):
-        """Generates a layout containing the item widgets."""
-        row_widget = QWidget()
-        row_layout = QHBoxLayout(row_widget)
-        row_layout.setContentsMargins(0, 5, 0, 5)
-
-        item_name = QLineEdit()
-        item_name.setPlaceholderText("Item Name")
-        item_code = QLineEdit()
-        item_code.setPlaceholderText("Code")
-        item_quantity = QLineEdit()
-        item_quantity.setPlaceholderText("Qty")
-        btn_delete = QPushButton("Delete")
-
-        row_layout.addWidget(item_name)
-        row_layout.addWidget(item_code)
-        row_layout.addWidget(item_quantity)
-        row_layout.addWidget(btn_delete)
-
-        return row_widget
