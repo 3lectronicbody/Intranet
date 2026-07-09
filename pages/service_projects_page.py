@@ -1,10 +1,11 @@
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton, \
-    QMessageBox, QListView
+    QMessageBox
 from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 from custom_widgets import CreateServiceProject, EditServiceProject
+from custom_widgets_folder.ServiceProject import ServiceProjectDialog
 from datetime import datetime
 
 
@@ -145,8 +146,10 @@ class ServiceProjectsPage(QWidget):
             # data load
             for index, project in enumerate(projects, start=1):
 
+                # NUMBER LABEL
                 number_label = QLabel(str(project.number))
                 number_label.setStyleSheet("font-weight: bold;")
+                # number label tooltip
                 if project.service_parts:
                     service_parts = ""
                     for i in range(len(project.service_parts)):
@@ -158,7 +161,7 @@ class ServiceProjectsPage(QWidget):
                 if project.tasks:
                     tasks = ""
                     for key, value in project.tasks.items():
-                        tasks += f"<b>Task:<b> {key}Time: {value} hr<br>"
+                        tasks += f"<b>Task:<b> {key}Time: {value if value else 'unknown'} hr<br>"
                 else:
                     tasks = "No tasks"
 
@@ -173,19 +176,19 @@ class ServiceProjectsPage(QWidget):
                 )
                 number_label.setToolTip(tooltip_content)
                 self.data_layout.addWidget(number_label, index, 0)
-
+                # OWNER LABEL
                 owner_label = QLabel(project.owner)
                 tooltip_content = f"Phone: {project.phone_number}\nEmail: {project.email}"
                 owner_label.setToolTip(tooltip_content)
                 self.data_layout.addWidget(owner_label, index, 1)
-
+                # DEVICE LABEL
                 item = project.manufacturer + " " + project.model
                 item_label = QLabel(item)
                 self.data_layout.addWidget(item_label, index, 2)
-
+                # START DATE LABEL
                 start_date_label = QLabel(project.start_date.strftime("%d/%m/%Y"))
                 self.data_layout.addWidget(start_date_label, index, 3)
-
+                # END DATE LABEL
                 if project.end_date:
                     end_date_label = QLabel(project.end_date.strftime("%d/%m/%Y"))
                     end_date_label.setStyleSheet("font-weight: bold;")
@@ -193,26 +196,32 @@ class ServiceProjectsPage(QWidget):
                     end_date_label = QLabel("Pending...")
                     end_date_label.setStyleSheet("color: green;")
                 self.data_layout.addWidget(end_date_label, index, 4)
-
+                # DETAILS BUTTON
                 details_button = QPushButton("Details")
                 details_button.clicked.connect(lambda _,project_id=project.id: self.details_project_button_handler(project_id))
                 self.data_layout.addWidget(details_button, index, 5)
-
+                # EDIT BUTTON
                 edit_button = QPushButton("Edit")
                 if not project.active:
                     edit_button.setDisabled(True)
                     edit_button.setFlat(True)
                 edit_button.clicked.connect(lambda _,project_id=project.id: self.edit_project_button_handler(project_id))
                 self.data_layout.addWidget(edit_button, index, 6)
-
+                # OPEN BUTTON
+                open_button = QPushButton("Open")
+                self.data_layout.addWidget(open_button, index, 7)
+                if not project.active:
+                    open_button.setDisabled(True)
+                    open_button.setFlat(True)
+                open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
+                # COMPLETE BUTTON
                 complete_button = QPushButton("Complete...")
                 if not project.active:
-                    complete_button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
                     complete_button.setDisabled(True)
                     complete_button.setFlat(True)
 
                 complete_button.clicked.connect(lambda _,project_id=project.id: self.complete_button_handler(project_id))
-                self.data_layout.addWidget(complete_button, index, 7)
+                self.data_layout.addWidget(complete_button, index, 8)
 
 
 
@@ -250,6 +259,10 @@ class ServiceProjectsPage(QWidget):
             session.commit()
 
         self.refresh_data()
+    def open_project_button_handler(self, project_id):
+
+        service_project = ServiceProjectDialog(self.database, self.user_id, project_id)
+        service_project.exec()
 
     # Headers sorting functions
     def number_header_clicked(self):

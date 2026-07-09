@@ -13,7 +13,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     app.setStyle("Fusion")
-    # 2. Apply the custom stylesheet
+    # 2. Apply the custom_widgets_folder stylesheet
     current_style = app.styleSheet()
     try:
         custom_css = (Path(__file__).parent.resolve() / "css" / "app_stylesheet.css").read_text(encoding="utf-8")
