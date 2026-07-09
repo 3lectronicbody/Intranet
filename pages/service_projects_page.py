@@ -155,12 +155,21 @@ class ServiceProjectsPage(QWidget):
                 else:
                     service_parts = "No service parts"
 
+                if project.tasks:
+                    tasks = ""
+                    for key, value in project.tasks.items():
+                        tasks += f"<b>Task:<b> {key}Time: {value} hr<br>"
+                else:
+                    tasks = "No tasks"
+
 
                 tooltip_content = (
                     f"<b>Code:</b> {project.code}<br>"
                     f"<b>Serial Number:</b> {project.serial_number}<br>"
-                    f"<b>Description:</b> {project.description}"
-                    f"<b>SERVICE PARTS:</b> {service_parts}"
+                    f"<b>Description:</b> {project.description}<br><br>"
+                    f"<b>SERVICE PARTS:</b> {service_parts}<br><br>"
+                    f"<b>TASKS:</b> {tasks}<br>"
+
                 )
                 number_label.setToolTip(tooltip_content)
                 self.data_layout.addWidget(number_label, index, 0)
