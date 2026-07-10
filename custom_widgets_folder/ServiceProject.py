@@ -82,7 +82,7 @@ class ServiceProjectDialog(QDialog):
         main_layout.addWidget(self.exit_button)
 
         self.refresh_tasks()
-        self.refresh_items()
+        self.refresh_service_parts()
     def refresh_tasks(self):
         clear_layout(self.tasks_list_layout, grid_layout=True)
         with self.database.session() as session:
@@ -96,17 +96,18 @@ class ServiceProjectDialog(QDialog):
                     self.tasks_list_layout.addWidget(task_name_label, counter, 0)
                     task_time_label = QLabel()
                     task_time_label.setText(f"{task['task_time']} hours")
+                    self.tasks_list_layout.addWidget(task_time_label, counter, 1)
                     edit_button = QPushButton("Edit")
-                    self.tasks_list_layout.addWidget(edit_button, counter, 1)
+                    self.tasks_list_layout.addWidget(edit_button, counter, 2)
                     delete_button = QPushButton("Delete")
                     delete_button.clicked.connect(lambda _, task_number=index: self.delete_task(task_number))
-                    self.tasks_list_layout.addWidget(delete_button, counter, 2)
+                    self.tasks_list_layout.addWidget(delete_button, counter, 3)
                     counter += 1
             else:
                 no_tasks_label = QLabel("No tasks added yet.")
                 no_tasks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.tasks_list_layout.addWidget(no_tasks_label, 0, 0, 1, 3)
-    def refresh_items(self):
+    def refresh_service_parts(self):
         clear_layout(self.items_list_layout, grid_layout=True)
         with self.database.session() as session:
             project = session.query(ServiceProjects).get(self.project_id)
@@ -131,8 +132,7 @@ class ServiceProjectDialog(QDialog):
                 no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
 
-    def exit_button_handler(self):
-        self.reject()
+
     def add_task(self):
         dialog = AddTaskDialog(self.database,self.project_id)
         dialog.exec()
@@ -149,10 +149,11 @@ class ServiceProjectDialog(QDialog):
             project.tasks = updated_projects
             session.commit()
             self.refresh_tasks()
-    def add_service_part(self):
+    def edit_task(self, task_number):
         pass
 
-
+    def add_service_part(self):
+        pass
     def delete_service_part(self, part_id):
         confirmation = confirmation_dialog(self, "Delete Item", "Are you sure you want to delete this item?")
         if confirmation == QMessageBox.StandardButton.No:
@@ -161,7 +162,10 @@ class ServiceProjectDialog(QDialog):
             project = session.query(ServiceProjects).get(self.project_id)
             project.service_parts.pop(part_id)
             session.commit()
-            self.refresh_items()
+            self.refresh_service_parts()
+
+    def exit_button_handler(self):
+        self.reject()
 
 
 class AddTaskDialog(QDialog):

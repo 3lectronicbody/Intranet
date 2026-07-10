@@ -161,7 +161,7 @@ class ServiceProjectsPage(QWidget):
                 if project.tasks:
                     tasks = ""
                     for task in project.tasks:
-                        tasks += f"Name: {task['task_name']}<br>Time: {task['task_time']} hours<br>"
+                        tasks += f"{task['task_name']} -> {task['task_time']} hours<br>"
                 else:
                     tasks = "No tasks"
 
@@ -170,8 +170,8 @@ class ServiceProjectsPage(QWidget):
                     f"<b>Code:</b> {project.code}<br>"
                     f"<b>Serial Number:</b> {project.serial_number}<br>"
                     f"<b>Description:</b> {project.description}<br><br>"
-                    f"<b>SERVICE PARTS:</b> {service_parts}<br><br>"
-                    f"<b>TASKS:</b> {tasks}<br>"
+                    f"<b>SERVICE PARTS:</b><br> {service_parts}<br><br>"
+                    f"<b>TASKS:</b><br> {tasks}<br>"
 
                 )
                 number_label.setToolTip(tooltip_content)
