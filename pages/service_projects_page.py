@@ -160,8 +160,8 @@ class ServiceProjectsPage(QWidget):
 
                 if project.tasks:
                     tasks = ""
-                    for key, value in project.tasks.items():
-                        tasks += f"<b>Task:<b> {key}Time: {value if value else 'unknown'} hr<br>"
+                    for task in project.tasks:
+                        tasks += f"Name: {task['task_name']}<br>Time: {task['task_time']} hours<br>"
                 else:
                     tasks = "No tasks"
 
