@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLab
 from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 from custom_widgets import CreateServiceProject, EditServiceProject
-from custom_widgets_folder.ServiceProject import ServiceProjectDialog
+from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
 
 
@@ -262,6 +262,7 @@ class ServiceProjectsPage(QWidget):
     def open_project_button_handler(self, project_id):
 
         service_project = ServiceProjectDialog(self.database, self.user_id, project_id)
+        service_project.refresh_signal.connect(self.refresh_data)
         service_project.exec()
 
     # Headers sorting functions

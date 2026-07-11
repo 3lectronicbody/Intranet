@@ -775,23 +775,25 @@ class CreateServiceProject(QDialog):
 
 
     def create_button_handler(self):
-        formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
-        with self.database.session() as session:
-            new_project = ServiceProjects(number=self.number_input.text(),
-                                         start_date=formatted_date,
-                                         owner=self.owner_input.text(),
-                                         phone_number=self.phone_number_input.text(),
-                                         email=self.email_input.text(),
-                                         manufacturer=self.manufacturer_input.text(),
-                                         model=self.model_input.text(),
-                                         code=self.code_input.text(),
-                                         serial_number=self.serial_number_input.text(),
-                                         description=self.description_input.toPlainText(),
-            )
-            session.add(new_project)
-            session.commit()
-            self.save_signal.emit()
-            self.accept()
+        confirmation = confirmation_dialog(self, "Create Service Project","Confirm that You want to create project")
+        if confirmation == QMessageBox.Yes:
+            formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
+            with self.database.session() as session:
+                new_project = ServiceProjects(number=self.number_input.text(),
+                                             start_date=formatted_date,
+                                             owner=self.owner_input.text(),
+                                             phone_number=self.phone_number_input.text(),
+                                             email=self.email_input.text(),
+                                             manufacturer=self.manufacturer_input.text(),
+                                             model=self.model_input.text(),
+                                             code=self.code_input.text(),
+                                             serial_number=self.serial_number_input.text(),
+                                             description=self.description_input.toPlainText(),
+                )
+                session.add(new_project)
+                session.commit()
+                self.save_signal.emit()
+                self.accept()
     def cancel_button_handler(self):
         self.reject()
 

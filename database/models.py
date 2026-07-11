@@ -161,7 +161,7 @@ class ServiceProjects(Base):
     service_parts: Mapped[list[dict] | None] = mapped_column(JSON, nullable=True)
     pdf_form: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
-    # tasks scheme -> # [{task_name: name, task_time: time}]
+    # tasks scheme -> # [{task_name: name, task_time: time, task_date: date}]
 
     # service_parts scheme ->[{name:part_name,code: code, quantity:quantity}]
 
