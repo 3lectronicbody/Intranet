@@ -152,9 +152,10 @@ class ServiceProjectsPage(QWidget):
                 # number label tooltip
                 if project.service_parts:
                     service_parts = ""
-                    for i in range(len(project.service_parts)):
-                        service_parts += (f"Name: {project.service_parts[i][0]}<br>Code: {project.service_parts[i][1]}<br>"
-                                          f"Quantity: {project.service_parts[i][2]}<br>")
+                    for part in project.service_parts:
+                        service_parts += (f"Name: {part['name']}<br>"
+                                          f"Code: {part['code']}<br>"
+                                          f"Quantity: {part['quantity']}<br>")
                 else:
                     service_parts = "No service parts"
 
@@ -224,7 +225,7 @@ class ServiceProjectsPage(QWidget):
                 self.data_layout.addWidget(complete_button, index, 8)
 
 
-
+    # Main Window
     def dropdown_change_handler(self):
         self.refresh_data()
     def searchbar_change_handler(self):
@@ -235,7 +236,7 @@ class ServiceProjectsPage(QWidget):
         self.dialog.exec()
     def cancel_button_handler(self):
         self.back_signal.emit()
-    # Service project
+    # Single Service project buttons
     def edit_project_button_handler(self, project_id):
         # Edit service project
         self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=True)

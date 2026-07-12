@@ -907,6 +907,9 @@ class EditServiceProject(QDialog):
         self.main_layout_vertical.addWidget(self.activate_button)
         self.activate_button.clicked.connect(lambda _, pid=project_id: self.activate_button_handler(pid))
 
+        self.delete_project_button = QPushButton("Delete Project")
+        self.main_layout_vertical.addWidget(self.delete_project_button)
+        self.delete_project_button.clicked.connect(self.delete_project_button_handler)
 
         self.button_layout = QHBoxLayout()
         self.main_layout_vertical.addLayout(self.button_layout)
@@ -987,6 +990,19 @@ class EditServiceProject(QDialog):
             self.save_signal.emit()
             self.close()
             return
+
+    def delete_project_button_handler(self):
+        warning = confirmation_dialog(self, "Warning?", "Are you sure you want to delete this project?\n"
+                                                        "This action cannot be undone.")
+        if warning == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                session.query(ServiceProjects).filter(ServiceProjects.id == self.project_id).delete()
+                session.commit()
+                self.save_signal.emit()
+                self.accept()
+
+
+
 
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")

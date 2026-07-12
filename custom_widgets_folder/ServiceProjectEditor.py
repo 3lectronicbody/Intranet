@@ -69,20 +69,19 @@ class ServiceProjectDialog(QDialog):
         items_layout.addWidget(items_scroll)
 
         # Bottom of item frame button
-        self.btn_add_item = QPushButton("Add Item")
-        items_layout.addWidget(self.btn_add_item)
+
+        self.add_service_part = QPushButton("Add Service Part")
+        self.add_service_part.clicked.connect(self.add_service_part_handler)
+        items_layout.addWidget(self.add_service_part)
         main_layout.addWidget(items_group)
 
         # ==========================================
         # 3. BOTTOM BUTTON LAYOUT
         # ==========================================
-        """self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        self.button_box.button(QDialogButtonBox.Save).setText("Save")
-        self.button_box.button(QDialogButtonBox.Cancel).setText("Exit")
-        main_layout.addWidget(self.button_box)"""
-        self.exit_button = QPushButton("Exit")
-        self.exit_button.clicked.connect(self.exit_button_handler)
-        main_layout.addWidget(self.exit_button)
+
+        self.back_button = QPushButton("Back")
+        self.back_button.clicked.connect(self.exit_button_handler)
+        main_layout.addWidget(self.back_button)
 
         self.refresh_tasks()
         self.refresh_service_parts()
@@ -122,9 +121,9 @@ class ServiceProjectDialog(QDialog):
             counter = 0
             if service_parts_list:
                 for part in service_parts_list:
-                    part_name_label = QLabel(part[0] or "")
-                    part_code_label = QLabel(part[1] or "")
-                    part_quantity_label = QLabel(part[2] or "")
+                    part_name_label = QLabel(part['name'] or "")
+                    part_code_label = QLabel(part['code'] or "")
+                    part_quantity_label = QLabel(str(part['quantity']) or "")
                     self.items_list_layout.addWidget(part_name_label, counter, 0)
                     self.items_list_layout.addWidget(part_code_label, counter, 1)
                     self.items_list_layout.addWidget(part_quantity_label, counter, 2)
@@ -161,17 +160,21 @@ class ServiceProjectDialog(QDialog):
         edit_dialog.save_signal.connect(self.refresh_tasks)
         edit_dialog.exec()
 
-    def add_service_part(self):
-        pass
+    def add_service_part_handler(self):
+        add_service_part_dialog = AddServicePartDialog(self.database,self.project_id)
+        add_service_part_dialog.refresh_signal.connect(self.refresh_service_parts)
+        add_service_part_dialog.exec()
     def delete_service_part(self, part_id):
         confirmation = confirmation_dialog(self, "Delete Item", "Are you sure you want to delete this item?")
         if confirmation == QMessageBox.StandardButton.No:
             return
         with self.database.session() as session:
             project = session.query(ServiceProjects).get(self.project_id)
-            project.service_parts.pop(part_id)
+            service_parts = copy.deepcopy(project.service_parts)
+            service_parts.pop(part_id)
+            project.service_parts = service_parts
             session.commit()
-            self.refresh_service_parts()
+        self.refresh_service_parts()
 
     def exit_button_handler(self):
         self.refresh_signal.emit()
@@ -179,27 +182,27 @@ class ServiceProjectDialog(QDialog):
 
 
 class AddTaskDialog(QDialog):
-    def __init__(self, database, project_id, parent=None, edit=False):
+    def __init__(self, database, project_id, parent=None):
         super().__init__(parent)
         self.database = database
         self.project_id=project_id
         self.parent = parent
 
         self.setWindowTitle("Add Task")
-        self_layout = QGridLayout()
-        self.setLayout(self_layout)
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
         self.task_name_input = QLineEdit()
-        self.task_name_input.setPlaceholderText("Task Name")
-        self_layout.addWidget(self.task_name_input, 0, 0, 1, 2)
+        self.task_name_input.setPlaceholderText("Name...")
+        self.layout.addWidget(self.task_name_input, 0, 0, 1, 2)
         self.task_time_input = QLineEdit()
-        self.task_time_input.setPlaceholderText("Task Time (hours)")
-        self_layout.addWidget(self.task_time_input, 1, 0, 1, 2)
+        self.task_time_input.setPlaceholderText("Time(h)...")
+        self.layout.addWidget(self.task_time_input, 1, 0, 1, 2)
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.save_button_handler)
-        self_layout.addWidget(self.save_button, 2, 0)
+        self.layout.addWidget(self.save_button, 2, 0)
         self.cancel_button = QPushButton("Cancel")
         self.cancel_button.clicked.connect(self.reject)
-        self_layout.addWidget(self.cancel_button, 2, 1)
+        self.layout.addWidget(self.cancel_button, 2, 1)
     def save_button_handler(self):
         task_name = self.task_name_input.text()
         task_time = self.task_time_input.text() or ""
@@ -279,6 +282,59 @@ class EditTaskDialog(QDialog):
             session.commit()
         self.save_signal.emit()
         self.accept()
+class AddServicePartDialog(QDialog):
+    refresh_signal = Signal()
+    def __init__(self, database, project_id, parent=None):
+        super().__init__(parent)
+        self.database = database
+        self.project_id=project_id
+        self.parent = parent
+        self.setWindowTitle("Add Service Part")
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.part_name_input = QLineEdit()
+        self.part_name_input.setPlaceholderText("Name...")
+        self.layout.addWidget(self.part_name_input, 0, 0, 1, 2)
+        self.part_code_input = QLineEdit()
+        self.part_code_input.setPlaceholderText("Code...")
+        self.layout.addWidget(self.part_code_input, 1, 0, 1, 2)
+        self.service_part_quantity_input = QLineEdit()
+        self.service_part_quantity_input.setPlaceholderText("Quantity...")
+        self.layout.addWidget(self.service_part_quantity_input, 2, 0, 1, 2)
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.save_button_handler)
+        self.layout.addWidget(self.save_button, 3, 0)
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        self.layout.addWidget(self.cancel_button, 3, 1)
+    def save_button_handler(self):
+        part_name = self.part_name_input.text()
+        part_code = self.part_code_input.text()
+        part_quantity = self.service_part_quantity_input.text().replace(",", ".").strip()
+        if not part_name:
+            QMessageBox.warning(self, "Error", "Service Part name is required.")
+            return
+        if not part_quantity:
+            QMessageBox.warning(self, "Error", "Service Part quantity is required.")
+            return
+        with self.database.session() as session:
+            project = session.get(ServiceProjects, self.project_id)
+            if not project:
+                QMessageBox.warning(self, "Error", "Project no longer exists.")
+                return
+            try:
+                part_quantity = float(part_quantity)
+            except ValueError:
+                QMessageBox.warning(self, "Error", "Invalid quantity format. Please use a number.")
+                return
+            updated_service_parts = copy.deepcopy(project.service_parts) if project.service_parts else []
+            updated_service_parts.append({"name": part_name, "code": part_code, "quantity": part_quantity})
+            project.service_parts = updated_service_parts
+            session.commit()
+        self.accept()
+        self.refresh_signal.emit()
+
 
 
 
