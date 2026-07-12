@@ -808,6 +808,11 @@ class EditServiceProject(QDialog):
         self.project_id = project_id
         self.parent = parent
 
+        self.activate_slot = None
+        self.complete_slot = None
+
+
+
 
         with self.database.session() as session:
             self.project = session.query(ServiceProjects).get(self.project_id)
@@ -955,12 +960,52 @@ class EditServiceProject(QDialog):
             self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
 
+        try:
+            self.activate_button.disconnect()
+        except TypeError, RuntimeError:
+            pass
+
         if self.project.active:
             self.activate_button.setText("Complete")
-            self.activate_button.clicked.connect(lambda _, pid=self.project_id, active=True: self.activate_complete_button_handler(pid, active))
+            self.complete_slot = lambda _, pid=self.project_id, active=True: self.activate_complete_button_handler(pid, active)
+            self.activate_button.clicked.connect(self.complete_slot)
         else:
             self.activate_button.setText("Activate")
-            self.activate_button.clicked.connect(lambda _, pid=self.project_id, active=False: self.activate_complete_button_handler(pid, active))
+            self.activate_slot = lambda _, pid=self.project_id, active=False: self.activate_complete_button_handler(pid, active)
+            self.activate_button.clicked.connect(self.activate_slot)
+    def activate_complete_button_handler(self, project_id, active):
+        if not active:
+            confirmation = confirmation_dialog(self, "Activate Service Project",
+                                               f"Are you sure you want to activate Service Project "
+                                               f"{self.number_input.text()}?")
+            if confirmation == QMessageBox.StandardButton.Yes:
+                with self.database.session() as session:
+                    project = session.query(ServiceProjects).get(project_id)
+                    project.active = True
+                    project.end_date = None
+                    session.commit()
+                self.save_signal.emit()
+                self.refresh()
+                return
+            else:
+                self.refresh()
+                return
+        if active:
+            # Deactivate the project
+            confirmation = confirmation_dialog(self, title="Confirmation",
+                                           message="Are you sure you want to complete this project?")
+            if confirmation == QMessageBox.Yes:
+                with self.database.session() as session:
+                    project = session.query(ServiceProjects).get(project_id)
+                    project.active = False
+                    project.end_date = datetime.now()
+                    session.commit()
+                self.save_signal.emit()
+                self.refresh()
+                return
+            else:
+
+                return
     def save_button_handler(self):
 
         with self.database.session() as session:
@@ -978,31 +1023,7 @@ class EditServiceProject(QDialog):
             self.accept()
     def cancel_button_handler(self):
         self.reject()
-    def activate_complete_button_handler(self, project_id, active):
-        if not active:
-            confirmation = confirmation_dialog(self, "Activate Service Project",
-                                               f"Are you sure you want to activate Service Project "
-                                               f"{self.number_input.text()}?")
-            if confirmation == QMessageBox.StandardButton.Yes:
-                with self.database.session() as session:
-                    project = session.query(ServiceProjects).get(project_id)
-                    project.active = True
-                    project.end_date = None
-                    session.commit()
 
-                self.save_signal.emit()
-                self.close()
-                return
-            # Deactivate the project
-        confirmation = confirmation_dialog(self, title="Confirmation",
-                                           message="Are you sure you want to complete this project?")
-        if confirmation == QMessageBox.Yes:
-            with self.database.session() as session:
-                project = session.query(ServiceProjects).get(project_id)
-                project.active = False
-                project.end_date = datetime.now()
-                session.commit()
-            self.refresh()
     def delete_project_button_handler(self):
         warning = confirmation_dialog(self, "Warning?", "Are you sure you want to delete this project?\n"
                                                         "This action cannot be undone.")
@@ -1012,9 +1033,6 @@ class EditServiceProject(QDialog):
                 session.commit()
                 self.save_signal.emit()
                 self.accept()
-
-
-
 
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
