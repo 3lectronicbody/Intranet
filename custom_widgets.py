@@ -1,3 +1,5 @@
+from multiprocessing import connection
+
 from PySide6 import QtGui, QtCore
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
@@ -903,9 +905,9 @@ class EditServiceProject(QDialog):
 
 
         self.main_layout_vertical.addStretch(1)
-        self.activate_button = QPushButton("Activate")
+        self.activate_button = QPushButton("__refresh__")
         self.main_layout_vertical.addWidget(self.activate_button)
-        self.activate_button.clicked.connect(lambda _, pid=project_id: self.activate_button_handler(pid))
+
 
         self.delete_project_button = QPushButton("Delete Project")
         self.main_layout_vertical.addWidget(self.delete_project_button)
@@ -930,8 +932,9 @@ class EditServiceProject(QDialog):
         self.refresh()
 
         # self.inputs.append(self.description_input)
-        for i in self.inputs:
-            i.textChanged.connect(self.save_button_enabler)
+        if editable:
+            for i in self.inputs:
+                i.textChanged.connect(self.save_button_enabler)
 
     def refresh(self):
         with self.database.session() as session:
@@ -951,13 +954,13 @@ class EditServiceProject(QDialog):
             self.pdf_button.setText("Create")
             self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
+
         if self.project.active:
-            self.activate_button.setDisabled(True)
-
-
-
-
-
+            self.activate_button.setText("Complete")
+            self.activate_button.clicked.connect(lambda _, pid=self.project_id, active=True: self.activate_complete_button_handler(pid, active))
+        else:
+            self.activate_button.setText("Activate")
+            self.activate_button.clicked.connect(lambda _, pid=self.project_id, active=False: self.activate_complete_button_handler(pid, active))
     def save_button_handler(self):
 
         with self.database.session() as session:
@@ -975,22 +978,31 @@ class EditServiceProject(QDialog):
             self.accept()
     def cancel_button_handler(self):
         self.reject()
+    def activate_complete_button_handler(self, project_id, active):
+        if not active:
+            confirmation = confirmation_dialog(self, "Activate Service Project",
+                                               f"Are you sure you want to activate Service Project "
+                                               f"{self.number_input.text()}?")
+            if confirmation == QMessageBox.StandardButton.Yes:
+                with self.database.session() as session:
+                    project = session.query(ServiceProjects).get(project_id)
+                    project.active = True
+                    project.end_date = None
+                    session.commit()
 
-    def activate_button_handler(self, project_id):
-        confirmation = confirmation_dialog(self, "Activate Service Project",
-                                           f"Are you sure you want to activate Service Project "
-                                           f"{self.number_input.text()}?")
-        if confirmation == QMessageBox.StandardButton.Yes:
+                self.save_signal.emit()
+                self.close()
+                return
+            # Deactivate the project
+        confirmation = confirmation_dialog(self, title="Confirmation",
+                                           message="Are you sure you want to complete this project?")
+        if confirmation == QMessageBox.Yes:
             with self.database.session() as session:
                 project = session.query(ServiceProjects).get(project_id)
-                project.active = True
-                project.end_date = None
+                project.active = False
+                project.end_date = datetime.now()
                 session.commit()
-                self.activate_button.setEnabled(False)
-            self.save_signal.emit()
-            self.close()
-            return
-
+            self.refresh()
     def delete_project_button_handler(self):
         warning = confirmation_dialog(self, "Warning?", "Are you sure you want to delete this project?\n"
                                                         "This action cannot be undone.")
@@ -1057,7 +1069,7 @@ class EditServiceProject(QDialog):
             self.project.code.strip() != self.code_input.text().strip() or \
             self.project.serial_number.strip() != self.serial_number_input.text().strip() or \
             self.project.description.strip() != self.description_input.toPlainText().strip():
-                self.save_button.setEnabled(True)
+            self.save_button.setEnabled(True)
         else:
             self.save_button.setEnabled(False)
 

@@ -215,14 +215,6 @@ class ServiceProjectsPage(QWidget):
                     open_button.setDisabled(True)
                     open_button.setFlat(True)
                 open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
-                # COMPLETE BUTTON
-                complete_button = QPushButton("Complete...")
-                if not project.active:
-                    complete_button.setDisabled(True)
-                    complete_button.setFlat(True)
-
-                complete_button.clicked.connect(lambda _,project_id=project.id: self.complete_button_handler(project_id))
-                self.data_layout.addWidget(complete_button, index, 8)
 
 
     # Main Window
@@ -247,19 +239,7 @@ class ServiceProjectsPage(QWidget):
         self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=False)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
-    def complete_button_handler(self, project_id):
-        # Deactivate the project
-        confirmation = confirmation_dialog(self, title="Confirmation",
-                                           message="Are you sure you want to complete this project?")
-        if confirmation == QMessageBox.No:
-            return
-        with self.database.session() as session:
-            project = session.query(ServiceProjects).get(project_id)
-            project.active = False
-            project.end_date = datetime.now()
-            session.commit()
 
-        self.refresh_data()
     def open_project_button_handler(self, project_id):
 
         service_project = ServiceProjectDialog(self.database, self.user_id, project_id)
