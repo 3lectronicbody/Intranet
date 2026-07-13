@@ -10,7 +10,7 @@ from pages.employees_page import EmployeesPage
 from pages.service_projects_page import ServiceProjectsPage
 from helper_functions import confirmation_dialog
 
-from custom_widgets import MenuBar
+from custom_widgets_folder.custom_widgets import MenuBar
 
 class MainFrame(QMainWindow):
     def __init__(self, database=None):

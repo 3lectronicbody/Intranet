@@ -1,9 +1,9 @@
 from PySide6.QtGui import Qt
-from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox, QMenuBar
+from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
 
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
-from custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
+from custom_widgets_folder.custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
 from helper_functions import confirmation_dialog
 
 

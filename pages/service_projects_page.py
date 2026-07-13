@@ -1,11 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton, \
-    QMessageBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
 from database.models import ServiceProjects
-from helper_functions import clear_layout, confirmation_dialog
-from custom_widgets import CreateServiceProject, EditServiceProject
-from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
+from helper_functions import clear_layout
+from custom_widgets_folder.custom_widgets import CreateServiceProject, EditServiceProject
+from custom_widgets_folder.ServiceProjectDialog import ServiceProjectDialog
 from datetime import datetime
 
 
@@ -197,20 +196,13 @@ class ServiceProjectsPage(QWidget):
                     end_date_label = QLabel("Pending...")
                     end_date_label.setStyleSheet("color: green;")
                 self.data_layout.addWidget(end_date_label, index, 4)
-                # DETAILS BUTTON
-                details_button = QPushButton("Details")
-                details_button.clicked.connect(lambda _,project_id=project.id: self.details_project_button_handler(project_id))
-                self.data_layout.addWidget(details_button, index, 5)
                 # EDIT BUTTON
                 edit_button = QPushButton("Edit")
-                if not project.active:
-                    edit_button.setDisabled(True)
-                    edit_button.setFlat(True)
                 edit_button.clicked.connect(lambda _,project_id=project.id: self.edit_project_button_handler(project_id))
-                self.data_layout.addWidget(edit_button, index, 6)
+                self.data_layout.addWidget(edit_button, index, 5)
                 # OPEN BUTTON
                 open_button = QPushButton("Open")
-                self.data_layout.addWidget(open_button, index, 7)
+                self.data_layout.addWidget(open_button, index, 6)
                 if not project.active:
                     open_button.setDisabled(True)
                     open_button.setFlat(True)
@@ -231,12 +223,7 @@ class ServiceProjectsPage(QWidget):
     # Single Service project buttons
     def edit_project_button_handler(self, project_id):
         # Edit service project
-        self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=True)
-        self.dialog.save_signal.connect(self.refresh_data)
-        self.dialog.exec()
-    def details_project_button_handler(self, project_id):
-        # Service project details
-        self.dialog = EditServiceProject(self.database, self.user_id, project_id, editable=False)
+        self.dialog = EditServiceProject(self.database, self.user_id, project_id)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
 

@@ -1,8 +1,7 @@
 from PySide6.QtCore import Signal, Qt, QTimer
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEdit, QVBoxLayout, QHBoxLayout, \
+from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEdit, QHBoxLayout, \
     QMessageBox
-from custom_widgets import CustomPushButton
+from custom_widgets_folder.custom_widgets import CustomPushButton
 from database.models import Users
 import platform
 import ctypes

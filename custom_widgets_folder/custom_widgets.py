@@ -801,24 +801,21 @@ class CreateServiceProject(QDialog):
 
 class EditServiceProject(QDialog):
     save_signal = Signal()
-    def __init__(self, database, user_id, project_id, parent=None, editable=True):
+    def __init__(self, database, user_id, project_id, parent=None):
         super().__init__(parent)
         self.database = database
         self.user_id = user_id
         self.project_id = project_id
         self.parent = parent
 
+        self.deactivate_slot = None
         self.activate_slot = None
-        self.complete_slot = None
-
-
 
 
         with self.database.session() as session:
             self.project = session.query(ServiceProjects).get(self.project_id)
 
         self.setWindowTitle("Edit Service Project")
-        self.setWindowTitle("View Service Project") if not editable else self.setWindowTitle("Edit Service Project")
 
         self.main_layout_vertical = QVBoxLayout()
         self.setLayout(self.main_layout_vertical)
@@ -892,9 +889,6 @@ class EditServiceProject(QDialog):
         self.layout.addWidget(self.description_input, 9, 1)
         self.inputs.append(self.description_input)
 
-        if not editable:
-            for i in self.inputs:
-                i.setReadOnly(True)
 
         self.pdf_form_frame = QFrame()
         self.pdf_form_frame.setFrameShape(QFrame.StyledPanel)  # Gives it a neat standard border
@@ -908,7 +902,6 @@ class EditServiceProject(QDialog):
         self.layout.addWidget(self.pdf_form_frame, 10, 0, 1, 2)
 
 
-
         self.main_layout_vertical.addStretch(1)
         self.activate_button = QPushButton("__refresh__")
         self.main_layout_vertical.addWidget(self.activate_button)
@@ -920,26 +913,21 @@ class EditServiceProject(QDialog):
 
         self.button_layout = QHBoxLayout()
         self.main_layout_vertical.addLayout(self.button_layout)
-        if editable:
-            self.save_button = QPushButton("Save")
-            self.save_button.setDisabled(True)
-            self.button_layout.addWidget(self.save_button)
-            self.save_button.clicked.connect(self.save_button_handler)
-            self.cancel_button = QPushButton("Cancel")
-            self.button_layout.addWidget(self.cancel_button)
-            self.cancel_button.clicked.connect(self.cancel_button_handler)
 
-        else:
-            self.cancel_button = QPushButton("Close")
-            self.main_layout_vertical.addWidget(self.cancel_button)
-            self.cancel_button.clicked.connect(self.cancel_button_handler)
+        self.save_button = QPushButton("Save")
+        self.save_button.setDisabled(True)
+        self.button_layout.addWidget(self.save_button)
+        self.save_button.clicked.connect(self.save_button_handler)
+        self.cancel_button = QPushButton("Cancel")
+        self.button_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.cancel_button_handler)
+
 
         self.refresh()
 
         # self.inputs.append(self.description_input)
-        if editable:
-            for i in self.inputs:
-                i.textChanged.connect(self.save_button_enabler)
+        for i in self.inputs:
+            i.textChanged.connect(self.save_button_enabler)
 
     def refresh(self):
         with self.database.session() as session:
@@ -960,52 +948,49 @@ class EditServiceProject(QDialog):
             self.pdf_button.clicked.connect(lambda _, pid=self.project_id: self.create_pdf_form(pid))
 
 
-        try:
-            self.activate_button.disconnect()
-        except TypeError, RuntimeError:
-            pass
 
         if self.project.active:
             self.activate_button.setText("Complete")
-            self.complete_slot = lambda _, pid=self.project_id, active=True: self.activate_complete_button_handler(pid, active)
-            self.activate_button.clicked.connect(self.complete_slot)
+            self.deactivate_slot = lambda _, pid=self.project_id, active=True: self.deactivate_service_project(pid)
+            self.activate_button.clicked.connect(self.deactivate_slot)
         else:
             self.activate_button.setText("Activate")
-            self.activate_slot = lambda _, pid=self.project_id, active=False: self.activate_complete_button_handler(pid, active)
+            self.activate_slot = lambda _, pid=self.project_id, active=False: self.activate_service_project(pid)
             self.activate_button.clicked.connect(self.activate_slot)
-    def activate_complete_button_handler(self, project_id, active):
-        if not active:
-            confirmation = confirmation_dialog(self, "Activate Service Project",
-                                               f"Are you sure you want to activate Service Project "
-                                               f"{self.number_input.text()}?")
-            if confirmation == QMessageBox.StandardButton.Yes:
-                with self.database.session() as session:
-                    project = session.query(ServiceProjects).get(project_id)
-                    project.active = True
-                    project.end_date = None
-                    session.commit()
-                self.save_signal.emit()
-                self.refresh()
-                return
-            else:
-                self.refresh()
-                return
-        if active:
-            # Deactivate the project
-            confirmation = confirmation_dialog(self, title="Confirmation",
-                                           message="Are you sure you want to complete this project?")
-            if confirmation == QMessageBox.Yes:
-                with self.database.session() as session:
-                    project = session.query(ServiceProjects).get(project_id)
-                    project.active = False
-                    project.end_date = datetime.now()
-                    session.commit()
-                self.save_signal.emit()
-                self.refresh()
-                return
-            else:
+    def activate_service_project(self, project_id):
 
-                return
+        confirmation = confirmation_dialog(self, "Activate Service Project",
+                                           f"Are you sure you want to activate Service Project "
+                                           f"{self.number_input.text()}?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                project.active = True
+                project.end_date = None
+                session.commit()
+            self.save_signal.emit()
+            self.activate_button.clicked.disconnect(self.activate_slot)
+            self.refresh()
+        else:
+            self.refresh()
+ 
+    def deactivate_service_project(self, project_id):
+        confirmation = confirmation_dialog(self, "Complete Service Project",
+                                           f"Are you sure you want to deactivate Service Project "
+                                           f"{self.number_input.text()}?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(project_id)
+                project.active = False
+                project.end_date = datetime.now()
+                session.commit()
+            self.save_signal.emit()
+            self.activate_button.clicked.disconnect(self.deactivate_slot)
+            self.refresh()
+            self.accept()
+        else:
+            self.refresh()
+
     def save_button_handler(self):
 
         with self.database.session() as session:
@@ -1039,7 +1024,7 @@ class EditServiceProject(QDialog):
         if confirmation == QMessageBox.StandardButton.Yes:
             with self.database.session() as session:
                 project = session.query(ServiceProjects).get(project_id)
-                empty_pdf_form_path = "files/service_form.pdf"
+                empty_pdf_form_path = "../files/service_form.pdf"
                 pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
                 writer = pypdf.PdfWriter()
                 writer.append(pdf_reader)

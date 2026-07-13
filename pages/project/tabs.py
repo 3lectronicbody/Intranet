@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame, QMessageBox, QVBoxLayout
 from database.models import ProjectDetails
 from helper_functions import clear_layout
-from custom_widgets import EditItem, EditActivity, EditToDo
+from custom_widgets_folder.custom_widgets import EditItem, EditActivity, EditToDo
 from helper_functions import confirmation_dialog
 from PySide6.QtGui import Qt
 

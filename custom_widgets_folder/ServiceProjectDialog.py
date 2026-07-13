@@ -138,7 +138,6 @@ class ServiceProjectDialog(QDialog):
                 no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
 
-
     def add_task(self):
         dialog = AddTaskDialog(self.database,self.project_id)
         dialog.exec()
@@ -159,7 +158,6 @@ class ServiceProjectDialog(QDialog):
         edit_dialog = EditTaskDialog(self.database,self.project_id,task_number)
         edit_dialog.save_signal.connect(self.refresh_tasks)
         edit_dialog.exec()
-
     def add_service_part_handler(self):
         add_service_part_dialog = AddServicePartDialog(self.database,self.project_id)
         add_service_part_dialog.refresh_signal.connect(self.refresh_service_parts)
@@ -175,7 +173,6 @@ class ServiceProjectDialog(QDialog):
             project.service_parts = service_parts
             session.commit()
         self.refresh_service_parts()
-
     def exit_button_handler(self):
         self.refresh_signal.emit()
         self.reject()
