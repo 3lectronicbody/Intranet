@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from PySide6 import QtGui, QtCore
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
@@ -10,6 +8,7 @@ from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 import copy
 import tempfile
+from datetime import datetime
 
 class ServiceProjectDialog(QDialog):
     refresh_signal = Signal()
@@ -139,6 +138,7 @@ class ServiceProjectDialog(QDialog):
                     self.items_list_layout.addWidget(part_code_label, counter, 1)
                     self.items_list_layout.addWidget(part_quantity_label, counter, 2)
                     edit_button = QPushButton("Edit")
+                    edit_button.clicked.connect(lambda _, part_id=counter: self.edit_service_part(part_id))
                     self.items_list_layout.addWidget(edit_button, counter, 3)
                     delete_button = QPushButton("Delete")
                     delete_button.clicked.connect(lambda _, part_id=counter: self.delete_service_part(part_id))
@@ -177,6 +177,10 @@ class ServiceProjectDialog(QDialog):
     def edit_task(self, task_number):
         edit_dialog = EditTaskDialog(self.database,self.project_id,task_number)
         edit_dialog.save_signal.connect(self.refresh_tasks)
+        edit_dialog.exec()
+    def edit_service_part(self, part_id):
+        edit_dialog = EditServicePartDialog(self.database,self.project_id,part_id)
+        edit_dialog.save_signal.connect(self.refresh_service_parts)
         edit_dialog.exec()
     def add_service_part_handler(self):
         add_service_part_dialog = AddServicePartDialog(self.database,self.project_id)
@@ -238,7 +242,6 @@ class ServiceProjectDialog(QDialog):
                     QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
             else:
                 print("PDF form not found.")
-
 
 class AddTaskDialog(QDialog):
     def __init__(self, database, project_id, parent=None):
@@ -393,6 +396,56 @@ class AddServicePartDialog(QDialog):
             session.commit()
         self.accept()
         self.refresh_signal.emit()
+class EditServicePartDialog(QDialog):
+    save_signal = Signal()
+    def __init__(self, database, project_id, part_number, parent=None):
+        super().__init__(parent)
+        self.database = database
+        self.project_id = project_id
+        self.part_number = part_number
+        self.parent = parent
+
+        with self.database.session() as session:
+            part = session.query(ServiceProjects).get(self.project_id).service_parts[self.part_number]
+
+        self.setWindowTitle("Edit Task")
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.part_name_input = QLineEdit()
+        self.part_name_input.setText(part["name"])
+        self.layout.addWidget(self.part_name_input, 0, 0, 1, 2)
+
+        self.part_code_input = QLineEdit()
+        self.part_code_input.setText(part["code"])
+        self.layout.addWidget(self.part_code_input, 1, 0, 1, 2)
+
+        self.part_quantity_input = QLineEdit()
+        self.part_quantity_input.setText(str(part["quantity"]) if part["quantity"] else "")
+        self.layout.addWidget(self.part_quantity_input, 2, 0, 1, 2)
+
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(lambda: self.save_button_handler(self.part_number))
+        self.layout.addWidget(self.save_button, 3, 0)
+        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button.clicked.connect(self.reject)
+        self.layout.addWidget(self.cancel_button, 3, 1)
+
+    def save_button_handler(self, part_number):
+        part_name = self.part_name_input.text()
+        part_code = self.part_code_input.text()
+        part_quantity = self.part_quantity_input.text() or ""
+        with self.database.session() as session:
+            # update entire list of tasks
+            project = session.get(ServiceProjects, self.project_id)
+            parts = project.service_parts
+            updated_parts = copy.deepcopy(parts)
+            updated_parts[part_number]["name"] = part_name
+            updated_parts[part_number]["code"] = part_code
+            updated_parts[part_number]["quantity"] = part_quantity.replace(",", ".").strip() if part_quantity else None
+            project.service_parts = updated_parts
+            session.commit()
+        self.save_signal.emit()
+        self.accept()
 
 
 

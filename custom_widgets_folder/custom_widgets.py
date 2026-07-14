@@ -827,9 +827,6 @@ class CreateServiceProject(QDialog):
                 project.pdf_form = bytes_stream.getvalue()  # get the content of the BytesIO object
                 session.commit()
 
-
-
-
 class EditServiceProject(QDialog):
     save_signal = Signal()
     def __init__(self, database, user_id, project_id, parent=None):
