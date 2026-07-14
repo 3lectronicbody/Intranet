@@ -86,6 +86,9 @@ class ServiceProjectDialog(QDialog):
         self.open_pdf_form_button = QPushButton("Open PDF Form")
         self.button_layout.addWidget(self.open_pdf_form_button)
         self.open_pdf_form_button.clicked.connect(self.open_pdf_form)
+        self.erase_project_button = QPushButton("Erase Project...")
+        self.button_layout.addWidget(self.erase_project_button)
+
 
 
         self.back_button = QPushButton("Back")

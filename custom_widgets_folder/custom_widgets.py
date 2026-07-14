@@ -701,11 +701,11 @@ class CreateServiceProject(QDialog):
                 last_number = int(last_project.number[-3:])
                 actual_number = last_number + 1
                 formatted_actual_number = f"{actual_number:03d}"
-                actual_number = str(datetime.now().year) + "/" + str(formatted_actual_number)
+                self.actual_number = str(datetime.now().year) + "/" + str(formatted_actual_number)
             else:
-                actual_number = str(datetime.now().year) + "/001"
+                self.actual_number = str(datetime.now().year) + "/001"
         self.number_input = QLineEdit()
-        self.number_input.setText(actual_number)
+        self.number_input.setText(self.actual_number)
         self.number_input.setStyleSheet("color: #3498db; font-weight: bold;")
         self.number_input.setReadOnly(True)
         self.layout.addWidget(self.number_input, 0, 1)
@@ -775,18 +775,27 @@ class CreateServiceProject(QDialog):
     def create_button_handler(self):
         confirmation = confirmation_dialog(self, "Create Service Project","Confirm that You want to create project")
         if confirmation == QMessageBox.Yes:
+            number = self.actual_number
             formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y")
+            owner = self.owner_input.text()
+            phone_number = self.phone_number_input.text()
+            email = self.email_input.text()
+            manufacturer = self.manufacturer_input.text()
+            model = self.model_input.text()
+            code = self.code_input.text()
+            serial_number = self.serial_number_input.text()
+            description = self.description_input.toPlainText()
             with self.database.session() as session:
-                new_project = ServiceProjects(number=self.number_input.text(),
+                new_project = ServiceProjects(number=number,
                                              start_date=formatted_date,
-                                             owner=self.owner_input.text(),
-                                             phone_number=self.phone_number_input.text(),
-                                             email=self.email_input.text(),
-                                             manufacturer=self.manufacturer_input.text(),
-                                             model=self.model_input.text(),
-                                             code=self.code_input.text(),
-                                             serial_number=self.serial_number_input.text(),
-                                             description=self.description_input.toPlainText(),
+                                             owner=owner or "unknown",
+                                             phone_number=phone_number or "unknown",
+                                             email=email or "unknown",
+                                             manufacturer=manufacturer or "unknown",
+                                             model=model or "unknown",
+                                             code=code or "unknown",
+                                             serial_number=serial_number or "unknown",
+                                             description=self.description_input.toPlainText() or "",
                 )
                 session.add(new_project)
                 session.commit()
