@@ -203,9 +203,6 @@ class ServiceProjectsPage(QWidget):
                 # OPEN BUTTON
                 open_button = QPushButton("Open")
                 self.data_layout.addWidget(open_button, index, 6)
-                if not project.active:
-                    open_button.setDisabled(True)
-                    open_button.setFlat(True)
                 open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
 
 

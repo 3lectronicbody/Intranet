@@ -1,14 +1,15 @@
 from datetime import datetime
 
+from PySide6 import QtGui, QtCore
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
     QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox
 )
 from PySide6.QtCore import Qt, Signal
-
 from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 import copy
+import tempfile
 
 class ServiceProjectDialog(QDialog):
     refresh_signal = Signal()
@@ -19,11 +20,11 @@ class ServiceProjectDialog(QDialog):
 
         self.database = database
         self.user_id = user_id
-        self.project_id= project_id
+        self.project_id = project_id
         self.parent = parent
 
         # Main Layout
-        main_layout = QVBoxLayout(self)
+        self.main_layout = QVBoxLayout(self)
 
         # ==========================================
         # 1. TASKS SECTION
@@ -49,7 +50,7 @@ class ServiceProjectDialog(QDialog):
         self.btn_add_task = QPushButton("Add Task")
         self.btn_add_task.clicked.connect(self.add_task)
         tasks_layout.addWidget(self.btn_add_task)
-        main_layout.addWidget(tasks_group)
+        self.main_layout.addWidget(tasks_group)
 
         # ==========================================
         # 2. ITEMS SECTION
@@ -73,18 +74,28 @@ class ServiceProjectDialog(QDialog):
         self.add_service_part = QPushButton("Add Service Part")
         self.add_service_part.clicked.connect(self.add_service_part_handler)
         items_layout.addWidget(self.add_service_part)
-        main_layout.addWidget(items_group)
+        self.main_layout.addWidget(items_group)
 
         # ==========================================
         # 3. BOTTOM BUTTON LAYOUT
         # ==========================================
 
+        self.button_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.button_layout)
+        self.complete_activate_button = QPushButton("")
+        self.button_layout.addWidget(self.complete_activate_button)
+        self.open_pdf_form_button = QPushButton("Open PDF Form")
+        self.button_layout.addWidget(self.open_pdf_form_button)
+        self.open_pdf_form_button.clicked.connect(self.open_pdf_form)
+
+
         self.back_button = QPushButton("Back")
         self.back_button.clicked.connect(self.exit_button_handler)
-        main_layout.addWidget(self.back_button)
+        self.main_layout.addWidget(self.back_button)
 
         self.refresh_tasks()
         self.refresh_service_parts()
+        self.refresh()
     def refresh_tasks(self):
         clear_layout(self.tasks_list_layout, grid_layout=True)
         with self.database.session() as session:
@@ -137,6 +148,15 @@ class ServiceProjectDialog(QDialog):
                 no_items_label = QLabel("No items added yet.")
                 no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
+    def refresh(self):
+        with self.database.session() as session:
+            project = session.get(ServiceProjects, self.project_id)
+        if project.active:
+            self.complete_activate_button.setText("Complete")
+            self.complete_activate_button.clicked.connect(self.deactivate_service_project)
+        else:
+            self.complete_activate_button.setText("Activate")
+            self.complete_activate_button.clicked.connect(self.activate_service_project)
 
     def add_task(self):
         dialog = AddTaskDialog(self.database,self.project_id)
@@ -176,6 +196,48 @@ class ServiceProjectDialog(QDialog):
     def exit_button_handler(self):
         self.refresh_signal.emit()
         self.reject()
+    def activate_service_project(self):
+        confirmation = confirmation_dialog(self, "Activate Service Project",
+                                           f"Are you sure you want to activate Service Project ")
+
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.get(ServiceProjects, self.project_id)
+                project.active = True
+                project.end_date = None
+                session.commit()
+            self.refresh_signal.emit()
+            self.complete_activate_button.clicked.disconnect(self.activate_service_project)
+            self.refresh()
+        else:
+            self.refresh()
+    def deactivate_service_project(self):
+        confirmation = confirmation_dialog(self, "Complete Service Project",
+                                           f"Are you sure you want to deactivate Service Project")
+
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(self.project_id)
+                project.active = False
+                project.end_date = datetime.now()
+                session.commit()
+            self.refresh_signal.emit()
+            self.complete_activate_button.clicked.disconnect(self.deactivate_service_project)
+            self.refresh()
+
+        else:
+            self.refresh()
+
+    def open_pdf_form(self):
+        with self.database.session() as session:
+            project = session.get(ServiceProjects, self.project_id)
+            if project and project.pdf_form:
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_file:
+                    temp_file.write(project.pdf_form)
+                    temp_path = temp_file.name
+                    QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
+            else:
+                print("PDF form not found.")
 
 
 class AddTaskDialog(QDialog):
