@@ -3,8 +3,9 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
 from database.models import ServiceProjects
 from helper_functions import clear_layout
-from custom_widgets_folder.custom_widgets import CreateServiceProject, EditServiceProject
-from custom_widgets_folder.ServiceProjectDialog import ServiceProjectDialog
+from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
+from custom_widgets_folder.EditServiceProject import EditServiceProject
+from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
 
 
