@@ -9,21 +9,32 @@ from helper_functions import clear_layout, confirmation_dialog
 import copy
 import tempfile
 from datetime import datetime
+from custom_widgets_folder.EditServiceProject import EditServiceProject
 
 class ServiceProjectDialog(QDialog):
     refresh_signal = Signal()
     def __init__(self,database, user_id, project_id, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Service Project Editor")
-        self.resize(600, 700)
+        self.resize(1000, 700)
 
         self.database = database
         self.user_id = user_id
         self.project_id = project_id
         self.parent = parent
 
-        # Main Layout
-        self.main_layout = QVBoxLayout(self)
+
+        self.main_layout = QHBoxLayout(self)
+        self.setLayout(self.main_layout)
+
+        self.left_layout = QVBoxLayout()
+        self.main_layout.addLayout(self.left_layout,1)
+        self.edit_project = EditServiceProject(self.database, self.user_id, self.project_id)
+        self.edit_project.save_signal.connect(self.edit_project.refresh)
+        self.left_layout.addWidget(self.edit_project)
+        # Right Layout
+        self.right_layout = QVBoxLayout()
+        self.main_layout.addLayout(self.right_layout,2)
 
         # ==========================================
         # 1. TASKS SECTION
@@ -49,7 +60,7 @@ class ServiceProjectDialog(QDialog):
         self.btn_add_task = QPushButton("Add Task")
         self.btn_add_task.clicked.connect(self.add_task)
         tasks_layout.addWidget(self.btn_add_task)
-        self.main_layout.addWidget(tasks_group)
+        self.right_layout.addWidget(tasks_group)
 
         # ==========================================
         # 2. ITEMS SECTION
@@ -73,14 +84,14 @@ class ServiceProjectDialog(QDialog):
         self.add_service_part = QPushButton("Add Service Part")
         self.add_service_part.clicked.connect(self.add_service_part_handler)
         items_layout.addWidget(self.add_service_part)
-        self.main_layout.addWidget(items_group)
+        self.right_layout.addWidget(items_group)
 
         # ==========================================
         # 3. BOTTOM BUTTON LAYOUT
         # ==========================================
 
         self.button_layout = QHBoxLayout()
-        self.main_layout.addLayout(self.button_layout)
+        self.right_layout.addLayout(self.button_layout)
         self.complete_activate_button = QPushButton("")
         self.button_layout.addWidget(self.complete_activate_button)
         self.open_pdf_form_button = QPushButton("Open PDF Form")
@@ -93,7 +104,7 @@ class ServiceProjectDialog(QDialog):
 
         self.back_button = QPushButton("Back")
         self.back_button.clicked.connect(self.exit_button_handler)
-        self.main_layout.addWidget(self.back_button)
+        self.right_layout.addWidget(self.back_button)
 
         self.refresh_tasks()
         self.refresh_service_parts()

@@ -1,10 +1,11 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton, \
+    QWidget
 
 from database.models import ServiceProjects
 
 
-class EditServiceProject(QDialog):
+class EditServiceProject(QWidget):
     save_signal = Signal()
     def __init__(self, database, user_id, project_id, parent=None):
         super().__init__(parent)
@@ -105,9 +106,6 @@ class EditServiceProject(QDialog):
         self.save_button.setDisabled(True)
         self.button_layout.addWidget(self.save_button)
         self.save_button.clicked.connect(self.save_button_handler)
-        self.cancel_button = QPushButton("Cancel")
-        self.button_layout.addWidget(self.cancel_button)
-        self.cancel_button.clicked.connect(self.cancel_button_handler)
 
 
         self.refresh()
@@ -128,8 +126,6 @@ class EditServiceProject(QDialog):
             self.serial_number_input.setText(self.project.serial_number)
             self.description_input.setText(self.project.description)
 
-
-
     def save_button_handler(self):
 
         with self.database.session() as session:
@@ -144,9 +140,6 @@ class EditServiceProject(QDialog):
             project.description = self.description_input.toPlainText()
             session.commit()
             self.save_signal.emit()
-            self.accept()
-    def cancel_button_handler(self):
-        self.reject()
 
     def save_button_enabler(self, *args):
         # compare state with state after textchange signal triggered in input

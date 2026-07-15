@@ -197,13 +197,9 @@ class ServiceProjectsPage(QWidget):
                     end_date_label = QLabel("Pending...")
                     end_date_label.setStyleSheet("color: green;")
                 self.data_layout.addWidget(end_date_label, index, 4)
-                # EDIT BUTTON
-                edit_button = QPushButton("Edit")
-                edit_button.clicked.connect(lambda _,project_id=project.id: self.edit_project_button_handler(project_id))
-                self.data_layout.addWidget(edit_button, index, 5)
                 # OPEN BUTTON
                 open_button = QPushButton("Open")
-                self.data_layout.addWidget(open_button, index, 6)
+                self.data_layout.addWidget(open_button, index, 5)
                 open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
 
 
@@ -219,11 +215,6 @@ class ServiceProjectsPage(QWidget):
     def cancel_button_handler(self):
         self.back_signal.emit()
     # Single Service project buttons
-    def edit_project_button_handler(self, project_id):
-        # Edit service project
-        self.dialog = EditServiceProject(self.database, self.user_id, project_id)
-        self.dialog.save_signal.connect(self.refresh_data)
-        self.dialog.exec()
 
     def open_project_button_handler(self, project_id):
 
