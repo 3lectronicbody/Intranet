@@ -14,8 +14,16 @@ class EditServiceProject(QWidget):
         self.project_id = project_id
         self.parent = parent
 
-        self.deactivate_slot = None
-        self.activate_slot = None
+        with self.database.session() as session:
+            project= session.get(ServiceProjects, self.project_id)
+            self.current_values = {'owner': project.owner.strip(),
+                                   'phone_number': project.phone_number.strip(),
+                                   'email': project.email.strip(),
+                                   'manufacturer': project.manufacturer.strip(),
+                                   'model': project.model.strip(),
+                                   'code': project.code.strip(),
+                                   'serial_number': project.serial_number.strip(),
+                                   'description':project.description.strip()}
 
 
         with self.database.session() as session:
@@ -118,16 +126,14 @@ class EditServiceProject(QWidget):
                 self.description_input.setText(self.project.description)
 
     def text_changed(self):
-        if (self.project.owner or "").strip() != self.owner_input.text().strip() or \
-            self.project.phone_number.strip() != self.phone_number_input.text().strip() or \
-            self.project.email.strip() != self.email_input.text().strip() or \
-            self.project.manufacturer.strip() != self.manufacturer_input.text().strip() or \
-            self.project.model.strip() != self.model_input.text().strip() or \
-            self.project.code.strip() != self.code_input.text().strip() or \
-            self.project.serial_number.strip() != self.serial_number_input.text().strip() or \
-            self.project.description.strip() != self.description_input.toPlainText().strip():
-            # self.save_button.setEnabled(True)
-
+        if self.current_values['owner'] != self.owner_input.text().strip() or \
+                self.current_values['phone_number'] != self.phone_number_input.text().strip() or \
+                self.current_values['email'] != self.email_input.text().strip() or \
+                self.current_values['manufacturer'] != self.manufacturer_input.text().strip() or \
+                self.current_values['model'] != self.model_input.text().strip() or \
+                self.current_values['code'] != self.code_input.text().strip() or \
+                self.current_values['serial_number'] != self.serial_number_input.text().strip() or \
+                self.current_values['description'] != self.description_input.toPlainText().strip():
             with self.database.session() as session:
                 project = session.query(ServiceProjects).get(self.project_id)
                 project.owner = self.owner_input.text()
@@ -139,5 +145,16 @@ class EditServiceProject(QWidget):
                 project.serial_number = self.serial_number_input.text()
                 project.description = self.description_input.toPlainText()
                 session.commit()
-                # self.save_signal.emit()
+            # Update current state dictionary:
+                self.current_values = {'owner': self.owner_input.text().strip(),
+                                       'phone_number': self.phone_number_input.text().strip(),
+                                       'email': self.email_input.text().strip(),
+                                       'manufacturer': self.manufacturer_input.text().strip(),
+                                       'model': self.model_input.text().strip(),
+                                       'code': self.code_input.text().strip(),
+                                       'serial_number': self.serial_number_input.text().strip(),
+                                       'description':self.description_input.toPlainText().strip()}
+
+
+
 
