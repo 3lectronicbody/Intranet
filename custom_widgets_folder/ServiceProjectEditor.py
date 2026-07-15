@@ -8,8 +8,12 @@ from database.models import ServiceProjects
 from helper_functions import clear_layout, confirmation_dialog
 import copy
 import tempfile
+from pathlib import Path
+import pypdf
+import io
 from datetime import datetime
 from custom_widgets_folder.EditServiceProject import EditServiceProject
+
 
 class ServiceProjectDialog(QDialog):
     refresh_signal = Signal()
@@ -22,6 +26,8 @@ class ServiceProjectDialog(QDialog):
         self.user_id = user_id
         self.project_id = project_id
         self.parent = parent
+        self.create_pdf_slot = None
+        self.open_pdf_slot = None
 
 
         self.main_layout = QHBoxLayout(self)
@@ -94,9 +100,10 @@ class ServiceProjectDialog(QDialog):
         self.right_layout.addLayout(self.button_layout)
         self.complete_activate_button = QPushButton("")
         self.button_layout.addWidget(self.complete_activate_button)
+
         self.open_pdf_form_button = QPushButton("Open PDF Form")
         self.button_layout.addWidget(self.open_pdf_form_button)
-        self.open_pdf_form_button.clicked.connect(self.open_pdf_form)
+
         self.erase_project_button = QPushButton("Erase Project...")
         self.button_layout.addWidget(self.erase_project_button)
         self.erase_project_button.clicked.connect(self.erase_button_handler)
@@ -173,6 +180,13 @@ class ServiceProjectDialog(QDialog):
         else:
             self.complete_activate_button.setText("Activate")
             self.complete_activate_button.clicked.connect(self.activate_service_project)
+
+        if not project.pdf_form:
+            self.open_pdf_form_button.setText("Create PDF Form")
+            self.open_pdf_form_button.clicked.connect(self.create_pdf_form)
+        else:
+            self.open_pdf_form_button.setText("Open PDF Form")
+            self.open_pdf_form_button.clicked.connect(self.open_pdf_form)
 
     def add_task(self):
         dialog = AddTaskDialog(self.database,self.project_id)
@@ -268,8 +282,50 @@ class ServiceProjectDialog(QDialog):
                     temp_file.write(project.pdf_form)
                     temp_path = temp_file.name
                     QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(temp_path))
+                self.open_pdf_form_button.clicked.disconnect(self.open_pdf_form)
             else:
                 print("PDF form not found.")
+
+    def create_pdf_form(self):
+        confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
+        if confirmation == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.get(ServiceProjects,self.project_id)
+                current_dir = Path(__file__).parent
+                empty_pdf_form_path = current_dir.parent / "files" / "service_form.pdf"
+                pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
+                writer = pypdf.PdfWriter()
+                writer.append(pdf_reader)
+                data = {"number": (project.number[-3:]),
+                        "year": project.number[2:4],
+                        "start_date": project.start_date.strftime("%d-%m-%Y"),
+                        "owner": project.owner,
+                        "phone_number": project.phone_number,
+                        "email": project.email,
+                        "manufacturer": project.manufacturer,
+                        "model": project.model,
+                        "code": project.code,
+                        "serial_number": project.serial_number,
+                        "description": project.description
+                        }
+                # Fulfill form values with data
+                writer.update_page_form_field_values(writer.pages[0], data)
+
+                # Saving the Pdf to a BytesIO object and then to a database field
+                bytes_stream = io.BytesIO()  # create a BytesIO object
+                writer.write(bytes_stream)  # write pdf content to the BytesIO object
+                project.pdf_form = bytes_stream.getvalue()
+
+
+                session.commit()
+                self.open_pdf_form_button.clicked.disconnect(self.create_pdf_form)
+                self.refresh()
+        else:
+            self.open_pdf_form_button.clicked.disconnect(self.create_pdf_form)
+            self.refresh()
+
+
+
 
 class AddTaskDialog(QDialog):
     def __init__(self, database, project_id, parent=None):
