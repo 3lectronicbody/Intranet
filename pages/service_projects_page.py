@@ -30,9 +30,9 @@ class ServiceProjectsPage(QWidget):
         self.dropdown_service_projects = QComboBox()
         # self.dropdown_service_projects.setView(QListView())
 
-        self.options = ["Active","Complete", "All" ]
+        self.options = ["All" ,"Active","Complete"]
         self.dropdown_service_projects.addItems(self.options)
-        self.dropdown_service_projects.setCurrentText("Active")
+        self.dropdown_service_projects.setCurrentIndex(0)
         self.dropdown_service_projects.currentTextChanged.connect(self.dropdown_change_handler)
         self.main_layout.addWidget(self.dropdown_service_projects)
 

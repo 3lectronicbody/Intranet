@@ -122,9 +122,6 @@ class ProjectPage(QDialog):
         elif self.tab.currentIndex() == 2:
             self.add_button.setText("Add To Do")
             self.todo_tab.load_data()
-    def refresh_data(self):
-        # For later use if main project window changes (for example name of the project changed in child dialog)
-        pass
 
     def closeEvent(self, event, /):
         text = "Are you sure you want to leave?"

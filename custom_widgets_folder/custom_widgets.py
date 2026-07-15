@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
-    QMenuBar, QFileDialog, QMessageBox, QApplication
+    QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
 from PySide6.QtCore import Signal
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
@@ -109,6 +109,11 @@ class AddItem(QDialog):
         self.unit_dropdown.addItems(units)
         self.data_layout.addWidget(self.unit_dropdown, 3, 1)
         self.unit_dropdown.setCurrentText("mtr")
+        self.description_label = QLabel("Description: ")
+        self.data_layout.addWidget(self.description_label, 4, 0)
+        self.description_input = QTextEdit()
+        self.data_layout.addWidget(self.description_input, 4, 1)
+
         self.setWindowTitle("Add Item")
 
         self.buttons_layout = QHBoxLayout()
@@ -123,10 +128,12 @@ class AddItem(QDialog):
         self.name_input.setStyleSheet("")
         self.code_input.setStyleSheet("")
         self.quantity_input.setStyleSheet("")
+        self.description_input.setStyleSheet("")
         name = self.name_input.text().strip()
         code = self.code_input.text().strip()
         quantity = self.quantity_input.text().replace(",", ".").strip()
         unit = self.unit_dropdown.currentText()
+        description = self.description_input.toPlainText().strip()
         if not name:
             warning = QMessageBox()
             warning.setText("Item name cannot be empty")
@@ -173,7 +180,8 @@ class AddItem(QDialog):
                                  item=name,
                                  item_code=code,
                                  quantity=quantity,
-                                 unit=unit)
+                                 unit=unit,
+                                 description=description)
             session.add(new)
             session.commit()
             self.accept()
@@ -229,6 +237,12 @@ class EditItem(QDialog):
         else:
             self.unit_dropdown.setCurrentIndex(0)
         self.data_layout.addWidget(self.unit_dropdown, 3, 1)
+
+        self.description_label = QLabel("Description: ")
+        self.data_layout.addWidget(self.description_label, 4, 0)
+        self.description_input = QTextEdit()
+        self.data_layout.addWidget(self.description_input, 4, 1)
+        self.description_input.setText(item.description)
 
         self.button_layout = QHBoxLayout()
         self.layout.addLayout(self.button_layout)
@@ -288,7 +302,7 @@ class EditItem(QDialog):
             return
         with self.database.session() as session:
             item = session.query(ProjectDetails).get(self.item_id)
-            item.name = name
+            item.item = name
             item.quantity = quantity
             item.unit = unit
             item.item_code = code

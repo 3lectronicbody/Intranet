@@ -139,6 +139,23 @@ class Projects(Base):
         self.is_active = is_active
         self.beginning = beginning
         self.end = end
+class ProjectDetails(Base):
+    __tablename__ = "project_details"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    activity: Mapped[str | None] = mapped_column(String, nullable=True)
+    item: Mapped[str | None] = mapped_column(String, nullable=True)
+    item_code: Mapped[str] = mapped_column(String, nullable=True)
+    quantity: Mapped[float] = mapped_column(Float, nullable=True)
+    unit: Mapped[str] = mapped_column(String, nullable=True)
+    todo: Mapped[str | None] = mapped_column(String, nullable=True)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # relationship
+    project_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("projects.id"), nullable=False
+    )
+    project = relationship("Projects", back_populates="project_details")
 
 
 class ServiceProjects(Base):
@@ -167,19 +184,3 @@ class ServiceProjects(Base):
 
 
 
-class ProjectDetails(Base):
-    __tablename__ = "project_details"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    activity: Mapped[str | None] = mapped_column(String, nullable=True)
-    item: Mapped[str | None] = mapped_column(String, nullable=True)
-    item_code: Mapped[str] = mapped_column(String, nullable=True)
-    quantity: Mapped[float] = mapped_column(Float, nullable=True)
-    unit: Mapped[str] = mapped_column(String, nullable=True)
-    todo: Mapped[str | None] = mapped_column(String, nullable=True)
-
-    # relationship
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("projects.id"), nullable=False
-    )
-    project = relationship("Projects", back_populates="project_details")

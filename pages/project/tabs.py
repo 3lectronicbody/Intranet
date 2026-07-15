@@ -51,6 +51,7 @@ class ItemsTab(QWidget):
             for item in items:
                 name_label = QLabel(item.item)
                 self.main_layout.addWidget(name_label, counter, 0)
+                name_label.setToolTip(str(item.description))
                 code_label = QLabel(item.item_code)
                 self.main_layout.addWidget(code_label, counter, 1)
                 quantity_label = QLabel(str(item.quantity))
@@ -70,7 +71,7 @@ class ItemsTab(QWidget):
         edit_dialog = EditItem(self.database, self.project_id,self.user_id, item_id)
         edit_dialog.save_signal.connect(self.load_data)
         edit_dialog.exec()
-        self.load_data()
+
 
     def delete_button_handler(self, item_id):
         confirmation = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this item?")
@@ -137,7 +138,7 @@ class ActivitiesTab(QWidget):
                 item = session.query(ProjectDetails).get(item_id)
                 session.delete(item)
                 session.commit()
-            self.load_data()
+            self.load_ddata()
 
 class ToDoTab(QWidget):
     def __init__(self, database, project_id, user_id):
