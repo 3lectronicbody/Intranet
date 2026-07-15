@@ -140,9 +140,10 @@ class CreateServiceProject(QDialog):
                 )
                 session.add(new_project)
                 session.commit()
+                self.create_pdf_form(new_project.id)
                 self.save_signal.emit()
                 self.accept()
-                self.create_pdf_form(new_project.id)
+
     def cancel_button_handler(self):
         self.reject()
 

@@ -99,51 +99,25 @@ class EditServiceProject(QWidget):
         self.main_layout_vertical.addStretch(1)
 
 
-        self.button_layout = QHBoxLayout()
-        self.main_layout_vertical.addLayout(self.button_layout)
-
-        self.save_button = QPushButton("Save")
-        self.save_button.setDisabled(True)
-        self.button_layout.addWidget(self.save_button)
-        self.save_button.clicked.connect(self.save_button_handler)
-
-
         self.refresh()
 
         # self.inputs.append(self.description_input)
         for i in self.inputs:
-            i.textChanged.connect(self.save_button_enabler)
+            i.textChanged.connect(self.text_changed)
 
     def refresh(self):
-        with self.database.session() as session:
-            self.project = session.query(ServiceProjects).get(self.project_id)
-            self.owner_input.setText(self.project.owner)
-            self.phone_number_input.setText(self.project.phone_number)
-            self.email_input.setText(self.project.email)
-            self.manufacturer_input.setText(self.project.manufacturer)
-            self.model_input.setText(self.project.model)
-            self.code_input.setText(self.project.code)
-            self.serial_number_input.setText(self.project.serial_number)
-            self.description_input.setText(self.project.description)
+            with self.database.session() as session:
+                self.project = session.query(ServiceProjects).get(self.project_id)
+                self.owner_input.setText(self.project.owner)
+                self.phone_number_input.setText(self.project.phone_number)
+                self.email_input.setText(self.project.email)
+                self.manufacturer_input.setText(self.project.manufacturer)
+                self.model_input.setText(self.project.model)
+                self.code_input.setText(self.project.code)
+                self.serial_number_input.setText(self.project.serial_number)
+                self.description_input.setText(self.project.description)
 
-    def save_button_handler(self):
-
-        with self.database.session() as session:
-            project = session.query(ServiceProjects).get(self.project_id)
-            project.owner = self.owner_input.text()
-            project.phone_number = self.phone_number_input.text()
-            project.email = self.email_input.text()
-            project.manufacturer = self.manufacturer_input.text()
-            project.model = self.model_input.text()
-            project.code = self.code_input.text()
-            project.serial_number = self.serial_number_input.text()
-            project.description = self.description_input.toPlainText()
-            session.commit()
-            self.save_signal.emit()
-
-    def save_button_enabler(self, *args):
-        # compare state with state after textchange signal triggered in input
-
+    def text_changed(self):
         if (self.project.owner or "").strip() != self.owner_input.text().strip() or \
             self.project.phone_number.strip() != self.phone_number_input.text().strip() or \
             self.project.email.strip() != self.email_input.text().strip() or \
@@ -152,6 +126,18 @@ class EditServiceProject(QWidget):
             self.project.code.strip() != self.code_input.text().strip() or \
             self.project.serial_number.strip() != self.serial_number_input.text().strip() or \
             self.project.description.strip() != self.description_input.toPlainText().strip():
-            self.save_button.setEnabled(True)
-        else:
-            self.save_button.setEnabled(False)
+            # self.save_button.setEnabled(True)
+
+            with self.database.session() as session:
+                project = session.query(ServiceProjects).get(self.project_id)
+                project.owner = self.owner_input.text()
+                project.phone_number = self.phone_number_input.text()
+                project.email = self.email_input.text()
+                project.manufacturer = self.manufacturer_input.text()
+                project.model = self.model_input.text()
+                project.code = self.code_input.text()
+                project.serial_number = self.serial_number_input.text()
+                project.description = self.description_input.toPlainText()
+                session.commit()
+                # self.save_signal.emit()
+

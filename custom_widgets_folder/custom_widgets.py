@@ -659,6 +659,18 @@ class CustomPushButton(QPushButton):
             self.clicked.emit()
             return
         super().keyPressEvent(event)
+class EraseServiceProjectConfirmationDialog(QDialog):
+    def __init__(self, database, project_id, user_id):
+        super().__init__()
+        self.database = database
+        self.project_id = project_id
+        self.user_id = user_id
+        self.setWindowTitle("Confirm Erase")
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.label = QLabel("Are you sure you want to erase this project?")
+        self.inputs_layout = QGridLayout()
+        
 
 
         

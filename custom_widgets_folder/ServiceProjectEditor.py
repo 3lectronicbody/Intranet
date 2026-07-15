@@ -99,6 +99,7 @@ class ServiceProjectDialog(QDialog):
         self.open_pdf_form_button.clicked.connect(self.open_pdf_form)
         self.erase_project_button = QPushButton("Erase Project...")
         self.button_layout.addWidget(self.erase_project_button)
+        self.erase_project_button.clicked.connect(self.erase_button_handler)
 
 
 
@@ -168,6 +169,7 @@ class ServiceProjectDialog(QDialog):
         if project.active:
             self.complete_activate_button.setText("Complete")
             self.complete_activate_button.clicked.connect(self.deactivate_service_project)
+
         else:
             self.complete_activate_button.setText("Activate")
             self.complete_activate_button.clicked.connect(self.activate_service_project)
@@ -245,6 +247,18 @@ class ServiceProjectDialog(QDialog):
 
         else:
             self.refresh()
+    def erase_button_handler(self):
+        warning = confirmation_dialog(self, "Erase Service Project",
+                                           f"Are you sure you want to erase Service Project?\n"
+                                           f"This action cannot be undone !!!")
+
+        if warning == QMessageBox.StandardButton.Yes:
+            with self.database.session() as session:
+                project = session.get(ServiceProjects, self.project_id)
+                session.delete(project)
+                session.commit()
+            self.refresh_signal.emit()
+            self.accept()
 
     def open_pdf_form(self):
         with self.database.session() as session:
