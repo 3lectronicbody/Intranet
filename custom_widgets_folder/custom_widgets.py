@@ -334,6 +334,11 @@ class AddActivity(QDialog):
         self.quantity_input = QLineEdit()
         self.data_layout.addWidget(self.quantity_input, 1, 1)
 
+        self.description_label = QLabel("Description: ")
+        self.data_layout.addWidget(self.description_label, 2, 0)
+        self.description_input = QTextEdit()
+        self.data_layout.addWidget(self.description_input, 2, 1)
+
         self.setWindowTitle("Add Activity")
 
         self.buttons_layout = QHBoxLayout()
@@ -348,6 +353,7 @@ class AddActivity(QDialog):
     def save_button_handler(self):
         name = self.name_input.text().strip() or None
         quantity = self.quantity_input.text().strip() or None
+        description = self.description_input.toPlainText().strip() or ""
         self.name_input.setStyleSheet("")
         self.quantity_input.setStyleSheet("")
         if not name:
@@ -390,7 +396,8 @@ class AddActivity(QDialog):
         with self.database.session() as session:
             new = ProjectDetails(project_id=self.project_id,
                                  activity=name,
-                                 quantity= quantity)
+                                 quantity= quantity,
+                                 description=description)
             session.add(new)
             session.commit()
             self.save_signal.emit()
@@ -431,6 +438,12 @@ class EditActivity(QDialog):
         self.quantity_input.setText(str(item.quantity))
         self.data_layout.addWidget(self.quantity_input, 1, 1)
 
+        self.description_label = QLabel("Description: ")
+        self.data_layout.addWidget(self.description_label, 2, 0)
+        self.description_input = QTextEdit()
+        self.data_layout.addWidget(self.description_input, 2, 1)
+        self.description_input.setText(item.description)
+
 
         self.button_layout = QHBoxLayout()
         self.layout.addLayout(self.button_layout)
@@ -446,9 +459,11 @@ class EditActivity(QDialog):
     def save_button_handler(self):
         activity = self.name_input.text().strip()
         quantity = self.quantity_input.text().strip().replace(",", ".")
+        description = self.description_input.toPlainText().strip()
 
         self.quantity_input.setStyleSheet("")
         self.name_input.setStyleSheet("")
+
 
         if not activity:
             message = QMessageBox()
@@ -487,9 +502,10 @@ class EditActivity(QDialog):
             item = session.query(ProjectDetails).get(self.item_id)
             item.activity = activity
             item.quantity = quantity
+            item.description = description
             session.commit()
-            self.accept()
-            self.save_signal.emit()
+        self.accept()
+        self.save_signal.emit()
 class AddToDo(QDialog):
     save_signal = Signal()
 
