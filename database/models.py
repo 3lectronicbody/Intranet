@@ -103,6 +103,7 @@ class Projects(Base):
     __tablename__ = "projects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    number: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
     project_owner: Mapped[str] = mapped_column(
@@ -123,22 +124,7 @@ class Projects(Base):
         "Logs", back_populates="project", cascade="all, delete-orphan"
     )
 
-    # For annotations because pycharm can't see Mapped[]
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        project_owner: str = "unknown",
-        is_active: bool | None = True,
-        beginning: datetime | None = None,
-        end: datetime | None = None,
-    ):
-        self.name = name
-        self.description = description
-        self.project_owner = project_owner
-        self.is_active = is_active
-        self.beginning = beginning
-        self.end = end
+
 class ProjectDetails(Base):
     __tablename__ = "project_details"
 

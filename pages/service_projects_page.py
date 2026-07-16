@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLab
 from database.models import ServiceProjects
 from helper_functions import clear_layout
 from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
-from custom_widgets_folder.EditServiceProject import EditServiceProject
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
 

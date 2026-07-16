@@ -184,8 +184,8 @@ class AddItem(QDialog):
                                  description=description)
             session.add(new)
             session.commit()
-            self.accept()
-            self.save_signal.emit()
+        self.accept()
+        self.save_signal.emit()
 class EditItem(QDialog):
     save_signal = Signal()
 
@@ -242,7 +242,7 @@ class EditItem(QDialog):
         self.data_layout.addWidget(self.description_label, 4, 0)
         self.description_input = QTextEdit()
         self.data_layout.addWidget(self.description_input, 4, 1)
-        self.description_input.setText(item.description)
+        self.description_input.setText(item.description or "")
 
         self.button_layout = QHBoxLayout()
         self.layout.addLayout(self.button_layout)
