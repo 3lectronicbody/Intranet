@@ -57,26 +57,6 @@ class Users(Base):
         "Logs", back_populates="user", cascade="all, delete-orphan"
     )
 
-    def __init__(
-        self,
-        email: str,
-        password: str,
-        role: str = Role.USER.value,
-        name: str | None = None,
-        surname: str | None = None,
-        phone: str | None = None,
-        picture: bytes | None = None,
-    ):
-
-        self.name = name
-        self.surname = surname
-        self.email = email
-        self.phone = phone
-        self.password = password
-        self.picture = picture
-        self.role = role
-
-
 class Logs(Base):
     __tablename__ = "logs"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
