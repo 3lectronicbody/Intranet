@@ -51,13 +51,15 @@ class ServiceProjectsPage(QWidget):
 
         self.button_layout = QHBoxLayout()
         self.main_layout.addLayout(self.button_layout)
+
+        self.cancel_button = QPushButton("BACK")
+        self.button_layout.addWidget(self.cancel_button)
+        self.cancel_button.clicked.connect(self.cancel_button_handler)
+
         self.create_button = QPushButton("CREATE PROJECT")
         self.create_button.setStyleSheet("color: green;")
         self.button_layout.addWidget(self.create_button)
         self.create_button.clicked.connect(self.create_project_button_handler)
-        self.cancel_button = QPushButton("BACK")
-        self.button_layout.addWidget(self.cancel_button)
-        self.cancel_button.clicked.connect(self.cancel_button_handler)
 
         self.refresh_data()
 
