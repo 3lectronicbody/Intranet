@@ -1,6 +1,5 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QMessageBox, QLabel
-
 from database.models import Users, Role
 
 

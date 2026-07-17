@@ -1,7 +1,8 @@
 from PySide6 import QtGui, QtCore
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox
+    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox, QMenu
 )
 from PySide6.QtCore import Qt, Signal
 from database.models import ServiceProjects
@@ -127,6 +128,13 @@ class ServiceProjectDialog(QDialog):
                 for index,task in enumerate(tasks):
                     task_name_label = QLabel()
                     task_name_label.setText(task["task_name"])
+                    task_name_label.setStyleSheet("font-weight: bold;")
+                    task_name_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                    # crete dyn property .menu of task_name_label
+                    task_name_label.menu = TaskContextMenu(index, self)
+                    task_name_label.customContextMenuRequested.connect(
+                    lambda qpoint, label = task_name_label: task_name_label.menu.exec(label.mapToGlobal(qpoint))
+                    )
                     self.tasks_list_layout.addWidget(task_name_label, counter, 0)
                     task_duration_label = QLabel()
                     task_duration_label.setText(f"{task['task_time']} hours" if task['task_time'] else "No duration")
@@ -154,6 +162,13 @@ class ServiceProjectDialog(QDialog):
             if service_parts_list:
                 for part in service_parts_list:
                     part_name_label = QLabel(part['name'] or "")
+                    part_name_label.setStyleSheet("font-weight: bold;")
+                    part_name_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+                    # crete dyn property .menu of task_name_label
+                    part_name_label.menu = ServicePartContextMenu(counter, self)
+                    part_name_label.customContextMenuRequested.connect(
+                        lambda qpoint, label=part_name_label: part_name_label.menu.exec(label.mapToGlobal(qpoint))
+                    )
                     part_code_label = QLabel(part['code'] or "")
                     part_quantity_label = QLabel(str(part['quantity']) or "")
                     self.items_list_layout.addWidget(part_name_label, counter, 0)
@@ -530,6 +545,37 @@ class EditServicePartDialog(QDialog):
             session.commit()
         self.save_signal.emit()
         self.accept()
+
+class TaskContextMenu(QMenu):
+    def __init__(self, task_number, parent=None):
+        super().__init__(parent)
+
+        self.task_number = task_number
+        self.parent = parent
+        self.edit_action = QAction("Edit", self)
+        self.edit_action.triggered.connect(lambda: self.parent.edit_task(self.task_number))
+        self.delete_action = QAction("Delete", self)
+        self.delete_action.triggered.connect(lambda: self.parent.delete_task(self.task_number))
+        self.addAction(self.edit_action)
+        self.addSeparator()
+        self.addAction(self.delete_action)
+        self.addSeparator()
+
+class ServicePartContextMenu(QMenu):
+    def __init__(self, part_number, parent=None):
+        super().__init__(parent)
+
+        self.part_number = part_number
+        self.parent = parent
+        self.edit_action = QAction("Edit", self)
+        self.edit_action.triggered.connect(lambda: self.parent.edit_service_part(self.part_number))
+
+        self.delete_action = QAction("Delete", self)
+        self.delete_action.triggered.connect(lambda: self.parent.delete_service_part(self.part_number))
+        self.addAction(self.edit_action)
+        self.addSeparator()
+        self.addAction(self.delete_action)
+        self.addSeparator()
 
 
 
