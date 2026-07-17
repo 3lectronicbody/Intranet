@@ -1,5 +1,10 @@
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
+import tempfile
+import os
+from email.message import EmailMessage
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QUrl
 import pypdf
 
 from database.models import ServiceProjects
@@ -47,6 +52,31 @@ def create_pdf_form(database,project_id):
         writer.write(bytes_stream) # write pdf content to the BytesIO object
         project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
         session.commit()
+def prepare_eml_with_attachment(subject, body, file_path):
+    # 1. Create the message
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg.set_content(body)
+
+    # 2. Attach the file
+    with open(file_path, 'rb') as f:
+        file_data = f.read()
+        msg.add_attachment(
+            file_data,
+            maintype='application',
+            subtype='pdf',
+            filename=os.path.basename(file_path)
+        )
+
+    # 3. Create a unique temporary file that ends in .eml
+    # delete=False is important, so the OS can still see/open it
+    # after Python closes the handle
+    with tempfile.NamedTemporaryFile(mode='wb', suffix='.eml', delete=False) as f:
+        f.write(msg.as_bytes())
+        temp_path = f.name
+
+    # 4. Open in the default system mail client
+    QDesktopServices.openUrl(QUrl.fromLocalFile(temp_path))
 
 
 

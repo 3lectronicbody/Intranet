@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
 
@@ -700,6 +700,20 @@ class EraseServiceProjectConfirmationDialog(QDialog):
         self.setLayout(self.layout)
         self.label = QLabel("Are you sure you want to erase this project?")
         self.inputs_layout = QGridLayout()
+class Label(QLabel):
+    # Custom label with set Context Menu Policy
+    def __init__(self, *args, context_menu=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.context_menu = context_menu
+        if context_menu:
+            self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            self.customContextMenuRequested.connect(
+                lambda qpoint, label=self: label.context_menu.exec(label.mapToGlobal(qpoint))
+            )
+
+
+
+
         
 
 
