@@ -1,13 +1,10 @@
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
-import tempfile
-import os
-from email.message import EmailMessage
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtCore import QUrl
-import pypdf
+from fpdf import FPDF
+import io
 
-from database.models import ServiceProjects
+
+from database.models import ServiceProjects, Projects, ProjectDetails
 
 
 def clear_layout(layout, grid_layout=False):
@@ -52,7 +49,36 @@ def create_pdf_form(database,project_id):
         writer.write(bytes_stream) # write pdf content to the BytesIO object
         project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
         session.commit()
-def prepare_eml_with_attachment(subject, body, file_path):
+def project_summary_pdf(database,project_id):
+    with database.session() as session:
+        items = session.query(ProjectDetails).filter(ProjectDetails.project_id == project_id, ProjectDetails.item.isnot(None)).all()
+        activities = session.query(ProjectDetails).filter(ProjectDetails.project_id == project_id, ProjectDetails.activity.isnot(None)).all()
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font(family="Arial", style='b', size=12)
+        pdf.cell(text="ITEMS")
+        if items:
+            for item in items:
+                pdf.cell(text=item.item, ln=1)
+        else:
+            pdf.cell(text="No Items")
+        pdf.cell(text="", w=1,h=2)
+        if activities:
+            for activity in activities:
+                pdf.cell(text=activity.activity, ln=1)
+        else:
+            pdf.cell(text="No Activities")
+
+        # Create temporary file
+        temp_file = io.BytesIO()
+        pdf.output(temp_file)
+    with database.session() as session:
+        project = session.get(Projects, project_id)
+        raw_bytes = temp_file.getvalue()
+        project.summary_pdf = raw_bytes
+        session.commit()
+"""def prepare_eml_with_attachment(subject, body, file_path):
     # 1. Create the message
     msg = EmailMessage()
     msg['Subject'] = subject
@@ -76,7 +102,7 @@ def prepare_eml_with_attachment(subject, body, file_path):
         temp_path = f.name
 
     # 4. Open in the default system mail client
-    QDesktopServices.openUrl(QUrl.fromLocalFile(temp_path))
+    QDesktopServices.openUrl(QUrl.fromLocalFile(temp_path))"""
 
 
 

@@ -1,10 +1,13 @@
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
 
+from database.database import Database
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
 from custom_widgets_folder.custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
-from helper_functions import confirmation_dialog
+from helper_functions import confirmation_dialog, project_summary_pdf
+
+
 
 
 class ProjectPage(QDialog):
@@ -21,7 +24,7 @@ class ProjectPage(QDialog):
         self.add_todo_dialog = None
 
         with self.database.session() as session:
-            project = session.query(Projects).get(project_id)
+            project = session.get(Projects, self.project_id)
             self.project_name = project.name
             self.project_description = project.description
         self.setWindowTitle(self.project_name)
@@ -64,6 +67,16 @@ class ProjectPage(QDialog):
         self.todo_tab = ToDoTab(self.database, self.project_id, self.user_id)
         self.tab.addTab(self.todo_tab, "TODO")
 
+        # COMPLETE PROJECT BUTTON
+        self.complete_project_button = QPushButton("Complete Project")
+        self.main_layout.addWidget(self.complete_project_button)
+        self.complete_project_button.clicked.connect(self.complete_project_button_handler)
+        self.complete_project_button.hide()
+        # ACTIVATE PROJECT BUTTON (THE SAME PLACE AS COMPLETE BUTTON)
+        self.activate_project_button = QPushButton("Activate")
+        self.main_layout.addWidget(self.activate_project_button)
+        self.activate_project_button.clicked.connect(self.activate_project_button_handler)
+        self.activate_project_button.hide()
 
         # ADD and BACK buttons
         self.buttons_layout = QHBoxLayout()
@@ -80,7 +93,28 @@ class ProjectPage(QDialog):
         # Changing ADD BUTTON text based on the current tab
 
         self.tab.currentChanged.connect(self.refresh_tab)
-
+        self.refresh_page()
+    def refresh_tab(self):
+        # Changing ADD BUTTON text based on the current tab
+        # Refreshing data based on change of the current tab
+        if self.tab.currentIndex() == 0:
+            self.add_button.setText("Add Item")
+            self.items_tab.load_data()
+        elif self.tab.currentIndex() == 1:
+            self.add_button.setText("Add Activity")
+            self.activities_tab.load_data()
+        elif self.tab.currentIndex() == 2:
+            self.add_button.setText("Add To Do")
+            self.todo_tab.load_data()
+    def refresh_page(self):
+        with self.database.session() as session:
+            project = session.get(Projects, self.project_id)
+            if not project.is_active:
+                self.complete_project_button.hide()
+                self.activate_project_button.show()
+            else:
+                self.complete_project_button.show()
+                self.activate_project_button.hide()
     def add_button_handler(self):
         current_tab_index = self.tab.currentIndex()
 
@@ -99,8 +133,6 @@ class ProjectPage(QDialog):
             self.add_todo_dialog = AddToDo(self.database, self.project_id, self.user_id)
             self.add_todo_dialog.save_signal.connect(self.todo_tab.load_data)
             self.add_todo_dialog.exec()
-
-
     def back_button_handler(self, event=None):
         text = "Are you sure you want to leave?"
         dialog = confirmation_dialog(self, title="Confirmation", message=text)
@@ -109,19 +141,26 @@ class ProjectPage(QDialog):
         else:
             if event:
                 event.ignore()
+    def complete_project_button_handler(self):
+        confirmation = confirmation_dialog(self, title="Confirmation", message="Are you sure you want to complete project ?")
+        if confirmation == QMessageBox.Yes:
+            pdf_summary_confirmation = confirmation_dialog(self, title="Pdf Summary", message="Do You want to create summary file")
+            if pdf_summary_confirmation == QMessageBox.Yes:
+                project_summary_pdf(self.database, self.project_id)
+            with self.database.session() as session:
+                project = session.get(Projects, self.project_id)
+                project.is_active = False
+                session.commit()
+            self.refresh_page()
 
-    def refresh_tab(self):
-        # Changing ADD BUTTON text based on the current tab
-        # Refreshing data based on change of the current tab
-        if self.tab.currentIndex() == 0:
-            self.add_button.setText("Add Item")
-            self.items_tab.load_data()
-        elif self.tab.currentIndex() == 1:
-            self.add_button.setText("Add Activity")
-            self.activities_tab.load_data()
-        elif self.tab.currentIndex() == 2:
-            self.add_button.setText("Add To Do")
-            self.todo_tab.load_data()
+        else:
+            return
+    def activate_project_button_handler(self):
+        with self.database.session() as session:
+            project = session.get(Projects, self.project_id)
+            project.is_active = True
+            session.commit()
+        self.refresh_page()
 
     def closeEvent(self, event, /):
         text = "Are you sure you want to leave?"

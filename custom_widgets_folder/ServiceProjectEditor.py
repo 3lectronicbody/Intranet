@@ -15,7 +15,7 @@ import io
 from datetime import datetime
 from custom_widgets_folder.EditServiceProject import EditServiceProject
 import tempfile
-from helper_functions import prepare_eml_with_attachment
+
 
 
 class ServiceProjectDialog(QDialog):

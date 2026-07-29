@@ -130,7 +130,7 @@ class AddItem(QDialog):
         self.quantity_input.setStyleSheet("")
         self.description_input.setStyleSheet("")
         name = self.name_input.text().strip()
-        code = self.code_input.text().strip()
+        code = self.code_input.text().strip() or "unknown"
         quantity = self.quantity_input.text().replace(",", ".").strip()
         unit = self.unit_dropdown.currentText()
         description = self.description_input.toPlainText().strip()
@@ -143,16 +143,6 @@ class AddItem(QDialog):
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not code:
-            warning = QMessageBox()
-            warning.setText("Item code cannot be empty")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
-            self.code_input.setStyleSheet("border: 2px solid red;")
-            self.code_input.setFocus()
-            return
-
         if not quantity:
             warning = QMessageBox()
             warning.setText("Quantity cannot be empty")
@@ -258,7 +248,7 @@ class EditItem(QDialog):
     def save_button_handler(self):
         name = self.name_input.text()
         quantity = self.quantity_input.text()
-        code = self.code_input.text()
+        code = self.code_input.text() or "unknown"
         unit = self.unit_dropdown.currentText()
         if not name:
             warning = QMessageBox()
@@ -268,15 +258,6 @@ class EditItem(QDialog):
             warning.exec()
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
-            return
-        if not code:
-            warning = QMessageBox()
-            warning.setText("Item code cannot be empty")
-            warning.setWindowTitle("Warning")
-            warning.setIcon(QMessageBox.Warning)
-            warning.exec()
-            self.code_input.setStyleSheet("border: 2px solid red;")
-            self.code_input.setFocus()
             return
 
         if not quantity:

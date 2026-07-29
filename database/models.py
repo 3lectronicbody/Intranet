@@ -92,6 +92,7 @@ class Projects(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     beginning: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    summary_pdf: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
     # Relationship with Project Details
     project_details: Mapped[list["ProjectDetails"]] = relationship(
@@ -116,6 +117,7 @@ class ProjectDetails(Base):
     unit: Mapped[str] = mapped_column(String, nullable=True)
     todo: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
+
 
     # relationship
     project_id: Mapped[int] = mapped_column(
