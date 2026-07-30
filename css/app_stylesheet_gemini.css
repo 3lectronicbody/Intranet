@@ -1,100 +1,92 @@
-/* --- Global Application Font & Dark Base --- */
+/* --- Global Font & PyCharm Modern Dark Base --- */
 QWidget {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 14px;
-    color: #e9ecef;
-    background-color: #121212;
+    font-family: "Segoe UI", -apple-system, Roboto, Arial, sans-serif;
+    font-size: 13px;
+    color: #DFDFDF;
+    background-color: #1E1F22;
 }
 
-/* --- Buttons (Monochromatic Slate) --- */
+/* --- Buttons --- */
 QPushButton {
-    background-color: #2a2a2a;
-    color: #f8f9fa;
-    border: 1px solid #3d3d3d;
+    background-color: #2B2D30;
+    color: #DFDFDF;
+    border: 1px solid #393B40;
     border-radius: 4px;
-    padding: 6px 12px;
-    font-weight: 500;
+    padding: 5px 12px;
 }
 
 QPushButton:hover {
-    background-color: #383838;
-    border-color: #525252;
+    background-color: #35383D;
+    border-color: #4E5157;
 }
 
 QPushButton:pressed {
-    background-color: #1f1f1f;
-    border-color: #525252;
+    background-color: #222326;
+    border-color: #393B40;
 }
 
 QPushButton:disabled {
-    background-color: #1a1a1a;
-    border-color: #262626;
-    color: #666666;
+    background-color: #1E1F22;
+    border-color: #2B2D30;
+    color: #7A7A7A;
 }
 
-/* --- Text Inputs / LineEdits --- */
+/* --- Inputs & Text Fields --- */
 QLineEdit, QTextEdit {
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
+    background-color: #2B2D30;
+    border: 1px solid #393B40;
     border-radius: 4px;
-    padding: 6px;
-    color: #f8f9fa;
+    padding: 4px 6px;
+    color: #DFDFDF;
 }
 
 QLineEdit:focus, QTextEdit:focus {
-    border: 1px solid #737373;
+    border: 1px solid #3574F0;
 }
 
 /* --- Labels --- */
 QLabel {
     background-color: transparent;
-    color: #e9ecef;
+    color: #DFDFDF;
 }
 
-/* --- ComboBox --- */
+/* --- Dropdowns / ComboBox --- */
 QComboBox {
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
+    background-color: #2B2D30;
+    border: 1px solid #393B40;
     border-radius: 4px;
-    padding: 5px 10px;
-    color: #f8f9fa;
+    padding: 4px 8px;
+    color: #DFDFDF;
 }
 
 QComboBox:hover {
-    border-color: #525252;
-}
-
-QComboBox::drop-down {
-    subcontrol-origin: padding;
-    subcontrol-position: top right;
-    width: 20px;
-    border-left-width: 0px;
+    border-color: #4E5157;
 }
 
 QComboBox QAbstractItemView {
-    background-color: #1e1e1e;
-    color: #f8f9fa;
-    selection-background-color: #383838;
-    selection-color: #ffffff;
-    border: 1px solid #333333;
+    background-color: #2B2D30;
+    color: #DFDFDF;
+    selection-background-color: #2D4E87;
+    selection-color: #FFFFFF;
+    border: 1px solid #393B40;
 }
 
-/* --- Tables & Lists --- */
-QTableView, QListWidget {
-    background-color: #181818;
-    border: 1px solid #262626;
-    gridline-color: #262626;
-    selection-background-color: #2e2e2e;
-    selection-color: #ffffff;
-    border-radius: 4px;
-    color: #f8f9fa;
+/* --- Tables, Trees, & Lists --- */
+QTableView, QListWidget, QTreeView {
+    background-color: #1E1F22;
+    border: 1px solid #2B2D30;
+    gridline-color: #2B2D30;
+    selection-background-color: #2D4E87;
+    selection-color: #FFFFFF;
+    color: #DFDFDF;
 }
 
 QHeaderView::section {
-    background-color: #212121;
-    color: #e9ecef;
-    padding: 6px;
+    background-color: #2B2D30;
+    color: #DFDFDF;
+    padding: 4px 8px;
     border: none;
-    border-bottom: 2px solid #333333;
+    border-right: 1px solid #1E1F22;
+    border-bottom: 1px solid #393B40;
     font-weight: bold;
 }

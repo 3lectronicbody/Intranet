@@ -8,6 +8,10 @@ qt-material==2.17
 shiboken6==6.11.0
 SQLAlchemy==2.0.49
 typing_extensions==4.15.0
+fastapi
 
 pypdf
 fpdf2
+fastapi
+fastapi
+fastapi
