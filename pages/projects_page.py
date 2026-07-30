@@ -38,6 +38,8 @@ class ProjectsPage(QWidget):
         self.create_button.clicked.connect(lambda _:self.create_signal.emit())
 
 
+
+
     def load_user(self, user_id):
         self.user_id = user_id
 
@@ -66,6 +68,9 @@ class ProjectsPage(QWidget):
             for project in projects:
                 project_name_label = QLabel(project.name)
                 project_name_label.setStyleSheet("font-weight: bold;")
+                if not project.is_active:
+                    project_name_label.setStyleSheet("color: #f0ad4e")
+
                 self.data_layout.addWidget(project_name_label, counter, 0)
 
 
@@ -88,7 +93,7 @@ class ProjectsPage(QWidget):
                 self.data_layout.addWidget(delete_project_button, counter, 3)
                 delete_project_button.clicked.connect(lambda _, project_id=project.id: self.delete_button_handler(project_id))
                 counter += 1
-
+    # Refresh data when the window is shown
     def showEvent(self, event, /):
         self.refresh_data()
         super().showEvent(event)

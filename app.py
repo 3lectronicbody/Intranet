@@ -17,8 +17,8 @@ if __name__ == "__main__":
     current_style = app.styleSheet()
     try:
         custom_css = (Path(__file__).parent.resolve() / "css" / "app_stylesheet.css").read_text(encoding="utf-8")
-
-        app.setStyleSheet(current_style + "\n" + custom_css)
+        custom_css_gemini = (Path(__file__).parent.resolve() / "css" / "app_stylesheet_gemini.css").read_text(encoding="utf-8")
+        app.setStyleSheet(current_style + "\n" + custom_css + custom_css_gemini)
     except FileNotFoundError:
         pass
 

@@ -1,76 +1,67 @@
-
-QTabBar::tab:selected {
-    background-color: grey;
-}
-
-/* This forces the dropdown to always open downwards */
-QComboBox {
-    combobox-popup: 0;
-}
 /* --- Global Application Font & Dark Base --- */
 QWidget {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
-    color: #f8f9fa;
-    background-color: #212529;
+    color: #e9ecef;
+    background-color: #121212;
 }
 
-/* --- Buttons (Bootstrap Primary) --- */
+/* --- Buttons (Monochromatic Slate) --- */
 QPushButton {
-    background-color: #0d6efd;
-    color: #ffffff;
-    border: 1px solid #0d6efd;
+    background-color: #2a2a2a;
+    color: #f8f9fa;
+    border: 1px solid #3d3d3d;
     border-radius: 4px;
     padding: 6px 12px;
     font-weight: 500;
 }
 
 QPushButton:hover {
-    background-color: #0b5ed7;
-    border-color: #0a58ca;
+    background-color: #383838;
+    border-color: #525252;
 }
 
 QPushButton:pressed {
-    background-color: #0a58ca;
-    border-color: #0a53bf;
+    background-color: #1f1f1f;
+    border-color: #525252;
 }
 
 QPushButton:disabled {
-    background-color: #343a40;
-    border-color: #343a40;
-    color: #6c757d;
+    background-color: #1a1a1a;
+    border-color: #262626;
+    color: #666666;
 }
 
 /* --- Text Inputs / LineEdits --- */
 QLineEdit, QTextEdit {
-    background-color: #2b3035;
-    border: 1px solid #495057;
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
     border-radius: 4px;
     padding: 6px;
     color: #f8f9fa;
 }
 
 QLineEdit:focus, QTextEdit:focus {
-    border: 1px solid #86b7fe;
+    border: 1px solid #737373;
 }
 
 /* --- Labels --- */
 QLabel {
     background-color: transparent;
-    color: #f8f9fa;
+    color: #e9ecef;
 }
 
 /* --- ComboBox --- */
 QComboBox {
-    background-color: #2b3035;
-    border: 1px solid #495057;
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
     border-radius: 4px;
     padding: 5px 10px;
     color: #f8f9fa;
 }
 
 QComboBox:hover {
-    border-color: #86b7fe;
+    border-color: #525252;
 }
 
 QComboBox::drop-down {
@@ -81,29 +72,29 @@ QComboBox::drop-down {
 }
 
 QComboBox QAbstractItemView {
-    background-color: #2b3035;
+    background-color: #1e1e1e;
     color: #f8f9fa;
-    selection-background-color: #0d6efd;
+    selection-background-color: #383838;
     selection-color: #ffffff;
-    border: 1px solid #495057;
+    border: 1px solid #333333;
 }
 
 /* --- Tables & Lists --- */
 QTableView, QListWidget {
-    background-color: #2b3035;
-    border: 1px solid #343a40;
-    gridline-color: #495057;
-    selection-background-color: #031633;
-    selection-color: #6ea8fe;
+    background-color: #181818;
+    border: 1px solid #262626;
+    gridline-color: #262626;
+    selection-background-color: #2e2e2e;
+    selection-color: #ffffff;
     border-radius: 4px;
     color: #f8f9fa;
 }
 
 QHeaderView::section {
-    background-color: #343a40;
-    color: #f8f9fa;
+    background-color: #212121;
+    color: #e9ecef;
     padding: 6px;
     border: none;
-    border-bottom: 2px solid #495057;
+    border-bottom: 2px solid #333333;
     font-weight: bold;
 }

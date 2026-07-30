@@ -267,14 +267,6 @@ class ServiceProjectDialog(QDialog):
                                            f"Are you sure you want to deactivate Service Project")
 
         if confirmation == QMessageBox.StandardButton.Yes:
-            summary_confirmation = confirmation_dialog(self, "Service Project Summary")
-            if summary_confirmation == QMessageBox.StandardButton.Yes:
-                with self.database.session() as session:
-                    project = session.query(ServiceProjects).get(self.project_id)
-
-                prepare_eml_with_attachment(subject=f"{project.name}", body=f"Service Project {project.name} Summary",)
-            else:
-                pass
 
             with self.database.session() as session:
                 project = session.query(ServiceProjects).get(self.project_id)
