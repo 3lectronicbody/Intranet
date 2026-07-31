@@ -90,19 +90,14 @@ class LoginPage(QWidget):
         email = self.email_input.text()
         password = self.password_input.text()
         # Role is set default in database model
-        """with self.database.session() as db:
-            user = db.query(Users).filter_by(email=email, password=password).first()
-            if user:
-                self.login_signal.emit(user.id)
-                self.email_input.setText("")
-                self.password_input.setText("")
-            else:
-                QMessageBox.warning(self, "Error", "Invalid email or password")"""
+
         response = client.get("/login", params={"user_email": email, "user_password": password})
-        if response:
+        if response.json():
             self.login_signal.emit(response.json()["user_id"])
             self.email_input.setText("")
             self.password_input.setText("")
+        else:
+            QMessageBox.warning(self, "Error", "Invalid email or password")
 
 
 
