@@ -8,12 +8,11 @@ class MainMenuPage(QWidget):
     projects_signal = Signal()
     employees_signal = Signal()
     service_projects_signal = Signal()
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
 
         self.user_id = None
         self.user = None
-        self.database = database
 
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -44,7 +43,6 @@ class MainMenuPage(QWidget):
         self.main_layout.addWidget(self.employees_button, 3, 0)
         self.employees_button.clicked.connect(self.employees_button_handler)
         self.menu_items.append(self.employees_button)
-
 
 
         for flat_button in self.menu_items:

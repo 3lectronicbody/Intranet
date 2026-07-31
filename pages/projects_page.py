@@ -9,10 +9,9 @@ class ProjectsPage(QWidget):
     delete_signal = Signal(int)
     back_signal = Signal()
     create_signal = Signal()
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
         self.user_id = None
-        self.database = database
         self.project_id = None
         self.blur_effect = None
 

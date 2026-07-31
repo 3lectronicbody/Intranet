@@ -1,16 +1,13 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QLineEdit, QHBoxLayout, QPushButton, QMessageBox
-from sqlalchemy.exc import IntegrityError
-from database.models import Users
+from API.main import client
 
 
 class SignUpPage(QWidget):
     cancel_signal = Signal()
     create_signal = Signal()
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
-
-        self.database = database
 
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -42,16 +39,12 @@ class SignUpPage(QWidget):
     def create_button_handler(self):
         email = self.name_input.text()
         password = self.password_input.text()
-        with self.database.session() as session:
-            user = Users(email=email, password=password)
-            try:
-                session.add(user)
-                session.commit()
-                self.create_signal.emit()
-            except IntegrityError:
-                QMessageBox.warning(self, "Error", "Email already exists")
-                session.rollback()
-                self.cancel_signal.emit()
+        response = client.post("/register", params={"email": email, "password": password})
+        if not response.json():
+            QMessageBox.warning(self, "Error", "Email already exists")
+            return
+        self.create_signal.emit()
+
     def hideEvent(self, event):
         self.name_input.clear()
         self.password_input.clear()

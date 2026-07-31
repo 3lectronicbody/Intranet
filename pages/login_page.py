@@ -2,7 +2,6 @@ from PySide6.QtCore import Signal, Qt, QTimer
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEdit, QHBoxLayout, \
     QMessageBox
 from custom_widgets_folder.custom_widgets import CustomPushButton
-from database.models import Users
 import platform
 import ctypes
 from API.main import client
@@ -13,10 +12,8 @@ class LoginPage(QWidget):
     close_signal = Signal()
     sign_up_signal = Signal()
 
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
-
-        self.database = database
 
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
@@ -83,9 +80,6 @@ class LoginPage(QWidget):
         self.adjustSize()
 
 
-
-
-
     def login_handler(self):
         email = self.email_input.text()
         password = self.password_input.text()
@@ -105,12 +99,10 @@ class LoginPage(QWidget):
 
     def cancel_handler(self):
         self.close_signal.emit()
-
     def sign_up_handler(self):
         self.email_input.setText("")
         self.password_input.setText("")
         self.sign_up_signal.emit()
-
     def check_caps_lock(self):
         platform_name = platform.system()
         if platform_name == "Windows":

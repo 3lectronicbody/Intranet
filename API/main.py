@@ -24,3 +24,12 @@ def password_validation(user_email: str, user_password: str, db=Depends(get_db))
         return {"user_id": user.id}
     else:
         return False
+@app.post("/register")
+def sign_up(email: str, password: str, db=Depends(get_db)):
+    existing_user = db.query(Users).filter(Users.email == email).first()
+    if existing_user:
+        return False
+    user = Users(email=email, password=password)
+    db.add(user)
+    db.commit()
+    return True

@@ -13,12 +13,11 @@ from helper_functions import confirmation_dialog
 from custom_widgets_folder.custom_widgets import MenuBar
 
 class MainFrame(QMainWindow):
-    def __init__(self, database=None):
+    def __init__(self):
         super().__init__()
 
         self.user_id = None
         self.project_id = None
-        self.database = database
 
         self.project_window = None
 
@@ -28,7 +27,7 @@ class MainFrame(QMainWindow):
         self.main_layout = QVBoxLayout()
         self.central_widget.setLayout(self.main_layout)
 
-        self.menu_bar = MenuBar(self,self.database, self.project_id, self.user_id, flag="main")
+        self.menu_bar = MenuBar(self, self.project_id, self.user_id, flag="main")
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.addWidget(self.menu_bar)
 
@@ -39,37 +38,37 @@ class MainFrame(QMainWindow):
         self.main_layout.addWidget(self.frame)
 
 
-        self.login_page = LoginPage(self.database)
+        self.login_page = LoginPage()
         self.login_page.login_signal.connect(self.show_main_menu_page)
         self.login_page.close_signal.connect(self.close)
         self.login_page.sign_up_signal.connect(self.show_sign_up_page)
 
         self.login_page_size = None
 
-        self.main_menu_page = MainMenuPage(self.database)
+        self.main_menu_page = MainMenuPage()
         self.main_menu_page.logout_signal.connect(self.show_login_page)
         self.main_menu_page.projects_signal.connect(self.show_projects_page)
         self.main_menu_page.employees_signal.connect(self.show_employees_page)
         self.main_menu_page.service_projects_signal.connect(self.show_service_projects_page)
 
 
-        self.sign_up_page = SignUpPage(self.database)
+        self.sign_up_page = SignUpPage()
         self.sign_up_page.cancel_signal.connect(self.show_login_page)
         self.sign_up_page.create_signal.connect(self.show_login_page)
 
-        self.projects_page = ProjectsPage(self.database)
+        self.projects_page = ProjectsPage()
         self.projects_page.back_signal.connect(self.show_main_menu_page)
         self.projects_page.create_signal.connect(self.show_create_project_page)
         self.projects_page.open_signal.connect(self.show_project_page) # Signal takes project_id
 
-        self.create_project_page = CreateProjectPage(self.database)
+        self.create_project_page = CreateProjectPage()
         self.create_project_page.cancel_signal.connect(self.show_projects_page)
         self.create_project_page.create_signal.connect(self.show_projects_page)
 
-        self.employees_page = EmployeesPage(self.database)
+        self.employees_page = EmployeesPage()
         self.employees_page.back_signal.connect(self.show_main_menu_page)
 
-        self.service_projects_page = ServiceProjectsPage(self.database, self.user_id, parent=self)
+        self.service_projects_page = ServiceProjectsPage(self.user_id, parent=self)
         self.service_projects_page.back_signal.connect(self.show_main_menu_page)
 
 
