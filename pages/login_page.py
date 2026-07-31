@@ -98,6 +98,8 @@ class LoginPage(QWidget):
             self.password_input.setText("")
         else:
             QMessageBox.warning(self, "Error", "Invalid email or password")
+            self.email_input.setText("")
+            self.password_input.setText("")
 
 
 
