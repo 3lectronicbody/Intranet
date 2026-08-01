@@ -121,7 +121,7 @@ class CreateServiceProject(QDialog):
         confirmation = confirmation_dialog(self, "Create Service Project", "Confirm that You want to create project")
         if confirmation == QMessageBox.Yes:
             number = self.actual_number
-            formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y").strftime("%Y-%m-%d")
+            formatted_date: datetime = datetime.now()
             owner = self.owner_input.text()
             phone_number = self.phone_number_input.text()
             email = self.email_input.text()
