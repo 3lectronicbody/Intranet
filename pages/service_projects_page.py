@@ -7,7 +7,7 @@ from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProjec
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
 from API.api import client
-from types import SimpleNamespace
+
 
 
 class ServiceProjectsPage(QWidget):

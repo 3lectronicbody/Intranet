@@ -8,7 +8,6 @@ from PySide6.QtCore import Qt, Signal
 from API.api import client
 from helper_functions import clear_layout, confirmation_dialog
 import copy
-import tempfile
 from pathlib import Path
 import pypdf
 import io

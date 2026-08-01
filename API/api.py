@@ -7,6 +7,7 @@ from sqlalchemy.orm import defer
 from API.pydantic_models  import ServiceProjectSchema
 from sqlalchemy.orm import Session
 from datetime import datetime
+import base64
 
 app = FastAPI()
 database = Database()
@@ -36,17 +37,25 @@ def password_validation(
         )
 
     return {"user_id": user.id}
+
 @app.get("/projects")
 def get_projects(db=Depends(get_db)):
     return db.query(Projects).all()
+
+@app.get("/projects/{project_id}")
+def get_project_by_id(project_id: int, db=Depends(get_db)):
+    return db.get(Projects, project_id)
+
 @app.get("/employees")
 def get_employees(db = Depends(get_db)):
     users = db.query(Users).all()
     return users
+
 @app.get("/employees/{user_id}")
 def get_user_by_id(user_id: int, db: Session =Depends(get_db)):
     user = db.get(Users, user_id)
     return user
+
 @app.patch("/employees/{user_id}")
 def update_user_role(user_id: int, new_role: str, db: Session = Depends(get_db)):
     user = db.get(Users, user_id)
@@ -55,20 +64,24 @@ def update_user_role(user_id: int, new_role: str, db: Session = Depends(get_db))
         db.commit()
         db.refresh(user)
     return user
-@app.get("/projects/{project_id}")
-def get_project_by_id(project_id: int, db=Depends(get_db)):
-    return db.get(Projects, project_id)
+
 @app.get("/service_projects", response_model=list[ServiceProjectSchema])
 def get_service_projects(db=Depends(get_db)):
     service_projects = db.query(ServiceProjects).options(defer(ServiceProjects.pdf_form)).all()
     return service_projects
+
+@app.get("/service_project/{service_project_id}")
+def get_service_project(service_project_id: int, db=Depends(get_db)):
+    project = db.get(ServiceProjects, service_project_id)
+    project_dictionary = project.to_dict()
+    if project.pdf_form:
+        project_dictionary["pdf_form"] = base64.b64encode(project.pdf_form).decode("utf-8")
+    return project_dictionary
 @app.get("/user/{user_id}")
 def get_user(user_id: int, db=Depends(get_db)):
     user = db.query(Users).filter(Users.id == user_id).first()
     return user
-@app.get("/service_project/{service_project_id}")
-def get_service_project(service_project_id: int, db=Depends(get_db)):
-    return db.get(ServiceProjects, service_project_id)
+
 
 @app.post("/service_projects/new")
 def create_service_project(new_project:ServiceProjectSchema
@@ -124,7 +137,8 @@ def update_service_project(service_project_id: int, data: dict, db=Depends(get_d
                 value = base64.b64decode(value)
             setattr(project, key, value)
     db.commit()
-    return True
+    db.refresh(project)
+    return None
 @app.get("/last_project_number")
 def get_last_project_number(db=Depends(get_db)):
     last_project = db.query(Projects).order_by(Projects.number.desc()).first()
