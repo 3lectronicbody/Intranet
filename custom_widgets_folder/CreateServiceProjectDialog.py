@@ -121,7 +121,7 @@ class CreateServiceProject(QDialog):
         confirmation = confirmation_dialog(self, "Create Service Project", "Confirm that You want to create project")
         if confirmation == QMessageBox.Yes:
             number = self.actual_number
-            formatted_date: datetime = datetime.now()
+            formatted_date: str = datetime.now().isoformat()
             owner = self.owner_input.text()
             phone_number = self.phone_number_input.text()
             email = self.email_input.text()
@@ -146,15 +146,10 @@ class CreateServiceProject(QDialog):
             }
 
             # Use json= instead of params= to send data in the request body
-            response = client.post("/service_projects/new", json=payload)
+            client.post("/service_projects/new", json=payload)
 
-            if response.status_code == 200:
-                new_project_id = response.json()
-                self.create_pdf_form(new_project_id)
-                self.save_signal.emit()
-                self.accept()
-            else:
-                QMessageBox.critical(self, "Error", f"Could not create service project: {response.text}")
+            self.save_signal.emit()
+            self.accept()
 
     def cancel_button_handler(self):
         self.reject()

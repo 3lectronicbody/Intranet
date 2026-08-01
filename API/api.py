@@ -70,13 +70,13 @@ def get_service_project(service_project_id: int, db=Depends(get_db)):
     return db.get(ServiceProjects, service_project_id)
 
 @app.post("/service_projects/new")
-def create_service_project(new_project: ServiceProjectSchema, db=Depends(get_db)):
-    from datetime import datetime
-    dt_start = datetime.strptime(new_project.start_date, "%Y-%m-%d")
+def create_service_project(new_project:ServiceProjectSchema
+                           , db=Depends(get_db)):
+
     new_project = ServiceProjects(
         number=new_project.number,
         owner=new_project.owner,
-        start_date=dt_start,
+        start_date=new_project.start_date,
         phone_number=new_project.phone_number,
         email=new_project.email,
         manufacturer=new_project.manufacturer,

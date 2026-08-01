@@ -1,7 +1,8 @@
 from pydantic import BaseModel,ConfigDict, EmailStr, Base64Bytes
 from database.models import Role
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
+
 
 class UsersSchema(BaseModel):
     id: int
@@ -54,7 +55,7 @@ class ProjectDetailSchema(BaseModel):
 
 
 class ServiceProjectSchema(BaseModel):
-    id: int
+    id: Optional[int] = None
     number: str
     owner: str
     start_date: datetime
