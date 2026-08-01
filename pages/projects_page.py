@@ -1,8 +1,7 @@
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QMessageBox, QGraphicsBlurEffect
-from database.models import Projects
+from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QMessageBox
 from helper_functions import clear_layout, confirmation_dialog
-from API.main import client
+from API.api import client
 
 
 class ProjectsPage(QWidget):
@@ -101,10 +100,10 @@ class ProjectsPage(QWidget):
         warning = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this project?")
         if warning == QMessageBox.No:
             return
-        with self.database.session() as session:
-            project = session.query(Projects).get(project_id)
-            session.delete(project)
-            session.commit()
+        response = client.delete(f"/project/{project_id}")
+        if response.status_code == 200 and response.json():
             self.refresh_data()
+        else:
+            QMessageBox.critical(self, "Error", "Could not delete project")
 
 

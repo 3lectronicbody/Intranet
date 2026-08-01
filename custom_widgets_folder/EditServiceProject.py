@@ -2,32 +2,28 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton, \
     QWidget
 
-from database.models import ServiceProjects
+from API.api import client
 
 
 class EditServiceProject(QWidget):
     save_signal = Signal()
-    def __init__(self, database, user_id, project_id, parent=None):
+    def __init__(self, user_id, project_id, parent=None):
         super().__init__(parent)
-        self.database = database
         self.user_id = user_id
         self.project_id = project_id
         self.parent = parent
 
-        with self.database.session() as session:
-            project= session.get(ServiceProjects, self.project_id)
-            self.current_values = {'owner': project.owner.strip(),
-                                   'phone_number': project.phone_number.strip(),
-                                   'email': project.email.strip(),
-                                   'manufacturer': project.manufacturer.strip(),
-                                   'model': project.model.strip(),
-                                   'code': project.code.strip(),
-                                   'serial_number': project.serial_number.strip(),
-                                   'description':project.description.strip()}
-
-
-        with self.database.session() as session:
-            self.project = session.query(ServiceProjects).get(self.project_id)
+        response = client.get(f"/service_project/{self.project_id}")
+        self.project = response.json()
+        
+        self.current_values = {'owner': self.project['owner'].strip(),
+                               'phone_number': self.project['phone_number'].strip(),
+                               'email': self.project['email'].strip(),
+                               'manufacturer': self.project['manufacturer'].strip(),
+                               'model': self.project['model'].strip(),
+                               'code': self.project['code'].strip(),
+                               'serial_number': self.project['serial_number'].strip(),
+                               'description':self.project['description'].strip()}
 
         self.setWindowTitle("Edit Service Project")
 
@@ -40,7 +36,7 @@ class EditServiceProject(QWidget):
         self.layout.addWidget(self.number_title_label, 0, 0)
 
         self.number_input = QLineEdit()
-        self.number_input.setText(self.project.number)
+        self.number_input.setText(self.project['number'])
         self.number_input.setStyleSheet("color: #3498db; font-weight: bold;")
         self.number_input.setReadOnly(True)
         self.layout.addWidget(self.number_input, 0, 1)
@@ -48,7 +44,9 @@ class EditServiceProject(QWidget):
         self.receive_date_label = QLabel("Date:")
         self.layout.addWidget(self.receive_date_label, 1, 0)
         self.receive_date_input = QLineEdit()
-        self.receive_date_input.setText(self.project.start_date.strftime("%d-%m-%Y"))
+        import datetime
+        start_date = datetime.datetime.fromisoformat(self.project['start_date'])
+        self.receive_date_input.setText(start_date.strftime("%d-%m-%Y"))
         self.receive_date_input.setStyleSheet("color: #3498db;")
         self.receive_date_input.setReadOnly(True)
         self.layout.addWidget(self.receive_date_input, 1, 1)
@@ -114,16 +112,16 @@ class EditServiceProject(QWidget):
             i.textChanged.connect(self.text_changed)
 
     def refresh(self):
-            with self.database.session() as session:
-                self.project = session.query(ServiceProjects).get(self.project_id)
-                self.owner_input.setText(self.project.owner)
-                self.phone_number_input.setText(self.project.phone_number)
-                self.email_input.setText(self.project.email)
-                self.manufacturer_input.setText(self.project.manufacturer)
-                self.model_input.setText(self.project.model)
-                self.code_input.setText(self.project.code)
-                self.serial_number_input.setText(self.project.serial_number)
-                self.description_input.setText(self.project.description)
+        response = client.get(f"/service_project/{self.project_id}")
+        self.project = response.json()
+        self.owner_input.setText(self.project['owner'])
+        self.phone_number_input.setText(self.project['phone_number'])
+        self.email_input.setText(self.project['email'])
+        self.manufacturer_input.setText(self.project['manufacturer'])
+        self.model_input.setText(self.project['model'])
+        self.code_input.setText(self.project['code'])
+        self.serial_number_input.setText(self.project['serial_number'])
+        self.description_input.setText(self.project['description'])
 
     def text_changed(self):
         if self.current_values['owner'] != self.owner_input.text().strip() or \
@@ -134,26 +132,28 @@ class EditServiceProject(QWidget):
                 self.current_values['code'] != self.code_input.text().strip() or \
                 self.current_values['serial_number'] != self.serial_number_input.text().strip() or \
                 self.current_values['description'] != self.description_input.toPlainText().strip():
-            with self.database.session() as session:
-                project = session.query(ServiceProjects).get(self.project_id)
-                project.owner = self.owner_input.text()
-                project.phone_number = self.phone_number_input.text()
-                project.email = self.email_input.text()
-                project.manufacturer = self.manufacturer_input.text()
-                project.model = self.model_input.text()
-                project.code = self.code_input.text()
-                project.serial_number = self.serial_number_input.text()
-                project.description = self.description_input.toPlainText()
-                session.commit()
+            
+            data = {
+                'owner': self.owner_input.text(),
+                'phone_number': self.phone_number_input.text(),
+                'email': self.email_input.text(),
+                'manufacturer': self.manufacturer_input.text(),
+                'model': self.model_input.text(),
+                'code': self.code_input.text(),
+                'serial_number': self.serial_number_input.text(),
+                'description': self.description_input.toPlainText()
+            }
+            client.patch(f"/service_project/{self.project_id}", json=data)
+            
             # Update current state dictionary:
-                self.current_values = {'owner': self.owner_input.text().strip(),
-                                       'phone_number': self.phone_number_input.text().strip(),
-                                       'email': self.email_input.text().strip(),
-                                       'manufacturer': self.manufacturer_input.text().strip(),
-                                       'model': self.model_input.text().strip(),
-                                       'code': self.code_input.text().strip(),
-                                       'serial_number': self.serial_number_input.text().strip(),
-                                       'description':self.description_input.toPlainText().strip()}
+            self.current_values = {'owner': self.owner_input.text().strip(),
+                                   'phone_number': self.phone_number_input.text().strip(),
+                                   'email': self.email_input.text().strip(),
+                                   'manufacturer': self.manufacturer_input.text().strip(),
+                                   'model': self.model_input.text().strip(),
+                                   'code': self.code_input.text().strip(),
+                                   'serial_number': self.serial_number_input.text().strip(),
+                                   'description':self.description_input.toPlainText().strip()}
 
 
 

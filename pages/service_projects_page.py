@@ -1,12 +1,13 @@
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
-from database.models import ServiceProjects
+from API.pydantic_models import ServiceProjectSchema
 from helper_functions import clear_layout
 from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
-from API.main import client
+from API.api import client
+from types import SimpleNamespace
 
 
 class ServiceProjectsPage(QWidget):
@@ -94,7 +95,11 @@ class ServiceProjectsPage(QWidget):
 
         selected_filter = self.dropdown_service_projects.currentText()
         searched_text = self.search_input.text().strip().lower()
-        projects = client.get("service_projects").json()
+        # Api database request
+        response = client.get("service_projects").json()
+
+        projects = [ServiceProjectSchema(**data) for data in response]
+
         if selected_filter == "All":
             projects = projects
         elif selected_filter == "Active":
@@ -211,7 +216,7 @@ class ServiceProjectsPage(QWidget):
     def searchbar_change_handler(self):
         self.refresh_data()
     def create_project_button_handler(self):
-        self.dialog = CreateServiceProject(self.database, self.user_id)
+        self.dialog = CreateServiceProject(self.user_id)
         self.dialog.save_signal.connect(self.refresh_data)
         self.dialog.exec()
     def cancel_button_handler(self):
@@ -220,7 +225,7 @@ class ServiceProjectsPage(QWidget):
 
     def open_project_button_handler(self, project_id):
 
-        service_project = ServiceProjectDialog(self.database, self.user_id, project_id)
+        service_project = ServiceProjectDialog(self.user_id, project_id)
         service_project.refresh_signal.connect(self.refresh_data)
         service_project.exec()
 

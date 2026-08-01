@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEd
 from custom_widgets_folder.custom_widgets import CustomPushButton
 import platform
 import ctypes
-from API.main import client
+from API.api import client
 
 
 class LoginPage(QWidget):
@@ -86,8 +86,11 @@ class LoginPage(QWidget):
         # Role is set default in database model
 
         response = client.get("/login", params={"user_email": email, "user_password": password})
-        if response.json():
-            self.login_signal.emit(response.json()["user_id"])
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, dict) and "user_id" in data:
+                # Emit signal only when user is found
+                self.login_signal.emit(data["user_id"])
             self.email_input.setText("")
             self.password_input.setText("")
         else:

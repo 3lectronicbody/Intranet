@@ -92,9 +92,12 @@ class MainFrame(QMainWindow):
         # If an ID is provided (from Login), save it!
         if user_id is not None:
             self.user_id = user_id
-        self.main_menu_page.load_user(self.user_id)
 
-        self.frame.setCurrentWidget(self.main_menu_page)
+            self.main_menu_page.load_user(self.user_id)
+
+            self.frame.setCurrentWidget(self.main_menu_page)
+        else:
+            return
     def show_login_page(self):
         self.setWindowTitle("Login")
         self.user_id = None

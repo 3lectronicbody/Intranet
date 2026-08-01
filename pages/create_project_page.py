@@ -1,8 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QGridLayout, QTextEdit, QPushButton, QMessageBox
 from PySide6.QtCore import Signal
-from database.models import Projects
 from datetime import datetime
-from API.main import client
+from API.api import client
 
 
 class CreateProjectPage(QWidget):
@@ -62,21 +61,18 @@ class CreateProjectPage(QWidget):
             QMessageBox.warning(self, "Warning", "Project name cannot be empty")
             self.name_input.setFocus()
             return
-        with self.database.session() as session:
-            import inspect
-            print("--- DEBUG START ---")
-            print("Projects class is loaded from:", inspect.getfile(Projects))
-            print("Attributes Python actually sees:", [attr for attr in dir(Projects) if not attr.startswith('_')])
-            print("--- DEBUG END ---")
 
-            project = Projects(name=name,
-                               number=number,
-                               description=description,
-                               is_active=True,
-                               project_owner=self.user_id ,
-                               beginning=datetime.now())
-            session.add(project)
-            session.commit()
-        self.name_input.setText("")
-        self.description_input.setText("")
-        self.create_signal.emit(self.user_id)
+        params = {
+            "name": name,
+            "number": number,
+            "description": description,
+            "project_owner": self.user_id
+        }
+        response = client.post("/new_project", params=params)
+
+        if response.status_code == 200:
+            self.name_input.setText("")
+            self.description_input.setText("")
+            self.create_signal.emit(self.user_id)
+        else:
+            QMessageBox.critical(self, "Error", "Could not create project")

@@ -1,0 +1,75 @@
+from pydantic import BaseModel,ConfigDict, EmailStr, Base64Bytes
+from database.models import Role
+from datetime import datetime
+from typing import Any
+
+class UsersSchema(BaseModel):
+    id: int
+    name: str | None = None
+    surname: str | None = None
+
+    email: str
+    phone_number: str | None = None
+    phone: str | None = None
+    password: str
+    picture: bytes | None = None
+    role: Role = Role.USER
+
+    # Allows Pydantic to parse directly from SQLAlchemy ORM models
+    model_config = ConfigDict(from_attributes=True)
+class LogSchema(BaseModel):
+    id: int
+    activity: str
+    description: str | None = None
+    timestamp: datetime
+    user_id: int
+    project_id: int | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ProjectSchema(BaseModel):
+    id: int
+    number: int
+    name: str
+    description: str
+    project_owner: str = "unknown"
+    is_active: bool = True
+    beginning: datetime
+    end: datetime | None = None
+    summary_pdf: Base64Bytes | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+class ProjectDetailSchema(BaseModel):
+    id: int
+    activity: str | None = None
+    item: str | None = None
+    item_code: str | None = None
+    quantity: float | None = None
+    unit: str | None = None
+    todo: str | None = None
+    description: str | None = None
+    project_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ServiceProjectSchema(BaseModel):
+    id: int
+    number: str
+    owner: str
+    start_date: datetime
+    end_date: datetime | None = None
+    phone_number: str | None = None
+    email: str | None = None
+    manufacturer: str
+    model: str | None = None
+    code: str | None = None
+    serial_number: str | None = None
+    description: str
+    repair_time: float | None = None
+    active: bool = True
+    tasks: list[dict[str, Any]] | None = None
+    service_parts: list[dict[str, Any]] | None = None
+    pdf_form: Base64Bytes | None = None
+
+    model_config = ConfigDict(from_attributes=True)

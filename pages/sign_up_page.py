@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QLineEdit, QHBoxLayout, QPushButton, QMessageBox
-from API.main import client
+from API.api import client
 
 
 class SignUpPage(QWidget):
