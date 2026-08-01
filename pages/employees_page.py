@@ -2,11 +2,12 @@ from functools import partial
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox
-from database.models import Role
-from PySide6.QtCore import Qt
-
-from database.models import Users
 from helper_functions import clear_layout
+from API.api import client
+from API.pydantic_models import UsersSchema, Role
+
+
+
 
 
 class EmployeesPage(QWidget):
@@ -27,58 +28,52 @@ class EmployeesPage(QWidget):
         self.back_button = QPushButton("Back")
         self.main_layout.addWidget(self.back_button)
         self.back_button.clicked.connect(self.back_signal.emit)
-
-
-
+    @staticmethod
+    def dropdown_menu_handler(employee_id, new_role_text):
+        client.patch(f"/employees/{employee_id}", params={"new_role": new_role_text})
     def load_user(self, user_id):
         self.user_id = user_id
     def refresh_data(self):
         clear_layout(self.data_layout, grid_layout=True)
-        with self.database.session() as session:
-            employees = session.query(Users).all()
-            counter = 0
-            for emp in employees:
-                label = QLabel(f"{emp.name or "Unknown name"} : {emp.email}")
-                if emp.id == self.user_id:
-                    label.setStyleSheet("""
-                        QLabel:hover { 
-                            color: blue;
-                            background-color: darkgrey; 
-                        }
-                        QLabel {
-                        font-weight: bold;
-                        text-decoration: underline;
-                        color: lightblue;
-                        }
-                    """)
-                else:
-                    label.setStyleSheet("""
-                        QLabel:hover { 
-                            color: blue;
-                            background-color: darkgrey;  
-                        }
-                    """)
+        response = client.get("employees").json()
+        employees = [UsersSchema.model_validate(emp) for emp in response]
+        counter = 0
+        for emp in employees:
+            label = QLabel(f"{emp.name or "Unknown name"} : {emp.email}")
+            if emp.id == self.user_id:
+                label.setStyleSheet("""
+                    QLabel:hover { 
+                        color: blue;
+                        background-color: darkgrey; 
+                    }
+                    QLabel {
+                    font-weight: bold;
+                    text-decoration: underline;
+                    color: lightblue;
+                    }
+                """)
+            else:
+                label.setStyleSheet("""
+                    QLabel:hover { 
+                        color: blue;
+                        background-color: darkgrey;  
+                    }
+                """)
 
-                label.setToolTip(
-                    f"ID: {emp.id}, Role: {emp.role}, Email: {emp.email}"
-                )
-                self.data_layout.addWidget(label,counter, 0)
-                # Add dropdown menu
-                dropdown_menu = QComboBox()
-                dropdown_menu.addItems([role.value for role in Role])
-                self.data_layout.addWidget(dropdown_menu, counter, 1)
-                dropdown_menu.setCurrentText(emp.role)
-                dropdown_menu.currentTextChanged.connect(partial(self.dropdown_menu_handler, emp.id,))
-                if emp.id == self.user_id:
-                    dropdown_menu.setEnabled(False)
+            label.setToolTip(
+                f"ID: {emp.id}, Role: {emp.role}, Email: {emp.email}"
+            )
+            self.data_layout.addWidget(label,counter, 0)
+            # Add dropdown menu
+            dropdown_menu = QComboBox()
+            dropdown_menu.addItems([role.value for role in Role])
+            self.data_layout.addWidget(dropdown_menu, counter, 1)
+            dropdown_menu.setCurrentText(emp.role)
+            dropdown_menu.currentTextChanged.connect(partial(self.dropdown_menu_handler, emp.id, ))
+            """if emp.id == self.user_id:
+                dropdown_menu.setEnabled(False)"""
 
-                counter += 1
-    def dropdown_menu_handler(self, employee_id, new_role_text):
-        with self.database.session() as session:
-            user = session.query(Users).get(employee_id)
-            role = new_role_text
-            if user:
-                user.role = role
-                session.commit()
-                # self.refresh_data()
+            counter += 1
+
+
 

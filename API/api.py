@@ -38,8 +38,24 @@ def password_validation(
 @app.get("/projects")
 def get_projects(db=Depends(get_db)):
     return db.query(Projects).all()
-@app.get("/project/{project_id}")
-def get_project(project_id: int, db=Depends(get_db)):
+@app.get("/employees")
+def get_employees(db = Depends(get_db)):
+    users = db.query(Users).all()
+    return users
+@app.get("/employees/{user_id}")
+def get_user_by_id(user_id: int, db: Session =Depends(get_db)):
+    user = db.get(Users, user_id)
+    return user
+@app.patch("/employees/{user_id}")
+def update_user_role(user_id: int, new_role: str, db: Session = Depends(get_db)):
+    user = db.get(Users, user_id)
+    if user:
+        user.role = new_role
+        db.commit()
+        db.refresh(user)
+    return user
+@app.get("/projects/{project_id}")
+def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
 @app.get("/service_projects", response_model=list[ServiceProjectSchema])
 def get_service_projects(db=Depends(get_db)):
@@ -53,33 +69,26 @@ def get_user(user_id: int, db=Depends(get_db)):
 def get_service_project(service_project_id: int, db=Depends(get_db)):
     return db.get(ServiceProjects, service_project_id)
 
-@app.post("/new_service_project")
-def create_service_project(
-    number: str,
-    owner: str,
-    start_date: str,
-    phone_number: str = None,
-    email: str = None,
-    manufacturer: str = None,
-    model: str = None,
-    code: str = None,
-    serial_number: str = None,
-    description: str = "",
-    db=Depends(get_db)
-):
+@app.post("/service_projects/new")
+def create_service_project(new_project: ServiceProjectSchema, db=Depends(get_db)):
     from datetime import datetime
-    dt_start = datetime.strptime(start_date, "%Y-%m-%d")
+    dt_start = datetime.strptime(new_project.start_date, "%Y-%m-%d")
     new_project = ServiceProjects(
-        number=number,
-        owner=owner,
+        number=new_project.number,
+        owner=new_project.owner,
         start_date=dt_start,
-        phone_number=phone_number,
-        email=email,
-        manufacturer=manufacturer,
-        model=model,
-        code=code,
-        serial_number=serial_number,
-        description=description
+        phone_number=new_project.phone_number,
+        email=new_project.email,
+        manufacturer=new_project.manufacturer,
+        model=new_project.model,
+        code=new_project.code,
+        serial_number=new_project.serial_number,
+        description=new_project.description,
+        repair_time=new_project.repair_time,
+        active=new_project.active,
+        tasks=new_project.tasks,
+        service_parts=new_project.service_parts,
+        pdf_form=new_project.pdf_form
     )
     db.add(new_project)
     db.commit()

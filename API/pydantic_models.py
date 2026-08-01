@@ -13,7 +13,7 @@ class UsersSchema(BaseModel):
     phone: str | None = None
     password: str
     picture: bytes | None = None
-    role: Role = Role.USER
+    role: str = Role.USER.value
 
     # Allows Pydantic to parse directly from SQLAlchemy ORM models
     model_config = ConfigDict(from_attributes=True)

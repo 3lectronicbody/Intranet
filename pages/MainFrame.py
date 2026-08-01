@@ -74,8 +74,6 @@ class MainFrame(QMainWindow):
 
 
 
-
-
         self.frame.addWidget(self.login_page)
         self.frame.addWidget(self.main_menu_page)
         self.frame.addWidget(self.sign_up_page)
@@ -89,15 +87,14 @@ class MainFrame(QMainWindow):
 
     def show_main_menu_page(self, user_id = None):
         self.setWindowTitle("Main Menu")
-        # If an ID is provided (from Login), save it!
+        # 1. Update stored ID only if a new one was supplied
         if user_id is not None:
             self.user_id = user_id
 
+        # 2. Proceed if we have a valid stored user_id (from login or previous load)
+        if self.user_id is not None:
             self.main_menu_page.load_user(self.user_id)
-
             self.frame.setCurrentWidget(self.main_menu_page)
-        else:
-            return
     def show_login_page(self):
         self.setWindowTitle("Login")
         self.user_id = None
