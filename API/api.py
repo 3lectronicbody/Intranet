@@ -6,6 +6,7 @@ from database.models import Users, Projects, ServiceProjects
 from sqlalchemy.orm import defer
 from API.pydantic_models  import ServiceProjectSchema
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 app = FastAPI()
 database = Database()
@@ -72,9 +73,22 @@ def get_service_project(service_project_id: int, db=Depends(get_db)):
 @app.post("/service_projects/new")
 def create_service_project(new_project:ServiceProjectSchema
                            , db=Depends(get_db)):
+    last_project = (
+        db.query(ServiceProjects)
+        .order_by(ServiceProjects.id.desc())  # or ServiceProjects.number.desc()
+        .first()
+    )
+    if last_project:
+        last_number = int(last_project.number[-3:])
+        actual_number = last_number + 1
+        formatted_actual_number = f"{actual_number:03d}"
+        actual_number = str(datetime.now().year) + "/" + str(formatted_actual_number)
+    else:
+        actual_number = str(datetime.now().year) + "/001"
+
 
     new_project = ServiceProjects(
-        number=new_project.number,
+        number=actual_number,
         owner=new_project.owner,
         start_date=new_project.start_date,
         phone_number=new_project.phone_number,

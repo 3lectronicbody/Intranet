@@ -132,7 +132,7 @@ class CreateServiceProject(QDialog):
             description = self.description_input.toPlainText()
 
             # Build payload matching the Pydantic schema
-            payload = {
+            new_project= {
                 "number": number,
                 "owner": owner or "unknown",
                 "start_date": formatted_date,
@@ -146,7 +146,7 @@ class CreateServiceProject(QDialog):
             }
 
             # Use json= instead of params= to send data in the request body
-            client.post("/service_projects/new", json=payload)
+            client.post("/service_projects/new", json=new_project)
 
             self.save_signal.emit()
             self.accept()
