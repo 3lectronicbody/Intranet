@@ -118,7 +118,7 @@ class CreateServiceProject(QDialog):
         self.cancel_button.clicked.connect(self.cancel_button_handler)
 
     def create_button_handler(self):
-        confirmation = confirmation_dialog(self, "Create Service Project","Confirm that You want to create project")
+        confirmation = confirmation_dialog(self, "Create Service Project", "Confirm that You want to create project")
         if confirmation == QMessageBox.Yes:
             number = self.actual_number
             formatted_date = datetime.strptime(self.receive_date_input.text(), "%d-%m-%Y").strftime("%Y-%m-%d")
@@ -131,7 +131,8 @@ class CreateServiceProject(QDialog):
             serial_number = self.serial_number_input.text()
             description = self.description_input.toPlainText()
 
-            params = {
+            # Build payload matching the Pydantic schema
+            payload = {
                 "number": number,
                 "owner": owner or "unknown",
                 "start_date": formatted_date,
@@ -143,14 +144,17 @@ class CreateServiceProject(QDialog):
                 "serial_number": serial_number or "unknown",
                 "description": description or ""
             }
-            response = client.post("/new_service_project", params=params)
+
+            # Use json= instead of params= to send data in the request body
+            response = client.post("/service_projects/new", json=payload)
+
             if response.status_code == 200:
                 new_project_id = response.json()
                 self.create_pdf_form(new_project_id)
                 self.save_signal.emit()
                 self.accept()
             else:
-                QMessageBox.critical(self, "Error", "Could not create service project")
+                QMessageBox.critical(self, "Error", f"Could not create service project: {response.text}")
 
     def cancel_button_handler(self):
         self.reject()
