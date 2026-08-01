@@ -6,14 +6,14 @@ from helper_functions import clear_layout
 from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
+from API.main import client
 
 
 class ServiceProjectsPage(QWidget):
     back_signal = Signal()
-    def __init__(self, database,user_id,parent=None):
+    def __init__(self,user_id,parent=None):
         super().__init__(parent)
 
-        self.database = database
         self.user_id = user_id
         self.parent = parent
         self.dialog = None
@@ -27,7 +27,7 @@ class ServiceProjectsPage(QWidget):
         self.setLayout(self.main_layout)
 
         self.dropdown_service_projects = QComboBox()
-        # self.dropdown_service_projects.setView(QListView())
+
 
         self.options = ["All" ,"Active","Complete"]
         self.dropdown_service_projects.addItems(self.options)
@@ -90,118 +90,119 @@ class ServiceProjectsPage(QWidget):
         for header in headers:
             header.setStyleSheet("font-weight: bold;")
 
-        with self.database.session() as session:
-
-            selected_filter = self.dropdown_service_projects.currentText()
-            searched_text = self.search_input.text().strip().lower()
-            if selected_filter == "All":
-                projects = session.query(ServiceProjects).all()
-            elif selected_filter == "Active":
-                projects = session.query(ServiceProjects).filter_by(active=True).all()
-            elif selected_filter == "Complete":
-                projects = session.query(ServiceProjects).filter_by(active=False).all()
-
-            projects = [project for project in projects if searched_text in
-                        project.owner.lower() or searched_text in str(project.number).lower() or
-                        searched_text in project.manufacturer.lower() or searched_text in project.model.lower()]
-            if self.sort_header == "number":
-                if self.sort_mode == "asc":
-                    projects.sort(key=lambda x: x.number, reverse=False)
-                else:
-                    projects.sort(key=lambda x: x.number, reverse=True)
-
-            elif self.sort_header == "owner":
-                if self.sort_mode == "asc":
-                    projects.sort(key=lambda x: x.owner, reverse=False)
-                else:
-                    projects.sort(key=lambda x: x.owner, reverse=True)
-
-            elif self.sort_header == "item":
-                if self.sort_mode == "asc":
-                    projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=False)
-                else:
-                    projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=True)
-
-            elif self.sort_header == "start_date":
-                if self.sort_mode == "asc":
-                    projects.sort(key=lambda x: x.start_date, reverse=False)
-                else:
-                    projects.sort(key=lambda x: x.start_date, reverse=True)
-
-            elif self.sort_header == "end_date":
-                if self.sort_mode == "asc":
-                    projects.sort(key=lambda x:
-                    (x.end_date if x.end_date is not None else datetime(9999,12,1)), reverse=False)
-
-                else:
-                    projects.sort(key=lambda x:
-                    (x.end_date if x.end_date is not None else datetime(9999, 12, 1)), reverse=True)
 
 
-            # no projects label
-            if not projects:
-                no_projects_label = QLabel("No projects found")
-                self.data_layout.addWidget(no_projects_label, 1, 0, 1, 5)
-                no_projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        selected_filter = self.dropdown_service_projects.currentText()
+        searched_text = self.search_input.text().strip().lower()
+        projects = client.get("service_projects").json()
+        if selected_filter == "All":
+            projects = projects
+        elif selected_filter == "Active":
+            projects = [project for project in projects if project.active]
+        elif selected_filter == "Complete":
+            projects = [project for project in projects if not project.active]
 
-            # data load
-            for index, project in enumerate(projects, start=1):
+        projects = [project for project in projects if searched_text in
+                    project.owner.lower() or searched_text in str(project.number).lower() or
+                    searched_text in project.manufacturer.lower() or searched_text in project.model.lower()]
+        if self.sort_header == "number":
+            if self.sort_mode == "asc":
+                projects.sort(key=lambda x: x.number, reverse=False)
+            else:
+                projects.sort(key=lambda x: x.number, reverse=True)
 
-                # NUMBER LABEL
-                number_label = QLabel(str(project.number))
-                number_label.setStyleSheet("font-weight: bold;")
-                # number label tooltip
-                if project.service_parts:
-                    service_parts = ""
-                    for part in project.service_parts:
-                        service_parts += (f"Name: {part['name']}<br>"
-                                          f"Code: {part['code']}<br>"
-                                          f"Quantity: {part['quantity']}<br>")
-                else:
-                    service_parts = "No service parts"
+        elif self.sort_header == "owner":
+            if self.sort_mode == "asc":
+                projects.sort(key=lambda x: x.owner, reverse=False)
+            else:
+                projects.sort(key=lambda x: x.owner, reverse=True)
 
-                if project.tasks:
-                    tasks = ""
-                    for task in project.tasks:
-                        tasks += f"{task['task_name']} -> {task['task_time']} hours<br>"
-                else:
-                    tasks = "No tasks"
+        elif self.sort_header == "item":
+            if self.sort_mode == "asc":
+                projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=False)
+            else:
+                projects.sort(key=lambda x: x.manufacturer + " " + x.model, reverse=True)
+
+        elif self.sort_header == "start_date":
+            if self.sort_mode == "asc":
+                projects.sort(key=lambda x: x.start_date, reverse=False)
+            else:
+                projects.sort(key=lambda x: x.start_date, reverse=True)
+
+        elif self.sort_header == "end_date":
+            if self.sort_mode == "asc":
+                projects.sort(key=lambda x:
+                (x.end_date if x.end_date is not None else datetime(9999,12,1)), reverse=False)
+
+            else:
+                projects.sort(key=lambda x:
+                (x.end_date if x.end_date is not None else datetime(9999, 12, 1)), reverse=True)
 
 
-                tooltip_content = (
-                    f"<b>Code:</b> {project.code}<br>"
-                    f"<b>Serial Number:</b> {project.serial_number}<br>"
-                    f"<b>Description:</b> {project.description}<br><br>"
-                    f"<b>SERVICE PARTS:</b><br> {service_parts}<br><br>"
-                    f"<b>TASKS:</b><br> {tasks}<br>"
+        # no projects label
+        if not projects:
+            no_projects_label = QLabel("No projects found")
+            self.data_layout.addWidget(no_projects_label, 1, 0, 1, 5)
+            no_projects_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-                )
-                number_label.setToolTip(tooltip_content)
-                self.data_layout.addWidget(number_label, index, 0)
-                # OWNER LABEL
-                owner_label = QLabel(project.owner)
-                tooltip_content = f"Phone: {project.phone_number}\nEmail: {project.email}"
-                owner_label.setToolTip(tooltip_content)
-                self.data_layout.addWidget(owner_label, index, 1)
-                # DEVICE LABEL
-                item = project.manufacturer + " " + project.model
-                item_label = QLabel(item)
-                self.data_layout.addWidget(item_label, index, 2)
-                # START DATE LABEL
-                start_date_label = QLabel(project.start_date.strftime("%d/%m/%Y"))
-                self.data_layout.addWidget(start_date_label, index, 3)
-                # END DATE LABEL
-                if project.end_date:
-                    end_date_label = QLabel(project.end_date.strftime("%d/%m/%Y"))
-                    end_date_label.setStyleSheet("font-weight: bold;")
-                else:
-                    end_date_label = QLabel("Pending...")
-                    end_date_label.setStyleSheet("color: green;")
-                self.data_layout.addWidget(end_date_label, index, 4)
-                # OPEN BUTTON
-                open_button = QPushButton("Open")
-                self.data_layout.addWidget(open_button, index, 5)
-                open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
+        # data load
+        for index, project in enumerate(projects, start=1):
+
+            # NUMBER LABEL
+            number_label = QLabel(str(project.number))
+            number_label.setStyleSheet("font-weight: bold;")
+            # number label tooltip
+            if project.service_parts:
+                service_parts = ""
+                for part in project.service_parts:
+                    service_parts += (f"Name: {part['name']}<br>"
+                                      f"Code: {part['code']}<br>"
+                                      f"Quantity: {part['quantity']}<br>")
+            else:
+                service_parts = "No service parts"
+
+            if project.tasks:
+                tasks = ""
+                for task in project.tasks:
+                    tasks += f"{task['task_name']} -> {task['task_time']} hours<br>"
+            else:
+                tasks = "No tasks"
+
+
+            tooltip_content = (
+                f"<b>Code:</b> {project.code}<br>"
+                f"<b>Serial Number:</b> {project.serial_number}<br>"
+                f"<b>Description:</b> {project.description}<br><br>"
+                f"<b>SERVICE PARTS:</b><br> {service_parts}<br><br>"
+                f"<b>TASKS:</b><br> {tasks}<br>"
+
+            )
+            number_label.setToolTip(tooltip_content)
+            self.data_layout.addWidget(number_label, index, 0)
+            # OWNER LABEL
+            owner_label = QLabel(project.owner)
+            tooltip_content = f"Phone: {project.phone_number}\nEmail: {project.email}"
+            owner_label.setToolTip(tooltip_content)
+            self.data_layout.addWidget(owner_label, index, 1)
+            # DEVICE LABEL
+            item = project.manufacturer + " " + project.model
+            item_label = QLabel(item)
+            self.data_layout.addWidget(item_label, index, 2)
+            # START DATE LABEL
+            start_date_label = QLabel(project.start_date.strftime("%d/%m/%Y"))
+            self.data_layout.addWidget(start_date_label, index, 3)
+            # END DATE LABEL
+            if project.end_date:
+                end_date_label = QLabel(project.end_date.strftime("%d/%m/%Y"))
+                end_date_label.setStyleSheet("font-weight: bold;")
+            else:
+                end_date_label = QLabel("Pending...")
+                end_date_label.setStyleSheet("color: green;")
+            self.data_layout.addWidget(end_date_label, index, 4)
+            # OPEN BUTTON
+            open_button = QPushButton("Open")
+            self.data_layout.addWidget(open_button, index, 5)
+            open_button.clicked.connect(lambda _,project_id=project.id: self.open_project_button_handler(project_id))
 
 
     # Main Window

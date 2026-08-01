@@ -94,9 +94,6 @@ class LoginPage(QWidget):
             QMessageBox.warning(self, "Error", "Invalid email or password")
             self.email_input.setText("")
             self.password_input.setText("")
-
-
-
     def cancel_handler(self):
         self.close_signal.emit()
     def sign_up_handler(self):

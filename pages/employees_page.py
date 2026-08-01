@@ -11,9 +11,8 @@ from helper_functions import clear_layout
 
 class EmployeesPage(QWidget):
     back_signal = Signal()
-    def __init__(self, database):
+    def __init__(self):
         super().__init__()
-        self.database = database
         self.user_id = None
 
         self.main_layout = QVBoxLayout()

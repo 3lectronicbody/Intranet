@@ -2,24 +2,20 @@ from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QGridLayout, QTextEdit
 from PySide6.QtCore import Signal
 from database.models import Projects
 from datetime import datetime
+from API.main import client
 
 
 class CreateProjectPage(QWidget):
     create_signal = Signal(int)
     cancel_signal = Signal(int)
-    def __init__(self, database, user_id = None):
+    def __init__(self, user_id = None):
         super().__init__()
-        self.database = database
         self.user_id = user_id
 
-        with self.database.session() as session:
-            last_project = session.query(Projects).order_by(Projects.number.desc()).first()
-            if last_project:
-                self.actual_number = last_project.number + 1
-            else:
-                self.actual_number = 1
-            self.formatted_number = f"{self.actual_number:03d}"
-            self.formatted_number = str(datetime.now().year) + "/" + self.formatted_number
+        response = client.get("last_project_number/")
+        self.actual_number = response.json() + 1
+        self.formatted_number = f"{self.actual_number:03d}"
+        self.formatted_number = str(datetime.now().year) + "/" + self.formatted_number
 
 
 
