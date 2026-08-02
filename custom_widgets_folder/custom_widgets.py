@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
 from API.api import API_CLIENT
+from API.pydantic_models import ProjectDetailSchema
 
 class MenuBar(QMenuBar):
     def __init__(self, parent, user_id, project_id=None, flag=None):
@@ -164,15 +165,14 @@ class AddItem(QDialog):
             self.quantity_input.setFocus()
             return
 
-    with self.database.session() as session:
-        new = ProjectDetails(project_id=self.project_id,
+
+        new = ProjectDetailSchema(project_id=self.project_id,
                              item=name,
                              item_code=code,
                              quantity=quantity,
                              unit=unit,
                              description=description)
-        session.add(new)
-        session.commit()
+        API_CLIENT.post("/projects/project/details/new", json=new.model_dump())
         self.accept()
         self.save_signal.emit()
 class EditItem(QDialog):

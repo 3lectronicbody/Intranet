@@ -41,7 +41,7 @@ class ProjectSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 class ProjectDetailSchema(BaseModel):
-    id: int
+    id: int | None = None
     activity: str | None = None
     item: str | None = None
     item_code: str | None = None

@@ -5,7 +5,7 @@ from custom_widgets_folder.custom_widgets import EditItem, EditActivity, EditToD
 from helper_functions import confirmation_dialog
 from PySide6.QtGui import Qt
 from API.api import API_CLIENT
-
+from types import SimpleNamespace
 
 
 class ItemsTab(QWidget):
@@ -45,13 +45,14 @@ class ItemsTab(QWidget):
 
 
         counter = 2
-        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}")
-        items = [detail for detail in project_details.json() if detail.item is not None]
+        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
+
+        items = [SimpleNamespace(**detail) for detail in project_details if detail['item'] is not None]
         for item in items:
             name_label = QLabel(item.item)
             self.main_layout.addWidget(name_label, counter, 0)
             name_label.setToolTip(str(item.description))
-            code_label = QLabel(item.item_code)
+            code_label = QLabel(item.item_code or "")
             self.main_layout.addWidget(code_label, counter, 1)
             quantity_label = QLabel(str(item.quantity))
             self.main_layout.addWidget(quantity_label, counter, 2)
@@ -111,7 +112,7 @@ class ActivitiesTab(QWidget):
 
         project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}")
         counter = 2
-        activities = [detail for detail in project_details.json() if detail.activity is not None]
+        activities = [SimpleNamespace(**detail) for detail in project_details.json() if detail['activity'] is not None]
         for activity in activities:
             name_label = QLabel(activity.activity)
             self.main_layout.addWidget(name_label, counter, 0)
@@ -149,7 +150,7 @@ class ToDoTab(QWidget):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.empty_list_label = QLabel("No To-Do Items")
+        self.empty_list_label = QLabel("No To-Do activities")
         self.layout.addWidget(self.empty_list_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
 
@@ -163,7 +164,7 @@ class ToDoTab(QWidget):
         clear_layout(self.main_layout, grid_layout=True)
         project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
 
-        todos = [detail for detail in project_details if detail.todo is not None]
+        todos = [SimpleNamespace(**detail) for detail in project_details if detail['todo'] is not None]
         if todos:
             self.empty_list_label.hide()
             counter = 1

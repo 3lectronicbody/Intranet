@@ -45,7 +45,7 @@ def get_projects(db=Depends(get_db), ):
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
-@app.get("/projects/project/details/{project_id}")
+@app.get("/projects/project/details/{project_id}", response_model=list[ProjectDetailSchema])
 def get_project_details(project_id: int, db=Depends(get_db)):
     project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
     return project_details
