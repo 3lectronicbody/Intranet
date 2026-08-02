@@ -122,17 +122,17 @@ class ProjectPage(QDialog):
 
         # 1. Determine the flag
         if current_tab_index == 0:
-            self.add_item_dialog = AddItem(self.database, self.project_id, self.user_id)
+            self.add_item_dialog = AddItem(self.project_id, self.user_id)
             self.add_item_dialog.save_signal.connect(self.items_tab.load_data)
             self.add_item_dialog.exec()
 
         elif current_tab_index == 1:
-            self.add_activity_dialog = AddActivity(self.database, self.project_id, self.user_id)
+            self.add_activity_dialog = AddActivity( self.project_id, self.user_id)
             self.add_activity_dialog.save_signal.connect(self.activities_tab.load_data)
             self.add_activity_dialog.exec()
 
         elif current_tab_index == 2:
-            self.add_todo_dialog = AddToDo(self.database, self.project_id, self.user_id)
+            self.add_todo_dialog = AddToDo(self.project_id, self.user_id)
             self.add_todo_dialog.save_signal.connect(self.todo_tab.load_data)
             self.add_todo_dialog.exec()
     def back_button_handler(self, event=None):

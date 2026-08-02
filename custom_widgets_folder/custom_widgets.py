@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
 from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
+from API.api import API_CLIENT
 
 class MenuBar(QMenuBar):
     def __init__(self, parent, user_id, project_id=None, flag=None):
@@ -75,9 +76,8 @@ class MenuBar(QMenuBar):
             self.parent.accept()
 class AddItem(QDialog):
     save_signal = Signal()
-    def __init__(self, database, project_id, user_id):
+    def __init__(self,project_id, user_id):
         super().__init__()
-        self.database = database
         self.project_id = project_id
         self.user_id = user_id
 
@@ -164,15 +164,15 @@ class AddItem(QDialog):
             self.quantity_input.setFocus()
             return
 
-        with self.database.session() as session:
-            new = ProjectDetails(project_id=self.project_id,
-                                 item=name,
-                                 item_code=code,
-                                 quantity=quantity,
-                                 unit=unit,
-                                 description=description)
-            session.add(new)
-            session.commit()
+    with self.database.session() as session:
+        new = ProjectDetails(project_id=self.project_id,
+                             item=name,
+                             item_code=code,
+                             quantity=quantity,
+                             unit=unit,
+                             description=description)
+        session.add(new)
+        session.commit()
         self.accept()
         self.save_signal.emit()
 class EditItem(QDialog):

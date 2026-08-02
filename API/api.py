@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from database.database import Database
 from database.models import Users, Projects, ServiceProjects, ProjectDetails
 from sqlalchemy.orm import defer
-from API.pydantic_models  import ServiceProjectSchema, ProjectDetailSchema
+from API.pydantic_models  import ServiceProjectSchema, ProjectDetailSchema, ProjectSchema
 from sqlalchemy.orm import Session
 from datetime import datetime
 import base64
@@ -39,8 +39,8 @@ def password_validation(
 
     return {"user_id": user.id}
 
-@app.get("/projects")
-def get_projects(db=Depends(get_db)):
+@app.get("/projects", response_model=list[ProjectSchema])
+def get_projects(db=Depends(get_db), ):
     return db.query(Projects).all()
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
@@ -49,6 +49,13 @@ def get_project_by_id(project_id: int, db=Depends(get_db)):
 def get_project_details(project_id: int, db=Depends(get_db)):
     project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
     return project_details
+@app.post("/projects/project/details/new", status_code=status.HTTP_201_CREATED)
+def create_project_detail(new_detail:ProjectDetailSchema, db=Depends(get_db)):
+    new_project_detail = ProjectDetails(**new_detail.model_dump())
+    db.add(new_project_detail)
+    db.commit()
+    db.refresh(new_project_detail)
+    return new_project_detail
 @app.get("/users")
 def get_employees(db = Depends(get_db)):
     users = db.query(Users).all()
