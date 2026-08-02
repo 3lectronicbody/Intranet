@@ -5,13 +5,12 @@ from fpdf import FPDF
 from database.models import ProjectDetails, Projects
 
 class MenuBar(QMenuBar):
-    def __init__(self, parent, database, user_id, project_id=None, flag=None):
+    def __init__(self, parent, user_id, project_id=None, flag=None):
         # flag=project: Menu bar for project window
         # flag=main: Menu bar for main menu
         super().__init__(parent)
 
         self.parent = parent
-        self.database = database
         self.project_id = project_id
         self.user_id = user_id
         self.flag = flag

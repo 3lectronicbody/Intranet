@@ -8,10 +8,9 @@ from PySide6.QtGui import Qt
 
 
 class ItemsTab(QWidget):
-    def __init__(self, database, project_id, user_id):
+    def __init__(self, project_id, user_id):
         super().__init__()
 
-        self.database = database
         self.project_id = project_id
         self.user_id= user_id
 
@@ -41,7 +40,6 @@ class ItemsTab(QWidget):
         hor_line.setFrameShape(QFrame.HLine)
         hor_line.setFrameShadow(QFrame.Sunken)
         self.main_layout.addWidget(hor_line, 1, 0, 1, 6)
-
 
 
         with self.database.session() as session:

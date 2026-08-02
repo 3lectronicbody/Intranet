@@ -36,7 +36,7 @@ class ProjectPage(QDialog):
         self.main_layout = QVBoxLayout()
         self.setLayout(self.main_layout)
 
-        self.menu_bar = MenuBar(self, self.database, self.user_id, project_id=self.project_id, flag="project")
+        self.menu_bar = MenuBar(self, self.user_id, project_id=self.project_id, flag="project")
         self.main_layout.setContentsMargins(0, 0, 0, 1)
         self.main_layout.addWidget(self.menu_bar)
 
@@ -60,14 +60,14 @@ class ProjectPage(QDialog):
 
         self.main_layout.addWidget(self.tab)
 
-        self.items_tab = ItemsTab(self.database, self.project_id, self.user_id)
+        self.items_tab = ItemsTab(self.project_id, self.user_id)
         self.tab.addTab(self.items_tab, "ITEMS")
         self.items_tab.setObjectName("items_tab")
 
-        self.activities_tab = ActivitiesTab(self.database, self.project_id, self.user_id)
+        self.activities_tab = ActivitiesTab(self.project_id, self.user_id)
         self.tab.addTab(self.activities_tab, "ACTIVITIES")
 
-        self.todo_tab = ToDoTab(self.database, self.project_id, self.user_id)
+        self.todo_tab = ToDoTab( self.project_id, self.user_id)
         self.tab.addTab(self.todo_tab, "TODO")
 
         # COMPLETE PROJECT BUTTON
