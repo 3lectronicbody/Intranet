@@ -292,9 +292,8 @@ class EditItem(QDialog):
 class AddActivity(QDialog):
     save_signal = Signal()
 
-    def __init__(self, database, project_id, user_id):
+    def __init__(self, project_id, user_id):
         super().__init__()
-        self.database = database
         self.project_id = project_id
         self.user_id = user_id
 
@@ -373,15 +372,15 @@ class AddActivity(QDialog):
             return
 
 
-        with self.database.session() as session:
-            new = ProjectDetails(project_id=self.project_id,
-                                 activity=name,
-                                 quantity= quantity,
-                                 description=description)
-            session.add(new)
-            session.commit()
-            self.save_signal.emit()
-            self.accept()
+
+        new = ProjectDetailSchema(project_id=self.project_id,
+                             activity=name,
+                             quantity= quantity,
+                             description=description)
+        API_CLIENT.post("/projects/project/details/new", json=new.model_dump())
+
+        self.save_signal.emit()
+        self.accept()
 class EditActivity(QDialog):
     save_signal = Signal()
 
@@ -489,9 +488,9 @@ class EditActivity(QDialog):
 class AddToDo(QDialog):
     save_signal = Signal()
 
-    def __init__(self, database, project_id, user_id):
+    def __init__(self,project_id, user_id):
         super().__init__()
-        self.database = database
+
         self.project_id = project_id
         self.user_id = user_id
 
@@ -560,14 +559,13 @@ class AddToDo(QDialog):
             self.quantity_input.setFocus()
             return
 
-        with self.database.session() as session:
-            todo = self.name_input.text().strip()
-            quantity = self.quantity_input.text().strip().replace(",", ".")
-            new = ProjectDetails(todo=todo,quantity=quantity, project_id=self.project_id)
-            session.add(new)
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+
+        todo = self.name_input.text().strip()
+        quantity = self.quantity_input.text().strip().replace(",", ".")
+        new = ProjectDetailSchema(todo=todo,quantity=float(quantity), project_id=self.project_id)
+        API_CLIENT.post("projects/project/details/new", json=new.model_dump())
+        self.accept()
+        self.save_signal.emit()
 class EditToDo(QDialog):
     save_signal = Signal()
 

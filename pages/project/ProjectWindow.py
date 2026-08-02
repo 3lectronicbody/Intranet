@@ -127,7 +127,7 @@ class ProjectPage(QDialog):
             self.add_item_dialog.exec()
 
         elif current_tab_index == 1:
-            self.add_activity_dialog = AddActivity( self.project_id, self.user_id)
+            self.add_activity_dialog = AddActivity(self.project_id, self.user_id)
             self.add_activity_dialog.save_signal.connect(self.activities_tab.load_data)
             self.add_activity_dialog.exec()
 
