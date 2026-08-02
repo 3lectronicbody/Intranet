@@ -110,14 +110,13 @@ class ProjectPage(QDialog):
             self.add_button.setText("Add To Do")
             self.todo_tab.load_data()
     def refresh_page(self):
-        with self.database.session() as session:
-            project = session.get(Projects, self.project_id)
-            if not project.is_active:
-                self.complete_project_button.hide()
-                self.activate_project_button.show()
-            else:
-                self.complete_project_button.show()
-                self.activate_project_button.hide()
+        project = API_CLIENT.get(f"/projects/{self.project_id}").json()
+        if not project['is_active']:
+            self.complete_project_button.hide()
+            self.activate_project_button.show()
+        else:
+            self.complete_project_button.show()
+            self.activate_project_button.hide()
     def add_button_handler(self):
         current_tab_index = self.tab.currentIndex()
 

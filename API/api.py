@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException, status
 # import TestClient
 from fastapi.testclient import TestClient
 from database.database import Database
-from database.models import Users, Projects, ServiceProjects
+from database.models import Users, Projects, ServiceProjects, ProjectDetails
 from sqlalchemy.orm import defer
-from API.pydantic_models  import ServiceProjectSchema
+from API.pydantic_models  import ServiceProjectSchema, ProjectDetailSchema
 from sqlalchemy.orm import Session
 from datetime import datetime
 import base64
@@ -45,6 +45,10 @@ def get_projects(db=Depends(get_db)):
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
+@app.get("/projects/project/details/{project_id}")
+def get_project_details(project_id: int, db=Depends(get_db)):
+    project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
+    return project_details
 @app.get("/users")
 def get_employees(db = Depends(get_db)):
     users = db.query(Users).all()
