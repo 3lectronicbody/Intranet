@@ -2,7 +2,7 @@ from PySide6 import QtGui, QtCore
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox, QMenu
+    QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame,QTextEdit, QGridLayout, QLabel, QMessageBox, QMenu
 )
 from PySide6.QtCore import Qt, Signal
 from API.api import API_CLIENT
@@ -12,12 +12,13 @@ from pathlib import Path
 import pypdf
 import io
 from datetime import datetime
-from custom_widgets_folder.EditServiceProject import EditServiceProject
+# from custom_widgets_folder.EditServiceProject import EditServiceProject
 import tempfile
 
 
 
 class ServiceProjectDialog(QDialog):
+    # Main Window
     refresh_signal = Signal()
     def __init__(self, user_id, project_id, parent=None):
         super().__init__(parent)
@@ -130,7 +131,7 @@ class ServiceProjectDialog(QDialog):
                     task_name_label.setText(task["task_name"])
                     task_name_label.setStyleSheet("font-weight: bold;")
                     task_name_label.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-                    # crete dyn property .menu of task_name_label
+                    # create dyn property .menu of task_name_label
                     task_name_label.menu = TaskContextMenu(index, self)
                     task_name_label.customContextMenuRequested.connect(
                     lambda qpoint, label = task_name_label: task_name_label.menu.exec(label.mapToGlobal(qpoint))
@@ -188,7 +189,7 @@ class ServiceProjectDialog(QDialog):
     def refresh(self):
         response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
-        if project.get('active'):
+        if project['active']:
             self.complete_activate_button.setText("Complete")
             self.complete_activate_button.clicked.connect(self.deactivate_service_project)
 
@@ -300,9 +301,9 @@ class ServiceProjectDialog(QDialog):
             pdf_reader = pypdf.PdfReader(empty_pdf_form_path)
             writer = pypdf.PdfWriter()
             writer.append(pdf_reader)
-            
+
             start_date_dt = datetime.fromisoformat(project['start_date'])
-            
+
             data = {"number": (project['number'][-3:]),
                     "year": project['number'][2:4],
                     "start_date": start_date_dt.strftime("%d-%m-%Y"),
@@ -321,7 +322,7 @@ class ServiceProjectDialog(QDialog):
             # Saving the Pdf to a BytesIO object and then to a database field
             bytes_stream = io.BytesIO()  # create a BytesIO object
             writer.write(bytes_stream)  # write pdf content to the BytesIO object
-            
+
             import base64
             API_CLIENT.patch(f"/service_project/{self.project_id}", json={'pdf_form': base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
             self.open_pdf_form_button.clicked.disconnect(self.create_pdf_form)
@@ -330,8 +331,154 @@ class ServiceProjectDialog(QDialog):
             self.open_pdf_form_button.clicked.disconnect(self.create_pdf_form)
             self.refresh()
 
+class EditServiceProject(QWidget):
+    # left side of ServiceProjectDialog, where user can edit the project details
+    save_signal = Signal()
 
+    def __init__(self, user_id, project_id, parent=None):
+        super().__init__(parent)
+        self.user_id = user_id
+        self.project_id = project_id
+        self.parent = parent
 
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
+        self.project = response.json()
+
+        self.current_values = {'owner': self.project['owner'].strip(),
+                               'phone_number': self.project['phone_number'].strip(),
+                               'email': self.project['email'].strip(),
+                               'manufacturer': self.project['manufacturer'].strip(),
+                               'model': self.project['model'].strip(),
+                               'code': self.project['code'].strip(),
+                               'serial_number': self.project['serial_number'].strip(),
+                               'description': self.project['description'].strip()}
+
+        self.setWindowTitle("Edit Service Project")
+
+        self.main_layout_vertical = QVBoxLayout()
+        self.setLayout(self.main_layout_vertical)
+
+        self.layout = QGridLayout()
+        self.main_layout_vertical.addLayout(self.layout)
+        self.number_title_label = QLabel("Number: ")
+        self.layout.addWidget(self.number_title_label, 0, 0)
+
+        self.number_input = QLineEdit()
+        self.number_input.setText(self.project['number'])
+        self.number_input.setStyleSheet("color: #3498db; font-weight: bold;")
+        self.number_input.setReadOnly(True)
+        self.layout.addWidget(self.number_input, 0, 1)
+
+        self.receive_date_label = QLabel("Date:")
+        self.layout.addWidget(self.receive_date_label, 1, 0)
+        self.receive_date_input = QLineEdit()
+        import datetime
+        start_date = datetime.datetime.fromisoformat(self.project['start_date'])
+        self.receive_date_input.setText(start_date.strftime("%d-%m-%Y"))
+        self.receive_date_input.setStyleSheet("color: #3498db;")
+        self.receive_date_input.setReadOnly(True)
+        self.layout.addWidget(self.receive_date_input, 1, 1)
+
+        self.inputs = []
+
+        self.owner_label = QLabel("Owner: ")
+        self.layout.addWidget(self.owner_label, 2, 0)
+        self.owner_input = QLineEdit()
+        self.layout.addWidget(self.owner_input, 2, 1)
+        self.inputs.append(self.owner_input)
+
+        self.phone_number_label = QLabel("Phone Number: ")
+        self.layout.addWidget(self.phone_number_label, 3, 0)
+        self.phone_number_input = QLineEdit()
+        self.layout.addWidget(self.phone_number_input, 3, 1)
+        self.inputs.append(self.phone_number_input)
+
+        self.email_label = QLabel("Email: ")
+        self.layout.addWidget(self.email_label, 4, 0)
+        self.email_input = QLineEdit()
+        self.layout.addWidget(self.email_input, 4, 1)
+        self.inputs.append(self.email_input)
+
+        self.manufacturer_label = QLabel("Manufacturer: ")
+        self.layout.addWidget(self.manufacturer_label, 5, 0)
+        self.manufacturer_input = QLineEdit()
+        self.layout.addWidget(self.manufacturer_input, 5, 1)
+        self.inputs.append(self.manufacturer_input)
+
+        self.model_label = QLabel("Model: ")
+        self.layout.addWidget(self.model_label, 6, 0)
+        self.model_input = QLineEdit()
+        self.layout.addWidget(self.model_input, 6, 1)
+        self.inputs.append(self.model_input)
+
+        self.code_label = QLabel("Code: ")
+        self.layout.addWidget(self.code_label, 7, 0)
+        self.code_input = QLineEdit()
+        self.layout.addWidget(self.code_input, 7, 1)
+        self.inputs.append(self.code_input)
+
+        self.serial_number_label = QLabel("Serial Number: ")
+        self.layout.addWidget(self.serial_number_label, 8, 0)
+        self.serial_number_input = QLineEdit()
+        self.layout.addWidget(self.serial_number_input, 8, 1)
+        self.inputs.append(self.serial_number_input)
+
+        self.description_label = QLabel("Description: ")
+        self.layout.addWidget(self.description_label, 9, 0)
+        self.description_input = QTextEdit()
+        self.layout.addWidget(self.description_input, 9, 1)
+        self.inputs.append(self.description_input)
+
+        self.main_layout_vertical.addStretch(1)
+
+        self.refresh()
+
+        # self.inputs.append(self.description_input)
+        for i in self.inputs:
+            i.textChanged.connect(self.text_changed)
+
+    def refresh(self):
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
+        self.project = response.json()
+        self.owner_input.setText(self.project['owner'])
+        self.phone_number_input.setText(self.project['phone_number'])
+        self.email_input.setText(self.project['email'])
+        self.manufacturer_input.setText(self.project['manufacturer'])
+        self.model_input.setText(self.project['model'])
+        self.code_input.setText(self.project['code'])
+        self.serial_number_input.setText(self.project['serial_number'])
+        self.description_input.setText(self.project['description'])
+
+    def text_changed(self):
+        if self.current_values['owner'] != self.owner_input.text().strip() or \
+                self.current_values['phone_number'] != self.phone_number_input.text().strip() or \
+                self.current_values['email'] != self.email_input.text().strip() or \
+                self.current_values['manufacturer'] != self.manufacturer_input.text().strip() or \
+                self.current_values['model'] != self.model_input.text().strip() or \
+                self.current_values['code'] != self.code_input.text().strip() or \
+                self.current_values['serial_number'] != self.serial_number_input.text().strip() or \
+                self.current_values['description'] != self.description_input.toPlainText().strip():
+            data = {
+                'owner': self.owner_input.text(),
+                'phone_number': self.phone_number_input.text(),
+                'email': self.email_input.text(),
+                'manufacturer': self.manufacturer_input.text(),
+                'model': self.model_input.text(),
+                'code': self.code_input.text(),
+                'serial_number': self.serial_number_input.text(),
+                'description': self.description_input.toPlainText()
+            }
+            API_CLIENT.patch(f"/service_projects/{self.project_id}", json=data)
+
+            # Update current state dictionary:
+            self.current_values = {'owner': self.owner_input.text().strip(),
+                                   'phone_number': self.phone_number_input.text().strip(),
+                                   'email': self.email_input.text().strip(),
+                                   'manufacturer': self.manufacturer_input.text().strip(),
+                                   'model': self.model_input.text().strip(),
+                                   'code': self.code_input.text().strip(),
+                                   'serial_number': self.serial_number_input.text().strip(),
+                                   'description': self.description_input.toPlainText().strip()}
 
 class AddTaskDialog(QDialog):
     def __init__(self, project_id, parent=None):
@@ -373,7 +520,7 @@ class AddTaskDialog(QDialog):
             confirmation = confirmation_dialog(self, "Warning", "No time entered. Are you sure you want to save this task without time?")
             if confirmation == QMessageBox.StandardButton.No:
                 return
-        
+
         response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if not project:
@@ -413,16 +560,17 @@ class EditTaskDialog(QDialog):
     def save_button_handler(self, task_number):
         task_name = self.task_name_input.text()
         task_time = self.task_time_input.text() or ""
-        
+
         response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         tasks = project.get('tasks', [])
         updated_tasks = copy.deepcopy(tasks)
         updated_tasks[task_number]["task_name"] = task_name
         updated_tasks[task_number]["task_time"] = task_time.replace(",", ".").strip() if task_time else None
-        
-        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'tasks': updated_tasks})
+
+        API_CLIENT.patch(f"/service_projects/{self.project_id}", json={'tasks': updated_tasks})
         self.accept()
+        self.save_signal.emit()
 class AddServicePartDialog(QDialog):
     refresh_signal = Signal()
     def __init__(self, project_id, parent=None):
@@ -458,23 +606,23 @@ class AddServicePartDialog(QDialog):
         if not part_quantity:
             QMessageBox.warning(self, "Error", "Service Part quantity is required.")
             return
-        
+
         response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if not project:
             QMessageBox.warning(self, "Error", "Project no longer exists.")
             return
-        
+
         try:
             part_quantity = float(part_quantity)
         except ValueError:
             QMessageBox.warning(self, "Error", "Invalid quantity format. Please use a number.")
             return
-        
+
         updated_service_parts = copy.deepcopy(project.get('service_parts', [])) if project.get('service_parts') else []
         updated_service_parts.append({"name": part_name, "code": part_code, "quantity": part_quantity})
-        
-        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_service_parts})
+
+        API_CLIENT.patch(f"/service_projects/{self.project_id}", json={'service_parts': updated_service_parts})
         self.accept()
         self.refresh_signal.emit()
 class EditServicePartDialog(QDialog):
@@ -514,7 +662,7 @@ class EditServicePartDialog(QDialog):
         part_name = self.part_name_input.text()
         part_code = self.part_code_input.text()
         part_quantity = self.part_quantity_input.text() or ""
-        
+
         response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         parts = project.get('service_parts', [])
@@ -522,8 +670,8 @@ class EditServicePartDialog(QDialog):
         updated_parts[part_number]["name"] = part_name
         updated_parts[part_number]["code"] = part_code
         updated_parts[part_number]["quantity"] = part_quantity.replace(",", ".").strip() if part_quantity else None
-        
-        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_parts})
+
+        API_CLIENT.patch(f"/service_projects/{self.project_id}", json={'service_parts': updated_parts})
         self.save_signal.emit()
         self.accept()
 
