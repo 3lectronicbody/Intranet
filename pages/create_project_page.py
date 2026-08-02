@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QGridLayout, QTextEdit, QPushButton, QMessageBox
 from PySide6.QtCore import Signal
 from datetime import datetime
-from API.api import client
+from API.api import API_CLIENT
 
 
 class CreateProjectPage(QWidget):
@@ -11,7 +11,7 @@ class CreateProjectPage(QWidget):
         super().__init__()
         self.user_id = user_id
 
-        response = client.get("last_project_number/")
+        response = API_CLIENT.get("/last_project_number")
         self.actual_number = response.json() + 1
         self.formatted_number = f"{self.actual_number:03d}"
         self.formatted_number = str(datetime.now().year) + "/" + self.formatted_number
@@ -68,7 +68,7 @@ class CreateProjectPage(QWidget):
             "description": description,
             "project_owner": self.user_id
         }
-        response = client.post("/new_project", params=params)
+        response = API_CLIENT.post("/new_project", params=params)
 
         if response.status_code == 200:
             self.name_input.setText("")

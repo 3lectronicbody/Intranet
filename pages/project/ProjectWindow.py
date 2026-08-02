@@ -1,32 +1,35 @@
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
 
-from database.database import Database
+
 from database.models import Projects
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
 from custom_widgets_folder.custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
 from helper_functions import confirmation_dialog, project_summary_pdf
+from API.api import API_CLIENT
+from types import SimpleNamespace
 
 
 
 
 class ProjectPage(QDialog):
-    def __init__(self, database, project_id=None, user_id=None):
+    def __init__(self,project_id=None, user_id=None):
         super().__init__()
 
         self.setMinimumSize(600, 500)
 
-        self.database = database
         self.project_id = project_id
         self.user_id = user_id
         self.add_activity_dialog = None
         self.add_item_dialog = None
         self.add_todo_dialog = None
 
-        with self.database.session() as session:
-            project = session.get(Projects, self.project_id)
-            self.project_name = project.name
-            self.project_description = project.description
+        project = API_CLIENT.get(f"/projects/{project_id}").json()
+        project = SimpleNamespace(**project)
+
+
+        self.project_name = project.name
+        self.project_description = project.description
         self.setWindowTitle(self.project_name)
 
 

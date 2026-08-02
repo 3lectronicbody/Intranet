@@ -2,7 +2,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton, \
     QWidget
 
-from API.api import client
+from API.api import API_CLIENT
 
 
 class EditServiceProject(QWidget):
@@ -13,7 +13,7 @@ class EditServiceProject(QWidget):
         self.project_id = project_id
         self.parent = parent
 
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         self.project = response.json()
         
         self.current_values = {'owner': self.project['owner'].strip(),
@@ -112,7 +112,7 @@ class EditServiceProject(QWidget):
             i.textChanged.connect(self.text_changed)
 
     def refresh(self):
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         self.project = response.json()
         self.owner_input.setText(self.project['owner'])
         self.phone_number_input.setText(self.project['phone_number'])
@@ -143,7 +143,7 @@ class EditServiceProject(QWidget):
                 'serial_number': self.serial_number_input.text(),
                 'description': self.description_input.toPlainText()
             }
-            client.patch(f"/service_project/{self.project_id}", json=data)
+            API_CLIENT.patch(f"/service_project/{self.project_id}", json=data)
             
             # Update current state dictionary:
             self.current_values = {'owner': self.owner_input.text().strip(),

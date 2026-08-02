@@ -6,7 +6,7 @@ from helper_functions import clear_layout
 from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
-from API.api import client
+from API.api import API_CLIENT
 
 
 
@@ -96,7 +96,7 @@ class ServiceProjectsPage(QWidget):
         selected_filter = self.dropdown_service_projects.currentText()
         searched_text = self.search_input.text().strip().lower()
         # Api database request
-        response = client.get("service_projects").json()
+        response = API_CLIENT.get("/service_projects").json()
 
         projects = [ServiceProjectSchema(**data) for data in response]
 

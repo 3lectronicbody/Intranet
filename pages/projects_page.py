@@ -1,7 +1,8 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QMessageBox
 from helper_functions import clear_layout, confirmation_dialog
-from API.api import client
+from API.api import API_CLIENT
+from types import SimpleNamespace
 
 
 class ProjectsPage(QWidget):
@@ -45,7 +46,11 @@ class ProjectsPage(QWidget):
     def refresh_data(self):
         clear_layout(self.data_layout, grid_layout=True)
 
-        projects = client.get("projects").json()
+        # API response to get all projects
+        projects = API_CLIENT.get("/projects").json()
+        # SimpleNamespace to make the data more accessible (e.g. project.name instead of project["name"])
+        projects = [SimpleNamespace(**project) for project in projects]
+
         counter = 1
         title_label_list = []
         title_name_label = QLabel("Name")
@@ -100,7 +105,7 @@ class ProjectsPage(QWidget):
         warning = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this project?")
         if warning == QMessageBox.No:
             return
-        response = client.delete(f"/project/{project_id}")
+        response = API_CLIENT.delete(f"/project/{project_id}")
         if response.status_code == 200 and response.json():
             self.refresh_data()
         else:

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEd
 from custom_widgets_folder.custom_widgets import CustomPushButton
 import platform
 import ctypes
-from API.api import client
+from API.api import API_CLIENT
 
 
 class LoginPage(QWidget):
@@ -85,7 +85,7 @@ class LoginPage(QWidget):
         password = self.password_input.text()
         # Role is set default in database model
 
-        response = client.get("/login", params={"user_email": email, "user_password": password})
+        response = API_CLIENT.get("/login", params={"user_email": email, "user_password": password})
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, dict) and "user_id" in data:

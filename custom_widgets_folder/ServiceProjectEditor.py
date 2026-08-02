@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QGroupBox, QLineEdit, QPushButton, QScrollArea, QFrame, QDialogButtonBox, QGridLayout, QLabel, QMessageBox, QMenu
 )
 from PySide6.QtCore import Qt, Signal
-from API.api import client
+from API.api import API_CLIENT
 from helper_functions import clear_layout, confirmation_dialog
 import copy
 from pathlib import Path
@@ -120,7 +120,7 @@ class ServiceProjectDialog(QDialog):
         self.refresh()
     def refresh_tasks(self):
         clear_layout(self.tasks_list_layout, grid_layout=True)
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project_data = response.json()
         tasks = project_data.get('tasks')
         counter = 0
@@ -149,13 +149,13 @@ class ServiceProjectDialog(QDialog):
                     delete_button.clicked.connect(lambda _, task_number=index: self.delete_task(task_number))
                     self.tasks_list_layout.addWidget(delete_button, counter, 4)
                     counter += 1
-            else:
-                no_tasks_label = QLabel("No tasks added yet.")
-                no_tasks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.tasks_list_layout.addWidget(no_tasks_label, 0, 0, 1, 3)
+        else:
+            no_tasks_label = QLabel("No tasks added yet.")
+            no_tasks_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.tasks_list_layout.addWidget(no_tasks_label, 0, 0, 1, 3)
     def refresh_service_parts(self):
         clear_layout(self.items_list_layout, grid_layout=True)
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project_data = response.json()
         service_parts_list = project_data.get('service_parts')
         counter = 0
@@ -181,12 +181,12 @@ class ServiceProjectDialog(QDialog):
                     delete_button.clicked.connect(lambda _, part_id=counter: self.delete_service_part(part_id))
                     self.items_list_layout.addWidget(delete_button, counter, 4)
                     counter += 1
-            else:
-                no_items_label = QLabel("No items added yet.")
-                no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
+        else:
+            no_items_label = QLabel("No items added yet.")
+            no_items_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.items_list_layout.addWidget(no_items_label, 0, 0, 1, 5)
     def refresh(self):
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if project.get('active'):
             self.complete_activate_button.setText("Complete")
@@ -212,11 +212,11 @@ class ServiceProjectDialog(QDialog):
         confirmation = confirmation_dialog(self, "Delete Task", "Are you sure you want to delete this task?")
         if confirmation == QMessageBox.StandardButton.No:
             return
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         updated_tasks = project.get('tasks', []).copy()
         updated_tasks.pop(task_number)
-        client.patch(f"/service_project/{self.project_id}", json={'tasks': updated_tasks})
+        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'tasks': updated_tasks})
         self.refresh_tasks()
     def edit_task(self, task_number):
         edit_dialog = EditTaskDialog(self.project_id,task_number)
@@ -234,11 +234,11 @@ class ServiceProjectDialog(QDialog):
         confirmation = confirmation_dialog(self, "Delete Item", "Are you sure you want to delete this item?")
         if confirmation == QMessageBox.StandardButton.No:
             return
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         service_parts = copy.deepcopy(project.get('service_parts', []))
         service_parts.pop(part_id)
-        client.patch(f"/service_project/{self.project_id}", json={'service_parts': service_parts})
+        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'service_parts': service_parts})
         self.refresh_service_parts()
     def exit_button_handler(self):
         self.refresh_signal.emit()
@@ -248,7 +248,7 @@ class ServiceProjectDialog(QDialog):
                                            f"Are you sure you want to activate Service Project ")
 
         if confirmation == QMessageBox.StandardButton.Yes:
-            client.patch(f"/service_project/{self.project_id}", json={'active': True, 'end_date': None})
+            API_CLIENT.patch(f"/service_project/{self.project_id}", json={'active': True, 'end_date': None})
             self.refresh_signal.emit()
             self.complete_activate_button.clicked.disconnect(self.activate_service_project)
             self.refresh()
@@ -259,7 +259,7 @@ class ServiceProjectDialog(QDialog):
                                            f"Are you sure you want to deactivate Service Project")
 
         if confirmation == QMessageBox.StandardButton.Yes:
-            client.patch(f"/service_project/{self.project_id}", json={'active': False, 'end_date': datetime.now().isoformat()})
+            API_CLIENT.patch(f"/service_project/{self.project_id}", json={'active': False, 'end_date': datetime.now().isoformat()})
             self.refresh_signal.emit()
             self.complete_activate_button.clicked.disconnect(self.deactivate_service_project)
             self.refresh()
@@ -272,12 +272,12 @@ class ServiceProjectDialog(QDialog):
                                            f"This action cannot be undone !!!")
 
         if warning == QMessageBox.StandardButton.Yes:
-            client.delete(f"/service_project/{self.project_id}")
+            API_CLIENT.delete(f"/service_project/{self.project_id}")
             self.refresh_signal.emit()
             self.accept()
 
     def open_pdf_form(self):
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if project and project.get('pdf_form'):
             import base64
@@ -293,7 +293,7 @@ class ServiceProjectDialog(QDialog):
     def create_pdf_form(self):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
         if confirmation == QMessageBox.StandardButton.Yes:
-            response = client.get(f"/service_project/{self.project_id}")
+            response = API_CLIENT.get(f"/service_project/{self.project_id}")
             project = response.json()
             current_dir = Path(__file__).parent
             empty_pdf_form_path = current_dir.parent / "files" / "service_form.pdf"
@@ -323,7 +323,7 @@ class ServiceProjectDialog(QDialog):
             writer.write(bytes_stream)  # write pdf content to the BytesIO object
             
             import base64
-            client.patch(f"/service_project/{self.project_id}", json={'pdf_form': base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
+            API_CLIENT.patch(f"/service_project/{self.project_id}", json={'pdf_form': base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
             self.open_pdf_form_button.clicked.disconnect(self.create_pdf_form)
             self.refresh()
         else:
@@ -374,7 +374,7 @@ class AddTaskDialog(QDialog):
             if confirmation == QMessageBox.StandardButton.No:
                 return
         
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if not project:
             QMessageBox.warning(self, "Error", "Project no longer exists.")
@@ -382,7 +382,7 @@ class AddTaskDialog(QDialog):
         updated_project_tasks = project.get('tasks', []) or []
         new_task = {"task_name": task_name, "task_time": task_time, "task_date": task_date}
         updated_project_tasks.append(new_task)
-        client.patch(f"/service_project/{self.project_id}", json={'tasks': updated_project_tasks})
+        API_CLIENT.patch(f"/service_projects/{self.project_id}", json={'tasks': updated_project_tasks})
         self.accept()
 class EditTaskDialog(QDialog):
     save_signal = Signal()
@@ -392,7 +392,7 @@ class EditTaskDialog(QDialog):
         self.task_number = task_number
         self.parent = parent
 
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         task = response.json()['tasks'][self.task_number]
 
         self.setWindowTitle("Edit Task")
@@ -414,14 +414,14 @@ class EditTaskDialog(QDialog):
         task_name = self.task_name_input.text()
         task_time = self.task_time_input.text() or ""
         
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         tasks = project.get('tasks', [])
         updated_tasks = copy.deepcopy(tasks)
         updated_tasks[task_number]["task_name"] = task_name
         updated_tasks[task_number]["task_time"] = task_time.replace(",", ".").strip() if task_time else None
         
-        client.patch(f"/service_project/{self.project_id}", json={'tasks': updated_tasks})
+        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'tasks': updated_tasks})
         self.accept()
 class AddServicePartDialog(QDialog):
     refresh_signal = Signal()
@@ -459,7 +459,7 @@ class AddServicePartDialog(QDialog):
             QMessageBox.warning(self, "Error", "Service Part quantity is required.")
             return
         
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         if not project:
             QMessageBox.warning(self, "Error", "Project no longer exists.")
@@ -474,7 +474,7 @@ class AddServicePartDialog(QDialog):
         updated_service_parts = copy.deepcopy(project.get('service_parts', [])) if project.get('service_parts') else []
         updated_service_parts.append({"name": part_name, "code": part_code, "quantity": part_quantity})
         
-        client.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_service_parts})
+        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_service_parts})
         self.accept()
         self.refresh_signal.emit()
 class EditServicePartDialog(QDialog):
@@ -485,7 +485,7 @@ class EditServicePartDialog(QDialog):
         self.part_number = part_number
         self.parent = parent
 
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         part = response.json()['service_parts'][self.part_number]
 
         self.setWindowTitle("Edit Task")
@@ -515,7 +515,7 @@ class EditServicePartDialog(QDialog):
         part_code = self.part_code_input.text()
         part_quantity = self.part_quantity_input.text() or ""
         
-        response = client.get(f"/service_project/{self.project_id}")
+        response = API_CLIENT.get(f"/service_projects/{self.project_id}")
         project = response.json()
         parts = project.get('service_parts', [])
         updated_parts = copy.deepcopy(parts)
@@ -523,7 +523,7 @@ class EditServicePartDialog(QDialog):
         updated_parts[part_number]["code"] = part_code
         updated_parts[part_number]["quantity"] = part_quantity.replace(",", ".").strip() if part_quantity else None
         
-        client.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_parts})
+        API_CLIENT.patch(f"/service_project/{self.project_id}", json={'service_parts': updated_parts})
         self.save_signal.emit()
         self.accept()
 

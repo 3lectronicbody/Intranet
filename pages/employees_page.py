@@ -3,7 +3,7 @@ from functools import partial
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox
 from helper_functions import clear_layout
-from API.api import client
+from API.api import API_CLIENT
 from API.pydantic_models import UsersSchema, Role
 
 
@@ -28,14 +28,9 @@ class EmployeesPage(QWidget):
         self.back_button = QPushButton("Back")
         self.main_layout.addWidget(self.back_button)
         self.back_button.clicked.connect(self.back_signal.emit)
-    @staticmethod
-    def dropdown_menu_handler(employee_id, new_role_text):
-        client.patch(f"/employees/{employee_id}", params={"new_role": new_role_text})
-    def load_user(self, user_id):
-        self.user_id = user_id
     def refresh_data(self):
         clear_layout(self.data_layout, grid_layout=True)
-        response = client.get("employees").json()
+        response = API_CLIENT.get("/users").json()
         employees = [UsersSchema.model_validate(emp) for emp in response]
         counter = 0
         for emp in employees:
@@ -70,10 +65,14 @@ class EmployeesPage(QWidget):
             self.data_layout.addWidget(dropdown_menu, counter, 1)
             dropdown_menu.setCurrentText(emp.role)
             dropdown_menu.currentTextChanged.connect(partial(self.dropdown_menu_handler, emp.id, ))
-            """if emp.id == self.user_id:
-                dropdown_menu.setEnabled(False)"""
 
             counter += 1
+    @staticmethod
+    def dropdown_menu_handler(user_id, new_role_text):
+        API_CLIENT.patch(f"/users/{user_id}", json={"role": new_role_text})
+    def load_user(self, user_id):
+        self.user_id = user_id
+
 
 
 

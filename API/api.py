@@ -18,7 +18,8 @@ def get_db():
         yield session
     finally:
         session.close()
-client = TestClient(app)
+
+API_CLIENT = TestClient(app)
 
 @app.get("/login")
 def password_validation(
@@ -41,48 +42,41 @@ def password_validation(
 @app.get("/projects")
 def get_projects(db=Depends(get_db)):
     return db.query(Projects).all()
-
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
-
-@app.get("/employees")
+@app.get("/users")
 def get_employees(db = Depends(get_db)):
     users = db.query(Users).all()
     return users
-
-@app.get("/employees/{user_id}")
+@app.get("/users/{user_id}")
 def get_user_by_id(user_id: int, db: Session =Depends(get_db)):
     user = db.get(Users, user_id)
     return user
-
-@app.patch("/employees/{user_id}")
-def update_user_role(user_id: int, new_role: str, db: Session = Depends(get_db)):
+@app.patch("/users/{user_id}")
+def update_user(user_id: int, data: dict, db: Session = Depends(get_db)):
     user = db.get(Users, user_id)
-    if user:
-        user.role = new_role
-        db.commit()
-        db.refresh(user)
-    return user
+    if not user:
+        return False
+    for key, value in data.items():
+        if hasattr(user, key):
+            setattr(user, key, value)
+    db.commit()
+    db.refresh(user)
+    return None
+
 
 @app.get("/service_projects", response_model=list[ServiceProjectSchema])
 def get_service_projects(db=Depends(get_db)):
     service_projects = db.query(ServiceProjects).options(defer(ServiceProjects.pdf_form)).all()
     return service_projects
-
-@app.get("/service_project/{service_project_id}")
+@app.get("/service_projects/{service_project_id}")
 def get_service_project(service_project_id: int, db=Depends(get_db)):
     project = db.get(ServiceProjects, service_project_id)
     project_dictionary = project.to_dict()
     if project.pdf_form:
         project_dictionary["pdf_form"] = base64.b64encode(project.pdf_form).decode("utf-8")
     return project_dictionary
-@app.get("/user/{user_id}")
-def get_user(user_id: int, db=Depends(get_db)):
-    user = db.query(Users).filter(Users.id == user_id).first()
-    return user
-
-
 @app.post("/service_projects/new")
 def create_service_project(new_project:ServiceProjectSchema
                            , db=Depends(get_db)):
@@ -121,8 +115,7 @@ def create_service_project(new_project:ServiceProjectSchema
     db.commit()
     db.refresh(new_project)
     return new_project.id
-
-@app.patch("/service_project/{service_project_id}")
+@app.patch("/service_projects/{service_project_id}")
 def update_service_project(service_project_id: int, data: dict, db=Depends(get_db)):
     project = db.get(ServiceProjects, service_project_id)
     if not project:
@@ -139,6 +132,8 @@ def update_service_project(service_project_id: int, data: dict, db=Depends(get_d
     db.commit()
     db.refresh(project)
     return None
+
+
 @app.get("/last_project_number")
 def get_last_project_number(db=Depends(get_db)):
     last_project = db.query(Projects).order_by(Projects.number.desc()).first()

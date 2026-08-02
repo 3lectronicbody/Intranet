@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QLineEdit, QHBoxLayout, QPushButton, QMessageBox
-from API.api import client
+from API.api import API_CLIENT
 
 
 class SignUpPage(QWidget):
@@ -39,7 +39,7 @@ class SignUpPage(QWidget):
     def create_button_handler(self):
         email = self.name_input.text()
         password = self.password_input.text()
-        response = client.post("/register", params={"email": email, "password": password})
+        response = API_CLIENT.post("/register", params={"email": email, "password": password})
         if not response.json():
             QMessageBox.warning(self, "Error", "Email already exists")
             return

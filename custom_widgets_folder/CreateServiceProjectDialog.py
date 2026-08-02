@@ -7,7 +7,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton, \
     QMessageBox
 
-from API.api import client
+from API.api import API_CLIENT
 from helper_functions import confirmation_dialog
 
 
@@ -18,7 +18,7 @@ class CreateServiceProject(QDialog):
         self.user_id = user_id
         self.project_id = project_id
         if self.project_id:
-            response = client.get(f"/service_project/{self.project_id}")
+            response = API_CLIENT.get(f"/service_projects/{self.project_id}")
             self.project = response.json()
         self.parent = parent
 
@@ -36,7 +36,7 @@ class CreateServiceProject(QDialog):
         self.layout.addWidget(self.number_title_label, 0, 0)
         
         # We need an endpoint for last service project number, or we can use the list of service projects
-        response = client.get("service_projects")
+        response = API_CLIENT.get("/service_projects")
         service_projects = response.json()
         
         if service_projects:
@@ -146,7 +146,7 @@ class CreateServiceProject(QDialog):
             }
 
             # Use json= instead of params= to send data in the request body
-            client.post("/service_projects/new", json=new_project)
+            API_CLIENT.post("/service_projects/new", json=new_project)
 
             self.save_signal.emit()
             self.accept()
@@ -157,7 +157,7 @@ class CreateServiceProject(QDialog):
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
         if confirmation == QMessageBox.StandardButton.Yes:
-            response = client.get(f"/service_project/{project_id}")
+            response = API_CLIENT.get(f"/service_projects/{project_id}")
             project = response.json()
             if not project:
                 return
@@ -197,4 +197,4 @@ class CreateServiceProject(QDialog):
             # as I don't want to overcomplicate without a clear endpoint for large binary
             # But the user asked to refactor it.
             # I will add a patch call.
-            client.patch(f"/service_project/{project_id}", json={"pdf_form": base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
+            API_CLIENT.patch(f"/service_project/{project_id}", json={"pdf_form": base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
