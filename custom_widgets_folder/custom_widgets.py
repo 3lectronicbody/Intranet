@@ -6,7 +6,8 @@ from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from database.models import ProjectDetails, Projects
 from API.api import API_CLIENT
-from API.pydantic_models import ProjectDetailSchema
+from API.pydantic_models import ProjectDetailSchema, ProjectItemSchema, ProjectActivitySchema
+
 
 class MenuBar(QMenuBar):
     def __init__(self, parent, user_id, project_id=None, flag=None):
@@ -168,13 +169,13 @@ class AddItem(QDialog):
             return
 
 
-        new = ProjectDetailSchema(project_id=self.project_id,
-                             item=name,
-                             item_code=code,
+        new_item = ProjectItemSchema(project_id=self.project_id,
+                             name=name,
+                             code=code,
                              quantity=quantity,
                              unit=unit,
                              description=description)
-        API_CLIENT.post("/projects/project/details/new", json=new.model_dump())
+        API_CLIENT.post("/projects/project/items/new", json=new_item.model_dump())
         self.accept()
         self.save_signal.emit()
 class EditItem(QDialog):
@@ -333,7 +334,7 @@ class AddActivity(QDialog):
 
     def save_button_handler(self):
         name = self.name_input.text().strip() or None
-        quantity = self.quantity_input.text().strip() or None
+        time = self.quantity_input.text().strip() or None
         description = self.description_input.toPlainText().strip() or ""
         self.name_input.setStyleSheet("")
         self.quantity_input.setStyleSheet("")
@@ -346,7 +347,7 @@ class AddActivity(QDialog):
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity:
+        if not time:
             warning = QMessageBox()
             warning.setText("Quantity field can't be empty")
             warning.setWindowTitle("Warning")
@@ -356,7 +357,7 @@ class AddActivity(QDialog):
             self.quantity_input.setFocus()
             return
         try:
-            quantity = float(quantity.replace(",", "."))
+            time = float(time.replace(",", "."))
         except ValueError:
             warning = QMessageBox()
             warning.setText("Quantity must be a number")
@@ -365,7 +366,7 @@ class AddActivity(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-        if quantity <= 0:
+        if time <= 0:
             message = QMessageBox()
             message.setText("Quantity value must be greater than zero")
             message.exec()
@@ -375,11 +376,11 @@ class AddActivity(QDialog):
 
 
 
-        new = ProjectDetailSchema(project_id=self.project_id,
-                             activity=name,
-                             quantity= quantity,
+        new = ProjectActivitySchema(project_id=self.project_id,
+                             name=name,
+                             time=time,
                              description=description)
-        API_CLIENT.post("/projects/project/details/new", json=new.model_dump())
+        API_CLIENT.post("/projects/project/activities/new", json=new.model_dump())
 
         self.save_signal.emit()
         self.accept()
@@ -512,6 +513,11 @@ class AddToDo(QDialog):
         self.quantity_input = QLineEdit()
         self.data_layout.addWidget(self.quantity_input, 1, 1)
 
+        self.description_label = QLabel("Description: ")
+        self.data_layout.addWidget(self.description_label, 2, 0)
+        self.description_input = QTextEdit()
+        self.data_layout.addWidget(self.description_input, 2, 1)
+
         self.setWindowTitle("Add Todo")
 
         self.buttons_layout = QHBoxLayout()
@@ -525,7 +531,7 @@ class AddToDo(QDialog):
 
     def save_button_handler(self):
         todo = self.name_input.text().strip()
-        quantity = self.quantity_input.text().strip().replace(",", ".")
+        time = self.quantity_input.text().strip().replace(",", ".")
 
         self.quantity_input.setStyleSheet("")
         self.name_input.setStyleSheet("")
@@ -537,7 +543,7 @@ class AddToDo(QDialog):
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity:
+        if not time:
             message = QMessageBox()
             message.setText(f"Please enter a quantity")
             message.exec()
@@ -545,7 +551,7 @@ class AddToDo(QDialog):
             self.quantity_input.setFocus()
             return
         try:
-            quantity = float(quantity)
+            time = float(time.replace(",", "."))
         except ValueError:
             message = QMessageBox()
             message.setText("Please enter a number")
@@ -553,9 +559,9 @@ class AddToDo(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-        if quantity <= 0:
+        if time <= 0:
             message = QMessageBox()
-            message.setText("Quantity value must be greater than zero")
+            message.setText("Time value must be greater than zero")
             message.exec()
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
@@ -563,9 +569,13 @@ class AddToDo(QDialog):
 
 
         todo = self.name_input.text().strip()
-        quantity = self.quantity_input.text().strip().replace(",", ".")
-        new = ProjectDetailSchema(todo=todo,quantity=float(quantity), project_id=self.project_id)
-        API_CLIENT.post("projects/project/details/new", json=new.model_dump())
+        time = self.quantity_input.text().strip().replace(",", ".")
+        description = self.description_input.toPlainText().strip() or ""
+        new_todo = ProjectActivitySchema(name=todo,
+                                         time=float(time),
+                                         description=description,
+                                         project_id=self.project_id,)
+        API_CLIENT.post("projects/project/activities/new", json=new_todo.model_dump())
         self.accept()
         self.save_signal.emit()
 class EditToDo(QDialog):

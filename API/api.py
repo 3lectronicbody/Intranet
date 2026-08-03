@@ -2,9 +2,9 @@ from fastapi import FastAPI, Depends, HTTPException, status
 # import TestClient
 from fastapi.testclient import TestClient
 from database.database import Database
-from database.models import Users, Projects, ServiceProjects, ProjectDetails
+from database.models import Users, Projects, ServiceProjects, ProjectItems, ProjectActivities, ProjectTodos
 from sqlalchemy.orm import defer
-from API.pydantic_models import ServiceProjectSchema, ProjectDetailSchema, ProjectSchema, ProjectItemSchema, \
+from API.pydantic_models import ServiceProjectSchema, ProjectSchema, ProjectItemSchema, \
     ProjectActivitySchema, ProjectTodoSchema
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -48,23 +48,37 @@ def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
 @app.get("/projects/project/items/{project_id}", response_model=list[ProjectItemSchema])
 def get_project_items(project_id: int, db=Depends(get_db)):
-    project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
-    return project_details
+    project_items = db.query(ProjectItems).filter(ProjectItems.project_id == project_id).all()
+    return project_items
 @app.get("/projects/project/activities/{project_id}", response_model=list[ProjectActivitySchema])
 def get_project_activities(project_id: int, db=Depends(get_db)):
-    project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
-    return project_details
+    project_activities = db.query(ProjectActivities).filter(ProjectActivities.project_id == project_id).all()
+    return project_activities
 @app.get("/projects/project/todos/{project_id}", response_model=list[ProjectTodoSchema])
 def get_project_todos(project_id: int, db=Depends(get_db)):
-    project_details = db.query(ProjectDetails).filter(ProjectDetails.project_id == project_id).all()
-    return project_details
-@app.post("/projects/project/details/new", status_code=status.HTTP_201_CREATED)
-def create_project_detail(new_detail:ProjectDetailSchema, db=Depends(get_db)):
-    new_project_detail = ProjectDetails(**new_detail.model_dump())
-    db.add(new_project_detail)
+    project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
+    return project_todos
+@app.post("/projects/project/items/new", status_code=status.HTTP_201_CREATED)
+def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
+    new_project_item = ProjectItems(**new_item.model_dump(exclude={"id"}))
+    db.add(new_project_item)
     db.commit()
-    db.refresh(new_project_detail)
-    return new_project_detail
+    db.refresh(new_project_item)
+    return new_project_item
+@app.post("/projects/project/activities/new", status_code=status.HTTP_201_CREATED)
+def create_project_activity(new_activity:ProjectActivitySchema, db=Depends(get_db)):
+    new_project_activity = ProjectActivities(**new_activity.model_dump(exclude={"id"}))
+    db.add(new_project_activity)
+    db.commit()
+    db.refresh(new_project_activity)
+    return new_project_activity
+@app.post("/projects/project/todos/new", status_code=status.HTTP_201_CREATED)
+def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
+    new_project_todo = ProjectTodos(**new_todo.model_dump(exclude={'id'}))
+    db.add(new_project_todo)
+    db.commit()
+    db.refresh(new_project_todo)
+    return new_project_todo
 
 
 @app.get("/users")

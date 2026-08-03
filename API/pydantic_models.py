@@ -42,7 +42,7 @@ class ProjectSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 class ProjectItemSchema(BaseModel):
     id: int | None = None
-    name: str | None = None
+    name: str
     code: str | None = None
     quantity: float | None = None
     unit: str | None = None
@@ -52,14 +52,16 @@ class ProjectItemSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 class ProjectActivitySchema(BaseModel):
     id: int | None = None
-    name: str | None = None
+    name: str
+    time: float | None = None
     description: str | None = None
     project_id: int
 
     model_config = ConfigDict(from_attributes=True)
 class ProjectTodoSchema(BaseModel):
     id: int | None = None
-    name: str | None = None
+    name: str
+    time: float | None = None
     description: str | None = None
     project_id: int
 

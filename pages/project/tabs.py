@@ -45,9 +45,9 @@ class ItemsTab(QWidget):
 
 
         counter = 2
-        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
+        project_items = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
 
-        items = [SimpleNamespace(**detail) for detail in project_details if detail['item'] is not None]
+        items = [SimpleNamespace(**detail) for detail in project_items if detail['item'] is not None]
         for item in items:
             name_label = QLabel(item.item)
             self.main_layout.addWidget(name_label, counter, 0)
