@@ -44,8 +44,8 @@ class ProjectItemSchema(BaseModel):
     id: int | None = None
     name: str
     code: str | None = None
-    quantity: float | None = None
-    unit: str | None = None
+    quantity: float
+    unit: str
     description: str | None = None
     project_id: int
 
@@ -53,7 +53,7 @@ class ProjectItemSchema(BaseModel):
 class ProjectActivitySchema(BaseModel):
     id: int | None = None
     name: str
-    time: float | None = None
+    time: float
     description: str | None = None
     project_id: int
 
@@ -61,7 +61,7 @@ class ProjectActivitySchema(BaseModel):
 class ProjectTodoSchema(BaseModel):
     id: int | None = None
     name: str
-    time: float | None = None
+    time: float
     description: str | None = None
     project_id: int
 

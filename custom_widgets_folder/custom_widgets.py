@@ -188,9 +188,11 @@ class EditItem(QDialog):
         self.item_id = item_id
         self.setWindowTitle("Edit Item")
 
-        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
 
-        items = [SimpleNamespace(**item) for item in project_details if item['item'] is not None]
+        item = API_CLIENT.get(f"/projects/project/items/{self.item_id}").json()
+        item = SimpleNamespace(**item)
+        print(item)
+        print(self.item_id)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -201,14 +203,14 @@ class EditItem(QDialog):
         self.data_layout.addWidget(self.name_label, 0, 0)
 
         self.name_input = QLineEdit()
-        self.name_input.setText(items.item)
+        self.name_input.setText(item.name)
         self.data_layout.addWidget(self.name_input, 0, 1)
 
         self.code_label = QLabel("Code: ")
         self.data_layout.addWidget(self.code_label, 1, 0)
 
         self.code_input = QLineEdit()
-        self.code_input.setText(item.item_code)
+        self.code_input.setText(item.code)
         self.data_layout.addWidget(self.code_input, 1, 1)
 
         self.quantity_label = QLabel("Quantity: ")

@@ -124,9 +124,9 @@ class ProjectItems(Base):
     __tablename__ = "project_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str | None] = mapped_column(String, nullable=True)
+    name: Mapped[str | None] = mapped_column(String, nullable=False)
     code: Mapped[str] = mapped_column(String, nullable=True)
-    quantity: Mapped[float] = mapped_column(Float, nullable=True)
+    quantity: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str | None] = mapped_column(String, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
@@ -141,7 +141,7 @@ class ProjectActivities(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str | None] = mapped_column(String, nullable=False)
-    time: Mapped[float] = mapped_column(Float, nullable=True)
+    time: Mapped[float] = mapped_column(Float, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
@@ -154,7 +154,7 @@ class ProjectTodos(Base):
     __tablename__ = "project_todos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str | None] = mapped_column(String, nullable=False)
-    time: Mapped[float] = mapped_column(Float, nullable=True)
+    time: Mapped[float] = mapped_column(Float, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Relationship with Projects table

@@ -45,13 +45,13 @@ class ItemsTab(QWidget):
 
 
         counter = 2
-        project_items = API_CLIENT.get(f"/projects/project/items/{self.project_id}").json()
+        project_items = API_CLIENT.get(f"/projects/{self.project_id}/items/").json()
         items = [SimpleNamespace(**item) for item in project_items]
         for item in items:
-            name_label = QLabel(item.item)
+            name_label = QLabel(item.name)
             self.main_layout.addWidget(name_label, counter, 0)
             name_label.setToolTip(str(item.description))
-            code_label = QLabel(item.item_code or "")
+            code_label = QLabel(item.code or "")
             self.main_layout.addWidget(code_label, counter, 1)
             quantity_label = QLabel(str(item.quantity))
             self.main_layout.addWidget(quantity_label, counter, 2)
@@ -105,9 +105,9 @@ class ActivitiesTab(QWidget):
         hor_line.setFrameShadow(QFrame.Sunken)
         self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
 
-        project_activities = API_CLIENT.get(f"/projects/project/activities/{self.project_id}")
+        project_activities = API_CLIENT.get(f"/projects/{self.project_id}/activities/").json()
         counter = 2
-        activities = [SimpleNamespace(**activity) for activity in project_activities.json()]
+        activities = [SimpleNamespace(**activity) for activity in project_activities]
         for activity in activities:
             name_label = QLabel(activity.activity)
             self.main_layout.addWidget(name_label, counter, 0)
@@ -153,7 +153,7 @@ class ToDoTab(QWidget):
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
-        project_todos = API_CLIENT.get(f"/projects/project/todos/{self.project_id}").json()
+        project_todos = API_CLIENT.get(f"/projects/{self.project_id}/todos/").json()
 
         if project_todos:
             todos = [SimpleNamespace(**todo) for todo in project_todos]

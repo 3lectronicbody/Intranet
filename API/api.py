@@ -52,18 +52,25 @@ def get_last_project_number(db=Depends(get_db)):
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
-@app.get("/projects/project/items/{project_id}", response_model=list[ProjectItemSchema])
+@app.get("/projects/{project_id}/items/", response_model=list[ProjectItemSchema])
 def get_project_items(project_id: int, db=Depends(get_db)):
     project_items = db.query(ProjectItems).filter(ProjectItems.project_id == project_id).all()
     return project_items
-@app.get("/projects/project/activities/{project_id}", response_model=list[ProjectActivitySchema])
+@app.get("/projects/{project_id}/activities/", response_model=list[ProjectActivitySchema])
 def get_project_activities(project_id: int, db=Depends(get_db)):
     project_activities = db.query(ProjectActivities).filter(ProjectActivities.project_id == project_id).all()
     return project_activities
-@app.get("/projects/project/todos/{project_id}", response_model=list[ProjectTodoSchema])
+@app.get("/projects/{project_id}/todos/", response_model=list[ProjectTodoSchema])
 def get_project_todos(project_id: int, db=Depends(get_db)):
     project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
     return project_todos
+@app.get("/projects/project/items/{item_id}", response_model=ProjectItemSchema)
+def get_item_by_id(item_id: int, db=Depends(get_db)):
+    item = db.get(ProjectItems, item_id)
+    if item:
+        return item
+    else:
+        raise HTTPException(status_code=404, detail="Item not found")
 @app.post("/projects/project/items/new", status_code=status.HTTP_201_CREATED)
 def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
     new_project_item = ProjectItems(**new_item.model_dump(exclude={"id"}))
@@ -85,7 +92,36 @@ def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
     db.commit()
     db.refresh(new_project_todo)
     return new_project_todo
-
+@app.patch("/projects/project/item/update/{item_id}",status_code=status.HTTP_202_ACCEPTED)
+def update_project_item(item_id: int, data: dict, db=Depends(get_db)):
+    item = db.get(ProjectItems, item_id)
+    if item:
+        for key, value in data.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+@app.patch("/projects/project/activity/update/{activity_id}", status_code=status.HTTP_202_ACCEPTED)
+def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
+    activity = db.get(ProjectActivities, activity_id)
+    if activity:
+        for key, value in data.items():
+            if hasattr(activity, key):
+                setattr(activity, key, value)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+@app.patch("/projects/project/todo/update/{todo_id}", status_code=status.HTTP_202_ACCEPTED)
+def update_project_todo(todo_id: int, data: dict, db=Depends(get_db)):
+    todo = db.get(ProjectTodos, todo_id)
+    if todo:
+        for key, value in data.items():
+            if hasattr(todo, key):
+                setattr(todo, key, value)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 
 @app.get("/users")
