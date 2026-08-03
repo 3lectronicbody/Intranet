@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, QFrame, QMessageBox, QVBoxLayout
-from database.models import ProjectDetails
+
 from helper_functions import clear_layout
 from custom_widgets_folder.custom_widgets import EditItem, EditActivity, EditToDo
 from helper_functions import confirmation_dialog
@@ -45,9 +45,8 @@ class ItemsTab(QWidget):
 
 
         counter = 2
-        project_items = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
-
-        items = [SimpleNamespace(**detail) for detail in project_items if detail['item'] is not None]
+        project_items = API_CLIENT.get(f"/projects/project/items/{self.project_id}").json()
+        items = [SimpleNamespace(**item) for item in project_items]
         for item in items:
             name_label = QLabel(item.item)
             self.main_layout.addWidget(name_label, counter, 0)
@@ -76,11 +75,7 @@ class ItemsTab(QWidget):
     def delete_button_handler(self, item_id):
         confirmation = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this item?")
         if confirmation == QMessageBox.Yes:
-            with self.database.session() as session:
-                item = session.query(ProjectDetails).get(item_id)
-                session.delete(item)
-                session.commit()
-            self.load_data()
+            pass
 
 class ActivitiesTab(QWidget):
     def __init__(self,project_id, user_id):
@@ -110,9 +105,9 @@ class ActivitiesTab(QWidget):
         hor_line.setFrameShadow(QFrame.Sunken)
         self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
 
-        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}")
+        project_activities = API_CLIENT.get(f"/projects/project/activities/{self.project_id}")
         counter = 2
-        activities = [SimpleNamespace(**detail) for detail in project_details.json() if detail['activity'] is not None]
+        activities = [SimpleNamespace(**activity) for activity in project_activities.json()]
         for activity in activities:
             name_label = QLabel(activity.activity)
             self.main_layout.addWidget(name_label, counter, 0)
@@ -127,18 +122,14 @@ class ActivitiesTab(QWidget):
             counter += 1
         self.main_layout.setRowStretch(counter, 1)
     def edit_button_handler(self, item_id):
-        dialog = EditActivity(self.database, self.project_id, self.user_id, item_id)
+        dialog = EditActivity(self.project_id, self.user_id, item_id)
         dialog.save_signal.connect(self.load_data)
         dialog.exec()
-        # self.load_data()
+
     def delete_button_handler(self, item_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this activity?")
         if confirm == QMessageBox.Yes:
-            with self.database.session() as session:
-                item = session.query(ProjectDetails).get(item_id)
-                session.delete(item)
-                session.commit()
-            self.load_ddata()
+            pass
 
 class ToDoTab(QWidget):
     def __init__(self, project_id, user_id):
@@ -162,10 +153,10 @@ class ToDoTab(QWidget):
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
-        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
+        project_todos = API_CLIENT.get(f"/projects/project/todos/{self.project_id}").json()
 
-        todos = [SimpleNamespace(**detail) for detail in project_details if detail['todo'] is not None]
-        if todos:
+        if project_todos:
+            todos = [SimpleNamespace(**todo) for todo in project_todos]
             self.empty_list_label.hide()
             counter = 1
             for index, item in enumerate(todos, start=1):
@@ -191,14 +182,9 @@ class ToDoTab(QWidget):
     def complete_button_handler(self, item_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to complete this item?")
         if confirm == QMessageBox.Yes:
-            with self.database.session() as session:
-                item = session.query(ProjectDetails).get(item_id)
-                item.activity = item.todo
-                item.todo = None
-                session.commit()
-            self.load_data()
+            pass
     def edit_button_handler(self, item_id):
-        dialog = EditToDo(self.database, self.project_id, self.user_id, item_id)
+        dialog = EditToDo(self.project_id, self.user_id, item_id)
         dialog.save_signal.connect(self.load_data)
         dialog.exec()
 

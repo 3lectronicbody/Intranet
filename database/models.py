@@ -98,19 +98,19 @@ class Projects(Base):
 
     # List of Project Items
     project_items: Mapped[list["ProjectItems"]] = relationship(
-        "ProjectDetails",
+        "ProjectItems",
         back_populates="project",
         cascade="all, delete-orphan",
     )
     # List of corresponding activities
     project_activities: Mapped[list["ProjectActivities"]] = relationship(
-        "ProjectDetails",
+        "ProjectActivities",
         back_populates="project",
         cascade="all, delete-orphan",
     )
     # List of Project todos
     project_todos: Mapped[list["ProjectTodos"]] = relationship(
-        "ProjectDetails",
+        "ProjectTodos",
         back_populates="project",
         cascade="all, delete-orphan",
     )
@@ -127,6 +127,7 @@ class ProjectItems(Base):
     name: Mapped[str | None] = mapped_column(String, nullable=True)
     code: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[float] = mapped_column(Float, nullable=True)
+    unit: Mapped[str | None] = mapped_column(String, nullable=False)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
@@ -134,7 +135,7 @@ class ProjectItems(Base):
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id"), nullable=False
     )
-    project = relationship("Projects", back_populates="project_details")
+    project = relationship("Projects", back_populates="project_items")
 class ProjectActivities(Base):
     __tablename__ = "project_activities"
 
@@ -148,7 +149,7 @@ class ProjectActivities(Base):
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id"), nullable=False
     )
-    project = relationship("Projects", back_populates="project_details")
+    project = relationship("Projects", back_populates="project_activities")
 class ProjectTodos(Base):
     __tablename__ = "project_todos"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -160,7 +161,7 @@ class ProjectTodos(Base):
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id"), nullable=False
     )
-    project = relationship("Projects", back_populates="project_details")
+    project = relationship("Projects", back_populates="project_todos")
 
 
 class ServiceProjects(Base):

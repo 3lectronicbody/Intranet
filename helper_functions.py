@@ -2,9 +2,7 @@ from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
 from fpdf import FPDF
 import io
-
-
-from database.models import ServiceProjects, Projects, ProjectDetails
+from database.models import ServiceProjects, Projects
 
 
 def clear_layout(layout, grid_layout=False):
@@ -78,31 +76,6 @@ def project_summary_pdf(database,project_id):
         raw_bytes = temp_file.getvalue()
         project.summary_pdf = raw_bytes
         session.commit()
-"""def prepare_eml_with_attachment(subject, body, file_path):
-    # 1. Create the message
-    msg = EmailMessage()
-    msg['Subject'] = subject
-    msg.set_content(body)
-
-    # 2. Attach the file
-    with open(file_path, 'rb') as f:
-        file_data = f.read()
-        msg.add_attachment(
-            file_data,
-            maintype='application',
-            subtype='pdf',
-            filename=os.path.basename(file_path)
-        )
-
-    # 3. Create a unique temporary file that ends in .eml
-    # delete=False is important, so the OS can still see/open it
-    # after Python closes the handle
-    with tempfile.NamedTemporaryFile(mode='wb', suffix='.eml', delete=False) as f:
-        f.write(msg.as_bytes())
-        temp_path = f.name
-
-    # 4. Open in the default system mail client
-    QDesktopServices.openUrl(QUrl.fromLocalFile(temp_path))"""
 
 
 

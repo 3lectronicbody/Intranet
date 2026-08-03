@@ -4,9 +4,9 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
 from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
-from database.models import ProjectDetails, Projects
+from database.models import Projects
 from API.api import API_CLIENT
-from API.pydantic_models import ProjectDetailSchema, ProjectItemSchema, ProjectActivitySchema
+from API.pydantic_models import ProjectTodoSchema, ProjectItemSchema, ProjectActivitySchema
 
 
 class MenuBar(QMenuBar):
