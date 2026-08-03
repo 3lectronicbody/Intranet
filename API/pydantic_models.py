@@ -40,19 +40,28 @@ class ProjectSchema(BaseModel):
     summary_pdf: Base64Bytes | None = None
 
     model_config = ConfigDict(from_attributes=True)
-class ProjectDetailSchema(BaseModel):
+class ProjectItemSchema(BaseModel):
     id: int | None = None
-    activity: str | None = None
-    item: str | None = None
-    item_code: str | None = None
+    name: str | None = None
+    code: str | None = None
     quantity: float | None = None
     unit: str | None = None
-    todo: str | None = None
     description: str | None = None
     project_id: int
 
     model_config = ConfigDict(from_attributes=True)
+class ProjectActivitySchema(BaseModel):
+    id: int | None = None
+    name: str | None = None
+    description: str | None = None
+    project_id: int
 
+    model_config = ConfigDict(from_attributes=True)
+class ProjectTodoSchema(BaseModel):
+    id: int | None = None
+    name: str | None = None
+    description: str | None = None
+    project_id: int
 
 class ServiceProjectSchema(BaseModel):
     id: Optional[int] = None

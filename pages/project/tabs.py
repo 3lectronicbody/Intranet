@@ -68,7 +68,7 @@ class ItemsTab(QWidget):
         self.main_layout.setRowStretch(counter, 1)
 
     def edit_button_handler(self, item_id):
-        edit_dialog = EditItem(self.database, self.project_id,self.user_id, item_id)
+        edit_dialog = EditItem(self.project_id,self.user_id, item_id)
         edit_dialog.save_signal.connect(self.load_data)
         edit_dialog.exec()
 

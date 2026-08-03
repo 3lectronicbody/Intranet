@@ -96,8 +96,20 @@ class Projects(Base):
     end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     summary_pdf: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
-    # Relationship with Project Details
-    project_details: Mapped[list["ProjectDetails"]] = relationship(
+    # List of Project Items
+    project_items: Mapped[list["ProjectItems"]] = relationship(
+        "ProjectDetails",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
+    # List of corresponding activities
+    project_activities: Mapped[list["ProjectActivities"]] = relationship(
+        "ProjectDetails",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
+    # List of Project todos
+    project_todos: Mapped[list["ProjectTodos"]] = relationship(
         "ProjectDetails",
         back_populates="project",
         cascade="all, delete-orphan",
@@ -108,20 +120,43 @@ class Projects(Base):
     )
 
 
-class ProjectDetails(Base):
-    __tablename__ = "project_details"
+class ProjectItems(Base):
+    __tablename__ = "project_items"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    activity: Mapped[str | None] = mapped_column(String, nullable=True)
-    item: Mapped[str | None] = mapped_column(String, nullable=True)
-    item_code: Mapped[str] = mapped_column(String, nullable=True)
+    name: Mapped[str | None] = mapped_column(String, nullable=True)
+    code: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[float] = mapped_column(Float, nullable=True)
-    unit: Mapped[str] = mapped_column(String, nullable=True)
-    todo: Mapped[str | None] = mapped_column(String, nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
     # relationship
+    project_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("projects.id"), nullable=False
+    )
+    project = relationship("Projects", back_populates="project_details")
+class ProjectActivities(Base):
+    __tablename__ = "project_activities"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str | None] = mapped_column(String, nullable=False)
+    time: Mapped[float] = mapped_column(Float, nullable=True)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+    # relationship
+    project_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("projects.id"), nullable=False
+    )
+    project = relationship("Projects", back_populates="project_details")
+class ProjectTodos(Base):
+    __tablename__ = "project_todos"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str | None] = mapped_column(String, nullable=False)
+    time: Mapped[float] = mapped_column(Float, nullable=True)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    # Relationship with Projects table
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("projects.id"), nullable=False
     )

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
 from PySide6.QtCore import Signal, Qt
@@ -178,16 +180,16 @@ class AddItem(QDialog):
 class EditItem(QDialog):
     save_signal = Signal()
 
-    def __init__(self, database, project_id, user_id, item_id):
+    def __init__(self,project_id, user_id, item_id):
         super().__init__()
-        self.database = database
         self.project_id = project_id
         self.user_id = user_id
         self.item_id = item_id
         self.setWindowTitle("Edit Item")
 
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
+        project_details = API_CLIENT.get(f"/projects/project/details/{self.project_id}").json()
+
+        items = [SimpleNamespace(**item) for item in project_details if item['item'] is not None]
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -198,7 +200,7 @@ class EditItem(QDialog):
         self.data_layout.addWidget(self.name_label, 0, 0)
 
         self.name_input = QLineEdit()
-        self.name_input.setText(item.item)
+        self.name_input.setText(items.item)
         self.data_layout.addWidget(self.name_input, 0, 1)
 
         self.code_label = QLabel("Code: ")
