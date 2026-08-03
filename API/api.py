@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-# import TestClient
 from fastapi.testclient import TestClient
 from database.database import Database
 from database.models import Users, Projects, ServiceProjects, ProjectItems, ProjectActivities, ProjectTodos
