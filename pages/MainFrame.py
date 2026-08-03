@@ -110,6 +110,7 @@ class MainFrame(QMainWindow):
     def show_create_project_page(self):
         self.setWindowTitle("Create Project")
         self.create_project_page.load_user(self.user_id)
+        self.create_project_page.refresh_data()
         self.frame.setCurrentWidget(self.create_project_page)
     def show_project_page(self, project_id):
         self.hide()

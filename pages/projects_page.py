@@ -70,12 +70,14 @@ class ProjectsPage(QWidget):
         self.data_layout.addWidget(title_open_label, 0, 2)
         self.data_layout.addWidget(title_delete_label, 0, 3)
         for project in projects:
+            number_label = QLabel(str(project.number))
+            self.data_layout.addWidget(number_label, counter, 0)
+
             project_name_label = QLabel(project.name)
             project_name_label.setStyleSheet("font-weight: bold;")
             if not project.is_active:
                 project_name_label.setStyleSheet("color: #f0ad4e")
-
-            self.data_layout.addWidget(project_name_label, counter, 0)
+            self.data_layout.addWidget(project_name_label, counter, 1)
 
 
             original_text = project.description
@@ -85,7 +87,7 @@ class ProjectsPage(QWidget):
             project_description_label.setFixedHeight(project_description_label.fontMetrics().height())
             project_description_label.setStyleSheet("font-style: italic;")
             project_description_label.setToolTip(original_text)
-            self.data_layout.addWidget(project_description_label, counter, 1)
+            self.data_layout.addWidget(project_description_label, counter, 2)
 
             open_project_button = QPushButton("Open")
             open_project_button.setStyleSheet("color: green;")

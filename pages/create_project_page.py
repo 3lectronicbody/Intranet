@@ -10,11 +10,8 @@ class CreateProjectPage(QWidget):
     def __init__(self, user_id = None):
         super().__init__()
         self.user_id = user_id
+        self.formatted_number = None
 
-        response = API_CLIENT.get("/last_project_number")
-        self.actual_number = response.json() + 1
-        self.formatted_number = f"{self.actual_number:03d}"
-        self.formatted_number = str(datetime.now().year) + "/" + self.formatted_number
 
 
 
@@ -51,10 +48,17 @@ class CreateProjectPage(QWidget):
         self.main_layout.addWidget(self.cancel_button, 4, 0)
         self.cancel_button.clicked.connect(lambda _: self.cancel_signal.emit(self.user_id))
 
+
+    def refresh_data(self):
+        last_number = API_CLIENT.get("/projects/last_project_number").json()
+        self.formatted_number = f"{last_number:03d}"
+        self.formatted_number = str(datetime.now().year) + "/" + self.formatted_number
+        self.number_input.setText(self.formatted_number)
     def load_user(self, user_id):
         self.user_id = user_id
     def create_project_handler(self):
-        number = self.actual_number
+        number = self.number_input.text()[-3:]
+        number = int(number)
         name = self.name_input.text()
         description = self.description_input.toPlainText()
         if not name:

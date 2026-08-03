@@ -43,6 +43,13 @@ def password_validation(
 @app.get("/projects", response_model=list[ProjectSchema])
 def get_projects(db=Depends(get_db), ):
     return db.query(Projects).all()
+@app.get("/projects/last_project_number")
+def get_last_project_number(db=Depends(get_db)):
+    last_project = db.query(Projects).order_by(Projects.number.desc()).first()
+    if last_project:
+        return last_project.number + 1
+    else:
+        return 1
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
@@ -79,6 +86,7 @@ def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
     db.commit()
     db.refresh(new_project_todo)
     return new_project_todo
+
 
 
 @app.get("/users")
@@ -170,13 +178,7 @@ def update_service_project(service_project_id: int, data: dict, db=Depends(get_d
     return None
 
 
-@app.get("/last_project_number")
-def get_last_project_number(db=Depends(get_db)):
-    last_project = db.query(Projects).order_by(Projects.number.desc()).first()
-    if last_project:
-        return last_project.number
-    else:
-        return 1
+
 @app.post("/register")
 def sign_up(email: str, password: str, db=Depends(get_db)):
     existing_user = db.query(Users).filter(Users.email == email).first()
