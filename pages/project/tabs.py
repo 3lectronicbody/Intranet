@@ -75,7 +75,10 @@ class ItemsTab(QWidget):
     def delete_button_handler(self, item_id):
         confirmation = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this item?")
         if confirmation == QMessageBox.Yes:
-            pass
+            API_CLIENT.delete(f"/projects/project/items/{item_id}/delete")
+            self.load_data()
+            return
+
 
 class ActivitiesTab(QWidget):
     def __init__(self,project_id, user_id):
@@ -126,10 +129,11 @@ class ActivitiesTab(QWidget):
         dialog.save_signal.connect(self.load_data)
         dialog.exec()
 
-    def delete_button_handler(self, item_id):
+    def delete_button_handler(self, activity_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this activity?")
         if confirm == QMessageBox.Yes:
-            pass
+            API_CLIENT.delete(f"/projects/project/activities/{activity_id}/delete")
+            self.load_data()
 
 class ToDoTab(QWidget):
     def __init__(self, project_id, user_id):
@@ -159,18 +163,18 @@ class ToDoTab(QWidget):
             todos = [SimpleNamespace(**todo) for todo in project_todos]
             self.empty_list_label.hide()
             counter = 1
-            for index, item in enumerate(todos, start=1):
+            for index, todo in enumerate(todos, start=1):
                 id_label = QLabel(str(index))
                 self.main_layout.addWidget(id_label, index-1,0)
-                todo_label = QLabel(item.todo)
+                todo_label = QLabel(todo.name)
                 self.main_layout.addWidget(todo_label, index-1,1)
-                quantity_label = QLabel(str(item.quantity))
+                quantity_label = QLabel(str(todo.time))
                 self.main_layout.addWidget(quantity_label, index-1,2)
                 complete_button = QPushButton("Complete")
-                complete_button.clicked.connect(lambda _, item_id = item.id: self.complete_button_handler(item_id))
+                complete_button.clicked.connect(lambda _, todo_id = todo.id: self.complete_button_handler(todo_id))
                 self.main_layout.addWidget(complete_button, index-1,3)
                 edit_button = QPushButton("Edit")
-                edit_button.clicked.connect(lambda _, item_id = item.id: self.edit_button_handler(item_id))
+                edit_button.clicked.connect(lambda _, todo_id = todo.id: self.edit_button_handler(todo_id))
                 self.main_layout.addWidget(edit_button, index-1,4)
 
                 counter += 1
@@ -179,10 +183,17 @@ class ToDoTab(QWidget):
 
         else:
             self.empty_list_label.show()
-    def complete_button_handler(self, item_id):
+    def complete_button_handler(self, todo_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to complete this item?")
         if confirm == QMessageBox.Yes:
-            pass
+            deleted_todo = API_CLIENT.delete(f"/projects/project/todos/{todo_id}/delete").json()
+            todo = SimpleNamespace(**deleted_todo)
+            API_CLIENT.post("/projects/project/activities/new", json={"name": todo.name,
+                                                                      "time": todo.time,
+                                                                      "description": todo.description,
+                                                                      "project_id": self.project_id})
+            self.load_data()
+
     def edit_button_handler(self, item_id):
         dialog = EditToDo(self.project_id, self.user_id, item_id)
         dialog.save_signal.connect(self.load_data)

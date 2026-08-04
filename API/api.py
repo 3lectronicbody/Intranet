@@ -115,6 +115,13 @@ def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
     db.commit()
     db.refresh(new_project_item)
     return new_project_item
+@app.delete("/projects/project/items/{item_id}/delete", status_code=status.HTTP_204_NO_CONTENT)
+def delete_item_by_id(item_id: int, db=Depends(get_db)):
+    item = db.get(ProjectItems, item_id)
+    if item:
+        db.delete(item)
+        db.commit()
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 # Project Activities Routes
 @app.get("/projects/{project_id}/activities/", response_model=list[ProjectActivitySchema])
@@ -146,13 +153,20 @@ def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
         db.refresh(activity)
         return True
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
+@app.delete("/projects/project/activities/{activity_id}/delete", status_code=status.HTTP_204_NO_CONTENT)
+def delete_activity_by_id(activity_id: int, db=Depends(get_db)):
+    activity = db.get(ProjectActivities, activity_id)
+    if activity:
+        db.delete(activity)
+        db.commit()
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 # Project Todos Routes
 @app.get("/projects/{project_id}/todos/", response_model=list[ProjectTodoSchema])
 def get_project_todos(project_id: int, db=Depends(get_db)):
     project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
     return project_todos
-@app.get("/projects/project/items/{item_id}", response_model=ProjectTodoSchema)
+@app.get("/projects/project/todos/{todo_id}", status_code=status.HTTP_200_OK, response_model=ProjectTodoSchema)
 def get_todo_by_id(todo_id: int, db=Depends(get_db)):
     todo = db.get(ProjectTodos, todo_id)
     if todo:
@@ -175,6 +189,14 @@ def update_project_todo(todo_id: int, data: dict, db=Depends(get_db)):
                 setattr(todo, key, value)
         db.commit()
         return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+@app.delete("/projects/project/todos/{todo_id}/delete", status_code=status.HTTP_200_OK, response_model=ProjectTodoSchema)
+def delete_todo_by_id(todo_id: int, db = Depends(get_db)):
+    todo = db.get(ProjectTodos, todo_id)
+    if todo:
+        db.delete(todo)
+        db.commit()
+        return todo
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 

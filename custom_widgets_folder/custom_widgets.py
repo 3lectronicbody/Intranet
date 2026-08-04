@@ -572,23 +572,23 @@ class AddToDo(QDialog):
         new_todo = ProjectActivitySchema(name=todo,
                                          time=float(time),
                                          description=description,
-                                         project_id=self.project_id,)
-        API_CLIENT.post("projects/project/activities/new", json=new_todo.model_dump())
+                                         project_id=self.project_id)
+        API_CLIENT.post("projects/project/todos/new", json=new_todo.model_dump())
         self.accept()
         self.save_signal.emit()
 class EditToDo(QDialog):
     save_signal = Signal()
 
-    def __init__(self, database, project_id, user_id, item_id):
+    def __init__(self,project_id, user_id, todo_id):
         super().__init__()
-        self.database = database
+
         self.project_id = project_id
         self.user_id = user_id
-        self.item_id = item_id
+        self.todo_id = todo_id
         self.setWindowTitle("Edit Item")
 
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
+        fetched_todo = API_CLIENT.get(f"/projects/project/todos/{self.todo_id}").json()
+        todo = SimpleNamespace(**fetched_todo)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -599,14 +599,14 @@ class EditToDo(QDialog):
         self.data_layout.addWidget(self.name_label, 0, 0)
 
         self.name_input = QLineEdit()
-        self.name_input.setText(item.todo)
+        self.name_input.setText(todo.name)
         self.data_layout.addWidget(self.name_input, 0, 1)
 
         self.quantity_label = QLabel("Quantity: ")
         self.data_layout.addWidget(self.quantity_label, 1, 0)
 
         self.quantity_input = QLineEdit()
-        self.quantity_input.setText(str(item.quantity))
+        self.quantity_input.setText(str(todo.time))
         self.data_layout.addWidget(self.quantity_input, 1, 1)
 
         self.button_layout = QHBoxLayout()
@@ -621,20 +621,20 @@ class EditToDo(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        todo = self.name_input.text().strip()
-        quantity = self.quantity_input.text().strip().replace(",", ".")
+        name = self.name_input.text().strip()
+        time = self.quantity_input.text().strip().replace(",", ".")
 
         self.quantity_input.setStyleSheet("")
         self.name_input.setStyleSheet("")
 
-        if not todo:
+        if not name:
             message = QMessageBox()
             message.setText("Please enter a name")
             message.exec()
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity:
+        if not time:
             message = QMessageBox()
             message.setText(f"Please enter a quantity")
             message.exec()
@@ -642,7 +642,7 @@ class EditToDo(QDialog):
             self.quantity_input.setFocus()
             return
         try:
-            quantity = float(quantity)
+            time = float(time.replace(",", "."))
         except ValueError:
             message = QMessageBox()
             message.setText("Please enter a number")
@@ -650,7 +650,7 @@ class EditToDo(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-        if quantity <= 0:
+        if time <= 0:
             message = QMessageBox()
             message.setText("Quantity value must be greater than zero")
             message.exec()
@@ -658,14 +658,12 @@ class EditToDo(QDialog):
             self.quantity_input.setFocus()
             return
 
-        with self.database.session() as session:
-
-            item = session.query(ProjectDetails).get(self.item_id)
-            item.todo = todo
-            item.quantity = quantity
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+        API_CLIENT.patch(f"/projects/project/todos/{self.todo_id}/update/",
+                         json={"name": name,
+                                "time": time,
+                                "project_id": self.project_id})
+        self.accept()
+        self.save_signal.emit()
 class CustomPushButton(QPushButton):
     # Added "Enter" key press event to the button"
     def __init__(self, text, parent=None):
