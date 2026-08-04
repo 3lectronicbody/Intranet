@@ -23,8 +23,7 @@ API_CLIENT = TestClient(app)
 
 @app.get("/login")
 def password_validation(
-    user_email: str, user_password: str, db: Session = Depends(get_db)
-):
+    user_email: str, user_password: str, db: Session = Depends(get_db)):
     user = (
         db.query(Users)
         .filter(Users.email == user_email, Users.password == user_password)
