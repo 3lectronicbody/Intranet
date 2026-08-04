@@ -19,8 +19,9 @@ def get_db():
     finally:
         session.close()
 
-API_CLIENT = TestClient(app)
+Api_Client = TestClient(app)
 
+# Login and Register Routes
 @app.get("/login")
 def password_validation(
     user_email: str, user_password: str, db: Session = Depends(get_db)):
@@ -37,7 +38,17 @@ def password_validation(
         )
 
     return {"user_id": user.id}
+@app.post("/register")
+def sign_up(email: str, password: str, db=Depends(get_db)):
+    existing_user = db.query(Users).filter(Users.email == email).first()
+    if existing_user:
+        return False
+    user = Users(email=email, password=password)
+    db.add(user)
+    db.commit()
+    return True
 
+# Projects Page routes
 @app.get("/projects", response_model=list[ProjectSchema])
 def get_projects(db=Depends(get_db), ):
     return db.query(Projects).all()
@@ -51,18 +62,35 @@ def get_last_project_number(db=Depends(get_db)):
 @app.get("/projects/{project_id}")
 def get_project_by_id(project_id: int, db=Depends(get_db)):
     return db.get(Projects, project_id)
+@app.post("/new_project")
+def create_project(name: str, number: int, description: str, project_owner: int, db=Depends(get_db)):
+    from datetime import datetime
+    project = Projects(
+        name=name,
+        number=number,
+        description=description,
+        is_active=True,
+        project_owner=str(project_owner),
+        beginning=datetime.now()
+    )
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    return project.id
+@app.delete("/project/{project_id}")
+def delete_project(project_id: int, db=Depends(get_db)):
+    project = db.get(Projects, project_id)
+    if project:
+        db.delete(project)
+        db.commit()
+        return True
+    return False
+
+# Project Items Routes
 @app.get("/projects/{project_id}/items/", response_model=list[ProjectItemSchema])
 def get_project_items(project_id: int, db=Depends(get_db)):
     project_items = db.query(ProjectItems).filter(ProjectItems.project_id == project_id).all()
     return project_items
-@app.get("/projects/{project_id}/activities/", response_model=list[ProjectActivitySchema])
-def get_project_activities(project_id: int, db=Depends(get_db)):
-    project_activities = db.query(ProjectActivities).filter(ProjectActivities.project_id == project_id).all()
-    return project_activities
-@app.get("/projects/{project_id}/todos/", response_model=list[ProjectTodoSchema])
-def get_project_todos(project_id: int, db=Depends(get_db)):
-    project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
-    return project_todos
 @app.get("/projects/project/items/{item_id}", response_model=ProjectItemSchema)
 def get_item_by_id(item_id: int, db=Depends(get_db)):
     item = db.get(ProjectItems, item_id)
@@ -77,6 +105,12 @@ def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
     db.commit()
     db.refresh(new_project_item)
     return new_project_item
+
+# Project Activities Routes
+@app.get("/projects/{project_id}/activities/", response_model=list[ProjectActivitySchema])
+def get_project_activities(project_id: int, db=Depends(get_db)):
+    project_activities = db.query(ProjectActivities).filter(ProjectActivities.project_id == project_id).all()
+    return project_activities
 @app.post("/projects/project/activities/new", status_code=status.HTTP_201_CREATED)
 def create_project_activity(new_activity:ProjectActivitySchema, db=Depends(get_db)):
     new_project_activity = ProjectActivities(**new_activity.model_dump(exclude={"id"}))
@@ -84,14 +118,7 @@ def create_project_activity(new_activity:ProjectActivitySchema, db=Depends(get_d
     db.commit()
     db.refresh(new_project_activity)
     return new_project_activity
-@app.post("/projects/project/todos/new", status_code=status.HTTP_201_CREATED)
-def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
-    new_project_todo = ProjectTodos(**new_todo.model_dump(exclude={'id'}))
-    db.add(new_project_todo)
-    db.commit()
-    db.refresh(new_project_todo)
-    return new_project_todo
-@app.patch("/projects/project/item/update/{item_id}",status_code=status.HTTP_202_ACCEPTED)
+@app.patch("/projects/project/items/{item_id}/update/",status_code=status.HTTP_202_ACCEPTED)
 def update_project_item(item_id: int, data: dict, db=Depends(get_db)):
     item = db.get(ProjectItems, item_id)
     if item:
@@ -101,7 +128,7 @@ def update_project_item(item_id: int, data: dict, db=Depends(get_db)):
         db.commit()
         return True
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-@app.patch("/projects/project/activity/update/{activity_id}", status_code=status.HTTP_202_ACCEPTED)
+@app.patch("/projects/project/activities/{activity_id}/update/", status_code=status.HTTP_202_ACCEPTED)
 def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
     activity = db.get(ProjectActivities, activity_id)
     if activity:
@@ -111,7 +138,20 @@ def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
         db.commit()
         return True
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-@app.patch("/projects/project/todo/update/{todo_id}", status_code=status.HTTP_202_ACCEPTED)
+
+# Project Todos Routes
+@app.get("/projects/{project_id}/todos/", response_model=list[ProjectTodoSchema])
+def get_project_todos(project_id: int, db=Depends(get_db)):
+    project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
+    return project_todos
+@app.post("/projects/project/todos/new", status_code=status.HTTP_201_CREATED)
+def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
+    new_project_todo = ProjectTodos(**new_todo.model_dump(exclude={'id'}))
+    db.add(new_project_todo)
+    db.commit()
+    db.refresh(new_project_todo)
+    return new_project_todo
+@app.patch("/projects/project/todos/{todo_id}/update/", status_code=status.HTTP_202_ACCEPTED)
 def update_project_todo(todo_id: int, data: dict, db=Depends(get_db)):
     todo = db.get(ProjectTodos, todo_id)
     if todo:
@@ -123,6 +163,7 @@ def update_project_todo(todo_id: int, data: dict, db=Depends(get_db)):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 
+# Users Routes
 @app.get("/users")
 def get_employees(db = Depends(get_db)):
     users = db.query(Users).all()
@@ -143,7 +184,7 @@ def update_user(user_id: int, data: dict, db: Session = Depends(get_db)):
     db.refresh(user)
     return None
 
-
+# Service Projects routes
 @app.get("/service_projects", response_model=list[ServiceProjectSchema])
 def get_service_projects(db=Depends(get_db)):
     service_projects = db.query(ServiceProjects).options(defer(ServiceProjects.pdf_form)).all()
@@ -193,6 +234,14 @@ def create_service_project(new_project:ServiceProjectSchema
     db.commit()
     db.refresh(new_project)
     return new_project.id
+@app.delete("/service_project/{service_project_id}")
+def delete_service_project(service_project_id: int, db=Depends(get_db)):
+    service_project = db.get(ServiceProjects, service_project_id)
+    if service_project:
+        db.delete(service_project)
+        db.commit()
+        return True
+    return False
 @app.patch("/service_projects/{service_project_id}")
 def update_service_project(service_project_id: int, data: dict, db=Depends(get_db)):
     project = db.get(ServiceProjects, service_project_id)
@@ -213,45 +262,8 @@ def update_service_project(service_project_id: int, data: dict, db=Depends(get_d
 
 
 
-@app.post("/register")
-def sign_up(email: str, password: str, db=Depends(get_db)):
-    existing_user = db.query(Users).filter(Users.email == email).first()
-    if existing_user:
-        return False
-    user = Users(email=email, password=password)
-    db.add(user)
-    db.commit()
-    return True
-@app.post("/new_project")
-def create_project(name: str, number: int, description: str, project_owner: int, db=Depends(get_db)):
-    from datetime import datetime
-    project = Projects(
-        name=name,
-        number=number,
-        description=description,
-        is_active=True,
-        project_owner=str(project_owner),
-        beginning=datetime.now()
-    )
-    db.add(project)
-    db.commit()
-    db.refresh(project)
-    return project.id
 
-@app.delete("/project/{project_id}")
-def delete_project(project_id: int, db=Depends(get_db)):
-    project = db.get(Projects, project_id)
-    if project:
-        db.delete(project)
-        db.commit()
-        return True
-    return False
 
-@app.delete("/service_project/{service_project_id}")
-def delete_service_project(service_project_id: int, db=Depends(get_db)):
-    service_project = db.get(ServiceProjects, service_project_id)
-    if service_project:
-        db.delete(service_project)
-        db.commit()
-        return True
-    return False
+
+
+

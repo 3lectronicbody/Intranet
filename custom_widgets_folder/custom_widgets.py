@@ -189,10 +189,10 @@ class EditItem(QDialog):
         self.setWindowTitle("Edit Item")
 
 
-        item = API_CLIENT.get(f"/projects/project/items/{self.item_id}").json()
-        item = SimpleNamespace(**item)
-        print(item)
-        print(self.item_id)
+        edited_item: dict = API_CLIENT.get(f"/projects/project/items/{self.item_id}").json()
+
+        item = SimpleNamespace(**edited_item)
+
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -285,15 +285,12 @@ class EditItem(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(self.item_id)
-            item.item = name
-            item.quantity = quantity
-            item.unit = unit
-            item.item_code = code
-            session.commit()
-            self.accept()
-            self.save_signal.emit()
+
+        API_CLIENT.patch(f"/projects/project/items/{self.item_id}/update/",
+                         json={"name": name,"quantity": quantity,"code": code,"unit": unit})
+
+        self.accept()
+        self.save_signal.emit()
 class AddActivity(QDialog):
     save_signal = Signal()
 
@@ -389,18 +386,18 @@ class AddActivity(QDialog):
 class EditActivity(QDialog):
     save_signal = Signal()
 
-    def __init__(self, database, project_id, user_id, item_id):
+    def __init__(self,project_id, user_id, item_id):
         super().__init__()
-        self.database = database
+
         self.project_id = project_id
         self.user_id = user_id
-        self.item_id = item_id
-        self.setWindowTitle("Edit Item")
+        self.activity_id = item_id
+        self.setWindowTitle("Edit Activity")
 
+        edited_activity: dict = API_CLIENT.get(f"/projects/project/activity/{self.activity_id}").json()
 
+        activity = SimpleNamespace(**edited_activity)
 
-        with self.database.session() as session:
-            item = session.query(ProjectDetails).get(item_id)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -411,22 +408,22 @@ class EditActivity(QDialog):
         self.data_layout.addWidget(self.name_label, 0, 0)
 
         self.name_input = QLineEdit()
-        self.name_input.setText(item.activity)
+        self.name_input.setText(activity.name)
         self.data_layout.addWidget(self.name_input, 0, 1)
 
 
-        self.quantity_label = QLabel("Quantity: ")
+        self.quantity_label = QLabel("Time: ")
         self.data_layout.addWidget(self.quantity_label, 1, 0)
 
         self.quantity_input = QLineEdit()
-        self.quantity_input.setText(str(item.quantity))
+        self.quantity_input.setText(str(activity.time))
         self.data_layout.addWidget(self.quantity_input, 1, 1)
 
         self.description_label = QLabel("Description: ")
         self.data_layout.addWidget(self.description_label, 2, 0)
         self.description_input = QTextEdit()
         self.data_layout.addWidget(self.description_input, 2, 1)
-        self.description_input.setText(item.description)
+        self.description_input.setText(activity.description)
 
 
         self.button_layout = QHBoxLayout()
@@ -441,22 +438,22 @@ class EditActivity(QDialog):
         self.cancel_button.clicked.connect(self.reject)
 
     def save_button_handler(self):
-        activity = self.name_input.text().strip()
-        quantity = self.quantity_input.text().strip().replace(",", ".")
+        name = self.name_input.text().strip()
+        time = self.quantity_input.text().strip().replace(",", ".")
         description = self.description_input.toPlainText().strip()
 
         self.quantity_input.setStyleSheet("")
         self.name_input.setStyleSheet("")
 
 
-        if not activity:
+        if not name:
             message = QMessageBox()
             message.setText("Please enter a name")
             message.exec()
             self.name_input.setStyleSheet("border: 2px solid red;")
             self.name_input.setFocus()
             return
-        if not quantity:
+        if not time:
             message = QMessageBox()
             message.setText(f"Please enter a quantity")
             message.exec()
@@ -464,7 +461,7 @@ class EditActivity(QDialog):
             self.quantity_input.setFocus()
             return
         try:
-            quantity = float(quantity)
+            time = float(time)
         except ValueError:
             message = QMessageBox()
             message.setText("Please enter a number")
@@ -472,7 +469,7 @@ class EditActivity(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-        if quantity <= 0:
+        if time <= 0:
             message = QMessageBox()
             message.setText("Quantity value must be greater than zero")
             message.exec()
@@ -481,13 +478,11 @@ class EditActivity(QDialog):
             return
 
 
-        with self.database.session() as session:
-
-            item = session.query(ProjectDetails).get(self.item_id)
-            item.activity = activity
-            item.quantity = quantity
-            item.description = description
-            session.commit()
+        API_CLIENT.patch(f"/projects/project/{self.activity_id}/update/", data={
+            "name": name,
+            "time": time,
+            "description": description
+        })
         self.accept()
         self.save_signal.emit()
 class AddToDo(QDialog):

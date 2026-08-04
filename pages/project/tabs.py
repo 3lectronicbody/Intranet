@@ -109,9 +109,9 @@ class ActivitiesTab(QWidget):
         counter = 2
         activities = [SimpleNamespace(**activity) for activity in project_activities]
         for activity in activities:
-            name_label = QLabel(activity.activity)
+            name_label = QLabel(activity.name)
             self.main_layout.addWidget(name_label, counter, 0)
-            quantity_label = QLabel(str(activity.quantity))
+            quantity_label = QLabel(str(activity.time))
             self.main_layout.addWidget(quantity_label, counter, 1)
             delete_button = QPushButton("Delete")
             self.main_layout.addWidget(delete_button, counter, 3)
