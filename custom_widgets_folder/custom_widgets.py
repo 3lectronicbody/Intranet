@@ -394,7 +394,7 @@ class EditActivity(QDialog):
         self.activity_id = item_id
         self.setWindowTitle("Edit Activity")
 
-        edited_activity: dict = API_CLIENT.get(f"/projects/project/activity/{self.activity_id}").json()
+        edited_activity: dict = API_CLIENT.get(f"/projects/project/activities/{self.activity_id}").json()
 
         activity = SimpleNamespace(**edited_activity)
 
@@ -478,11 +478,12 @@ class EditActivity(QDialog):
             return
 
 
-        API_CLIENT.patch(f"/projects/project/{self.activity_id}/update/", data={
+        API_CLIENT.patch(f"/projects/project/activities/{self.activity_id}/update/", json={
             "name": name,
             "time": time,
             "description": description
         })
+        print(f"Activity {self.activity_id} updated")
         self.accept()
         self.save_signal.emit()
 class AddToDo(QDialog):

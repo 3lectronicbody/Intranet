@@ -19,7 +19,7 @@ def get_db():
     finally:
         session.close()
 
-Api_Client = TestClient(app)
+API_CLIENT = TestClient(app)
 
 # Login and Register Routes
 @app.get("/login")
@@ -98,6 +98,16 @@ def get_item_by_id(item_id: int, db=Depends(get_db)):
         return item
     else:
         raise HTTPException(status_code=404, detail="Item not found")
+@app.patch("/projects/project/items/{item_id}/update/",status_code=status.HTTP_202_ACCEPTED)
+def update_project_item(item_id: int, data: dict, db=Depends(get_db)):
+    item = db.get(ProjectItems, item_id)
+    if item:
+        for key, value in data.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
+        db.commit()
+        return True
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 @app.post("/projects/project/items/new", status_code=status.HTTP_201_CREATED)
 def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
     new_project_item = ProjectItems(**new_item.model_dump(exclude={"id"}))
@@ -111,6 +121,13 @@ def create_project_item(new_item:ProjectItemSchema, db=Depends(get_db)):
 def get_project_activities(project_id: int, db=Depends(get_db)):
     project_activities = db.query(ProjectActivities).filter(ProjectActivities.project_id == project_id).all()
     return project_activities
+@app.get("/projects/project/activities/{activity_id}", response_model=ProjectActivitySchema)
+def get_activity_by_id(activity_id: int, db=Depends(get_db)):
+    activity = db.get(ProjectActivities, activity_id)
+    if activity:
+        return activity
+    else:
+        raise HTTPException(status_code=404, detail="Activity not found")
 @app.post("/projects/project/activities/new", status_code=status.HTTP_201_CREATED)
 def create_project_activity(new_activity:ProjectActivitySchema, db=Depends(get_db)):
     new_project_activity = ProjectActivities(**new_activity.model_dump(exclude={"id"}))
@@ -118,16 +135,6 @@ def create_project_activity(new_activity:ProjectActivitySchema, db=Depends(get_d
     db.commit()
     db.refresh(new_project_activity)
     return new_project_activity
-@app.patch("/projects/project/items/{item_id}/update/",status_code=status.HTTP_202_ACCEPTED)
-def update_project_item(item_id: int, data: dict, db=Depends(get_db)):
-    item = db.get(ProjectItems, item_id)
-    if item:
-        for key, value in data.items():
-            if hasattr(item, key):
-                setattr(item, key, value)
-        db.commit()
-        return True
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 @app.patch("/projects/project/activities/{activity_id}/update/", status_code=status.HTTP_202_ACCEPTED)
 def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
     activity = db.get(ProjectActivities, activity_id)
@@ -136,14 +143,22 @@ def update_project_activity(activity_id: int, data: dict, db=Depends(get_db)):
             if hasattr(activity, key):
                 setattr(activity, key, value)
         db.commit()
+        db.refresh(activity)
         return True
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Activity not found")
 
 # Project Todos Routes
 @app.get("/projects/{project_id}/todos/", response_model=list[ProjectTodoSchema])
 def get_project_todos(project_id: int, db=Depends(get_db)):
     project_todos = db.query(ProjectTodos).filter(ProjectTodos.project_id == project_id).all()
     return project_todos
+@app.get("/projects/project/items/{item_id}", response_model=ProjectTodoSchema)
+def get_todo_by_id(todo_id: int, db=Depends(get_db)):
+    todo = db.get(ProjectTodos, todo_id)
+    if todo:
+        return todo
+    else:
+        raise HTTPException(status_code=404, detail="Todo not found")
 @app.post("/projects/project/todos/new", status_code=status.HTTP_201_CREATED)
 def create_project_todo(new_todo:ProjectTodoSchema, db=Depends(get_db)):
     new_project_todo = ProjectTodos(**new_todo.model_dump(exclude={'id'}))
