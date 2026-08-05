@@ -41,7 +41,6 @@ class Log(Enum):
     DELETE_ACTIVITY = "delete_activity"
     SIGN_IN = "sign_in"
     DELETE_PROJECT = "delete_project"
-
 class AppMetadata(Base):
     __tablename__ =  "app_metadata"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

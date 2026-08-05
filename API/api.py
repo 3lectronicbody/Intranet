@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.testclient import TestClient
 from database.database import Database
-from database.models import Users, Projects, ServiceProjects, ProjectItems, ProjectActivities, ProjectTodos
+from database.models import Users, Projects, ServiceProjects, ProjectItems, ProjectActivities, ProjectTodos, AppMetadata
 from sqlalchemy.orm import defer
 from API.pydantic_models import ServiceProjectSchema, ProjectSchema, ProjectItemSchema, \
     ProjectActivitySchema, ProjectTodoSchema
@@ -47,6 +47,11 @@ def sign_up(email: str, password: str, db=Depends(get_db)):
     db.add(user)
     db.commit()
     return True
+
+# APP VERSION
+@app.get("/app_metadata")
+def get_app_metadata(db = Depends(get_db)):
+    return db.query(AppMetadata).order_by(AppMetadata.created_at.desc()).first()
 
 # Projects Page routes
 @app.get("/projects", response_model=list[ProjectSchema])

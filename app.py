@@ -1,15 +1,15 @@
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 from pages.MainFrame import MainFrame
-from database.database import Database
 from pathlib import Path
 import sys
+from helper_functions import check_for_updates
 
 
 
 
 
 if __name__ == "__main__":
-    database = Database()
+
     app = QApplication(sys.argv)
 
     app.setStyle("Fusion")
@@ -21,6 +21,12 @@ if __name__ == "__main__":
         app.setStyleSheet(current_style + "\n" + custom_css + custom_css_gemini)
     except FileNotFoundError:
         pass
+
+    check = check_for_updates()
+    if not check:
+        sys.exit()
+
+
 
 
     root = MainFrame()

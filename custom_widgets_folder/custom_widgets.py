@@ -6,7 +6,9 @@ from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from API.api import API_CLIENT
 from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
-import inspect
+from datetime import datetime
+from config import APP_VERSION
+
 
 
 class MenuBar(QMenuBar):
@@ -35,7 +37,6 @@ class MenuBar(QMenuBar):
         # File Menu -> Exit Action
         self.exit = self.file_menu.addAction("Exit")
         self.exit.triggered.connect(lambda _: self.exit_button_handler())
-
 
 
 
@@ -85,6 +86,48 @@ class MenuBar(QMenuBar):
             app_instance.quit()
     def about_menu_handler(self):
         pass
+    class AboutDialog(QDialog):
+        def __init__(self, parent=None):
+            super().__init__(parent)
+            self.setWindowTitle("About")
+            self.layout = QVBoxLayout()
+            self.setLayout(self.layout)
+
+            self.name_label = QLabel("Project Management System")
+            self.layout.addWidget(self.name_label)
+
+            self.version_label = QLabel(f"Version: {APP_VERSION}")
+            self.layout.addWidget(self.version_label)
+
+            self.created_label = QLabel("_load_creation_date")
+            self.layout.addWidget(self.created_label)
+
+            self.release_notes_label = QLabel("_load_release_notes")
+            self.layout.addWidget(self.release_notes_label)
+
+
+            self.cancel_button = QPushButton("CANCEL")
+            self.layout.addWidget(self.cancel_button)
+            self.cancel_button.clicked.connect(self.accept)
+
+            self.update_button = QPushButton("Update...")
+            self.layout.addWidget(self.update_button)
+            self.update_button.clicked.connect(self.update_button_handler)
+
+            self.refresh_data()
+
+        def refresh_data(self):
+            metadata = API_CLIENT.get("/app_metadata").json()
+            current_version = [data for data in metadata if metadata[data]['version'] == APP_VERSION]
+            print(current_version)
+            self.name_label.setText(metadata["name"])
+            self.version_label.setText(metadata["version"])
+            created_at:str  = datetime.strftime(metadata["created_at"], "%Y-%m-%dT%H:%M")
+            self.created_label.setText(created_at)
+            self.release_notes_label.setText(metadata["release_notes"])
+        def update_button_handler(self):
+            pass
+
 
 class AddItem(QDialog):
     save_signal = Signal()
