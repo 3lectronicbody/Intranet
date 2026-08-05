@@ -4,16 +4,16 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
 from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
-from database.models import Projects
 from API.api import API_CLIENT
-from API.pydantic_models import ProjectTodoSchema, ProjectItemSchema, ProjectActivitySchema
+from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
+import inspect
 
 
 class MenuBar(QMenuBar):
-    def __init__(self, parent, user_id, project_id=None, flag=None):
+    def __init__(self,parent, user_id, project_id=None, flag=None):
         # flag=project: Menu bar for project window
         # flag=main: Menu bar for main menu
-        super().__init__(parent)
+        super().__init__()
 
         self.parent = parent
         self.project_id = project_id
@@ -32,9 +32,14 @@ class MenuBar(QMenuBar):
             self.main_menu.triggered.connect(self.main_menu_handler)
 
 
+
+
         # EXIT BUTTON MENU
-        self.exit = self.addAction("Exit")
+        self.exit = self.
+
         self.exit.triggered.connect(lambda _: self.exit_button_handler())
+
+
 
     def export_project_handler(self):
         file_path, selected_filter = QFileDialog.getSaveFileName(self)
@@ -42,29 +47,34 @@ class MenuBar(QMenuBar):
             pdf = FPDF()
             pdf.add_page()
             pdf.set_font("Arial", size=12)
-            with self.database.session() as session:
-                all_items = session.query(ProjectDetails).filter_by(project_id=self.project_id).all()
-                items = [item for item in all_items if item.activity is None and item.todo is None]
-                activities = [item for item in all_items if item.activity is not None]
-
-                item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
-
-                pdf.cell(100, 10, txt=f"Project Name: {session.query(Projects).get(self.project_id).name}", ln=1)
-                pdf.cell(100, 10, txt="ITEMS", ln=1)
-
-                for i in items:
-                    pdf.cell(item_column_width["name"], 10, txt=i.item or "", ln=0)
-                    pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
-                    pdf.cell(item_column_width["code"], 10, txt=i.item_code, ln=0)
-                    pdf.cell(item_column_width["unit"], 10, txt=i.unit, ln=1)
 
 
-                activity_column_width = {"name": 60, "quantity": 20}
-                pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
+            items = API_CLIENT.get(f"/projects/{self.project_id}/items/").json()
+            items = [SimpleNamespace(**item) for item in items]
+            activities = API_CLIENT.get(f"/projects/{self.project_id}/activities/").json()
+            activities = [SimpleNamespace(**activity) for activity in activities]
+            project_name = API_CLIENT.get(f"/projects/{self.project_id}").json()["name"]
 
-                for i in activities:
-                    pdf.cell(activity_column_width["name"], 10, txt=i.activity or "", ln=0)
-                    pdf.cell(activity_column_width["quantity"], 10, txt=str(i.quantity), ln=1)
+            item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
+
+            pdf.cell(100,10,text="PROJECT REPORT",ln=1,align="C")
+
+            pdf.cell(100, 10, txt=f"Project Name: {project_name}", ln=1)
+            pdf.cell(100, 10, txt="ITEMS", ln=1)
+
+            for i in items:
+                pdf.cell(item_column_width["name"], 10, txt=i.name or "", ln=0)
+                pdf.cell(item_column_width["quantity"], 10, txt=str(i.quantity), ln=0)
+                pdf.cell(item_column_width["code"], 10, txt=i.code or "", ln=0)
+                pdf.cell(item_column_width["unit"], 10, txt=i.unit or "", ln=1)
+
+
+            activity_column_width = {"name": 60, "quantity": 20}
+            pdf.cell(100, 10, txt="ACTIVITIES", ln=1)
+
+            for i in activities:
+                pdf.cell(activity_column_width["name"], 10, txt=i.name or "", ln=0)
+                pdf.cell(activity_column_width["quantity"], 10, txt=str(i.time), ln=1)
 
             if file_path[-4:] != ".pdf":
                 file_path += ".pdf"

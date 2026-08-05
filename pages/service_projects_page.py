@@ -190,7 +190,7 @@ class ServiceProjectsPage(QWidget):
             owner_label.setToolTip(tooltip_content)
             self.data_layout.addWidget(owner_label, index, 1)
             # DEVICE LABEL
-            item = project.manufacturer + " " + project.model
+            item = project.manufacturer.strip()+ " - " + project.model.strip() if project.model else project.manufacturer.strip()
             item_label = QLabel(item)
             self.data_layout.addWidget(item_label, index, 2)
             # START DATE LABEL

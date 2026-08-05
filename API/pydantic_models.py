@@ -1,7 +1,17 @@
-from pydantic import BaseModel,ConfigDict, EmailStr, Base64Bytes
+from pydantic import BaseModel,ConfigDict, Base64Bytes
 from database.models import Role
 from datetime import datetime
 from typing import Any, Optional
+
+class AppMetadataSchema(BaseModel):
+    id: int
+    name: str | None = None
+    version: str
+    download_url: str
+    mandatory_update: bool
+    created_at: datetime
+    sha256: str
+    release_notes: str | None = None
 
 
 class UsersSchema(BaseModel):

@@ -1,8 +1,11 @@
+from types import SimpleNamespace
+
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
 from fpdf import FPDF
 import io
 from database.models import ServiceProjects, Projects
+from API.api import API_CLIENT
 
 
 def clear_layout(layout, grid_layout=False):
@@ -47,30 +50,34 @@ def create_pdf_form(database,project_id):
         writer.write(bytes_stream) # write pdf content to the BytesIO object
         project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
         session.commit()
-def project_summary_pdf(database,project_id):
-    with database.session() as session:
-        items = session.query(ProjectDetails).filter(ProjectDetails.project_id == project_id, ProjectDetails.item.isnot(None)).all()
-        activities = session.query(ProjectDetails).filter(ProjectDetails.project_id == project_id, ProjectDetails.activity.isnot(None)).all()
+def project_summary_pdf(project_id):
 
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font(family="Arial", style='b', size=12)
-        pdf.cell(text="ITEMS")
-        if items:
-            for item in items:
-                pdf.cell(text=item.item, ln=1)
-        else:
-            pdf.cell(text="No Items")
-        pdf.cell(text="", w=1,h=2)
-        if activities:
-            for activity in activities:
-                pdf.cell(text=activity.activity, ln=1)
-        else:
-            pdf.cell(text="No Activities")
+    items = API_CLIENT.get(f"/projects/{project_id}/items/").json()
+    items = [SimpleNamespace(**item) for item in items]
+    activities = API_CLIENT.get(f"/projects/{project_id}/activities/").json()
+    activities = [SimpleNamespace(**activity) for activity in activities]
 
-        # Create temporary file
-        temp_file = io.BytesIO()
-        pdf.output(temp_file)
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font(family="Arial", style='b', size=12)
+    pdf.cell(text="ITEMS")
+    if items:
+        for item in items:
+            pdf.cell(text=item.item, ln=1)
+    else:
+        pdf.cell(text="No Items")
+    pdf.cell(text="", w=1,h=2)
+    if activities:
+        for activity in activities:
+            pdf.cell(text=activity.activity, ln=1)
+    else:
+        pdf.cell(text="No Activities")
+
+    # Create temporary file
+    temp_file = io.BytesIO()
+    pdf.output(temp_file)
+
+
     with database.session() as session:
         project = session.get(Projects, project_id)
         raw_bytes = temp_file.getvalue()
