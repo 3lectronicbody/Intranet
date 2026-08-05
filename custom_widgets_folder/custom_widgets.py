@@ -32,7 +32,7 @@ class MenuBar(QMenuBar):
 
         # File Menu -> About Action
         self.about = self.file_menu.addAction("About...")
-        self.about.triggered.connect(self.about_menu_handler)
+        self.about.triggered.connect(self.open_about_menu_handler)
 
         # File Menu -> Exit Action
         self.exit = self.file_menu.addAction("Exit")
@@ -84,8 +84,9 @@ class MenuBar(QMenuBar):
         app_instance = QApplication.instance()
         if app_instance:
             app_instance.quit()
-    def about_menu_handler(self):
-        pass
+    def open_about_menu_handler(self):
+        about_dialog = self.AboutDialog()
+        about_dialog.exec()
     class AboutDialog(QDialog):
         def __init__(self, parent=None):
             super().__init__(parent)
@@ -105,24 +106,28 @@ class MenuBar(QMenuBar):
             self.release_notes_label = QLabel("_load_release_notes")
             self.layout.addWidget(self.release_notes_label)
 
-
-            self.cancel_button = QPushButton("CANCEL")
-            self.layout.addWidget(self.cancel_button)
-            self.cancel_button.clicked.connect(self.accept)
+            self.button_layout = QHBoxLayout()
+            self.layout.addLayout(self.button_layout)
 
             self.update_button = QPushButton("Update...")
-            self.layout.addWidget(self.update_button)
+            self.button_layout.addWidget(self.update_button)
             self.update_button.clicked.connect(self.update_button_handler)
+            self.cancel_button = QPushButton("CANCEL")
+            self.button_layout.addWidget(self.cancel_button)
+            self.cancel_button.clicked.connect(self.accept)
+
 
             self.refresh_data()
 
         def refresh_data(self):
-            metadata = API_CLIENT.get("/app_metadata").json()
-            current_version = [data for data in metadata if metadata[data]['version'] == APP_VERSION]
-            print(current_version)
+            current_version = APP_VERSION
+            metadata = API_CLIENT.get(f"/app_metadata/{current_version}").json()
+
+
+
             self.name_label.setText(metadata["name"])
             self.version_label.setText(metadata["version"])
-            created_at:str  = datetime.strftime(metadata["created_at"], "%Y-%m-%dT%H:%M")
+            created_at  = metadata["created_at"]
             self.created_label.setText(created_at)
             self.release_notes_label.setText(metadata["release_notes"])
         def update_button_handler(self):
