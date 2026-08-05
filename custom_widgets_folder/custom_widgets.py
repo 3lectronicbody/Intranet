@@ -28,16 +28,14 @@ class MenuBar(QMenuBar):
             self.export_project = self.file_menu.addAction("Export Project...")
             self.export_project.triggered.connect(self.export_project_handler)
 
-            self.main_menu = self.addAction("Main Menu")
-            self.main_menu.triggered.connect(self.main_menu_handler)
+        # File Menu -> About Action
+        self.about = self.file_menu.addAction("About...")
+        self.about.triggered.connect(self.about_menu_handler)
 
-
-
-
-        # EXIT BUTTON MENU
-        self.exit = self.
-
+        # File Menu -> Exit Action
+        self.exit = self.file_menu.addAction("Exit")
         self.exit.triggered.connect(lambda _: self.exit_button_handler())
+
 
 
 
@@ -85,9 +83,9 @@ class MenuBar(QMenuBar):
         app_instance = QApplication.instance()
         if app_instance:
             app_instance.quit()
-    def main_menu_handler(self):
-        if self.parent:
-            self.parent.accept()
+    def about_menu_handler(self):
+        pass
+
 class AddItem(QDialog):
     save_signal = Signal()
     def __init__(self,project_id, user_id):
