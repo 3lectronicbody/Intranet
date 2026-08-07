@@ -16,6 +16,7 @@ class MainFrame(QMainWindow):
     def __init__(self):
         super().__init__()
 
+
         self.user_id = None
         self.project_id = None
 

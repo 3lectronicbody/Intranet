@@ -1,8 +1,7 @@
 from types import SimpleNamespace
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
-from fpdf import FPDF
-import io
+import sys
 from database.models import ServiceProjects, Projects
 from API.api import API_CLIENT
 import json
@@ -86,8 +85,50 @@ def project_summary_pdf(project_id):
         session.commit()"""
 def check_for_updates():
     # Function check if there is an update available
-    # TODO: Check for updates function
-    raise NotImplementedError
+
+    with open("version.json", "r") as f:
+        app_version_id = json.load(f)["id"]
+    app_metadata = API_CLIENT.get("/app_metadata/latest_version")
+    if app_metadata.status_code == 200:
+        latest_version_id = app_metadata.json()["id"]
+        latest_version_number = app_metadata.json()["version"]
+    else:
+        return False
+    # Compare actual version id with latest version id from the API
+
+    if app_version_id < latest_version_id: # -> there is more actual version
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setWindowTitle("Update Available")
+        msg_box.setText(f"There is a new version of the app available. Do You want to update to version?: {latest_version_number}.")
+        msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        result = msg_box.exec()
+        if result == QMessageBox.Yes:
+            return True
+        return False
+    return False
+def get_app_version(flag=None):
+    version_path = Path(__file__).resolve().parent / "version.json"
+    if not version_path.exists():
+        QMessageBox.critical(None, "Error", "Version file not found. Please reinstall the app.\n"
+                                                        "If the problem persists, contact support.")
+        sys.exit(0)
+    with open(version_path, "r") as f:
+        json_file = json.load(f)
+
+    if flag == "id":
+        return json_file['id']
+    elif flag == "version":
+        return json_file['version']
+    else:
+        return json_file
+
+
+def update_app():
+    # TODO: Write in Rust
+    print("Updating app...")
+
+
 
 
 

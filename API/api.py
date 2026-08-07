@@ -51,7 +51,7 @@ def sign_up(email: str, password: str, db=Depends(get_db)):
     return True
 
 # APP VERSION
-@app.get("/app_metadata/")
+@app.get("/app_metadata/latest_version")
 def get_app_metadata(db = Depends(get_db)):
     return db.query(AppMetadata).order_by(desc(AppMetadata.version)).first()
 @app.get("/app_metadata/{current_version}")

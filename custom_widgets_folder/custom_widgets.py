@@ -1,3 +1,4 @@
+import os, sys
 from types import SimpleNamespace
 
 from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEdit, QHBoxLayout, QPushButton, QComboBox, \
@@ -7,6 +8,7 @@ from fpdf import FPDF
 from API.api import API_CLIENT
 from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
 import json
+from helper_functions import confirmation_dialog, get_app_version
 
 
 
@@ -20,9 +22,9 @@ class MenuBar(QMenuBar):
         self.project_id = project_id
         self.user_id = user_id
         self.flag = flag
-        with open("config.json", "r") as f:
+        with open("version.json", "r") as f:
             config = json.load(f)
-            self.app_version = config["APP_VERSION"]
+            self.app_version = config["version"]
 
         self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
         # ADD FILE MENU TO MENU BAR
@@ -39,6 +41,9 @@ class MenuBar(QMenuBar):
         # File Menu -> Exit Action
         self.exit = self.file_menu.addAction("Exit")
         self.exit.triggered.connect(lambda _: self.exit_button_handler())
+
+        self.check_for_updates = self.file_menu.addAction("Check for Updates...")
+        self.check_for_updates.triggered.connect(self.update_handler)
 
 
 
@@ -81,17 +86,24 @@ class MenuBar(QMenuBar):
                 file_path += ".pdf"
 
             pdf.output(file_path)
+    def open_about_menu_handler(self):
+        about_dialog = self.AboutDialog()
+        about_dialog.exec()
+
     @staticmethod
     def exit_button_handler():
         app_instance = QApplication.instance()
         if app_instance:
             app_instance.quit()
-    def open_about_menu_handler(self):
-        about_dialog = self.AboutDialog()
-        about_dialog.exec()
+    def update_handler(self):
+        confirmation = confirmation_dialog(self,title="Update", message="Are you sure you want to update the app?")
+        if confirmation == QMessageBox.Yes:
+            os.startfile("updater.exe")
+            QApplication.quit()
     class AboutDialog(QDialog):
         def __init__(self, parent=None):
             super().__init__(parent)
+            self.version = get_app_version(flag="version")
             self.setWindowTitle("About")
             self.layout = QVBoxLayout()
             self.setLayout(self.layout)
@@ -99,7 +111,8 @@ class MenuBar(QMenuBar):
             self.name_label = QLabel("Project Management System")
             self.layout.addWidget(self.name_label)
 
-            self.version_label = QLabel(f"Version: {self.app_version}" or "Unknown")
+
+            self.version_label = QLabel(f"Version: {self.version}" or "Unknown")
             self.layout.addWidget(self.version_label)
 
             self.created_label = QLabel("_load_creation_date")
@@ -123,12 +136,10 @@ class MenuBar(QMenuBar):
 
         def refresh_data(self):
 
-            metadata = API_CLIENT.get(f"/app_metadata/{self.app_version}").json()
-
-
+            metadata = API_CLIENT.get(f"/app_metadata/{self.version}").json()
 
             self.name_label.setText(metadata["name"])
-            self.version_label.setText(metadata["version"])
+            self.version_label.setText(f"Version: {metadata["version"]}" or "Unknown")
             created_at  = metadata["created_at"]
             self.created_label.setText(created_at)
             self.release_notes_label.setText(metadata["release_notes"])
