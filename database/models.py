@@ -1,12 +1,13 @@
 from sqlalchemy import (
     Integer,
+    Text,
     String,
     DateTime,
     Boolean,
     Float,
     ForeignKey,
     LargeBinary,
-    JSON
+    JSON,
 )
 from enum import Enum
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, relationship
@@ -41,16 +42,17 @@ class Log(Enum):
     DELETE_ACTIVITY = "delete_activity"
     SIGN_IN = "sign_in"
     DELETE_PROJECT = "delete_project"
+
 class AppMetadata(Base):
     __tablename__ =  "app_metadata"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str | None] = mapped_column(String, nullable=True, default="Intranet")
+    filename: Mapped[str] = mapped_column(String, nullable=False, default="Intranet")
     version: Mapped[str] = mapped_column(String, nullable=False)
-    download_url: Mapped[str] = mapped_column(String, nullable=False, default="www.google.com")
-    mandatory_update: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    download_url: Mapped[str] = mapped_column(String, nullable=False)
+    mandatory_update: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default = lambda: datetime.now(timezone.utc))
     sha256: Mapped[str] = mapped_column(String, nullable=False)
-    release_notes: Mapped[str] = mapped_column(String, nullable=True)
+    release_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 

@@ -1,0 +1,6 @@
+VERSION = "1.0.0"
+VERSION_ID = 1
+NAME = "Intranet"
+AUTHOR = ""
+RELEASE_NOTES = ""
+FILE_HASH = ""

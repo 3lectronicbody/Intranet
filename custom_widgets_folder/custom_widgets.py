@@ -133,7 +133,6 @@ class MenuBar(QMenuBar):
 
 
             self.refresh_data()
-
         def refresh_data(self):
 
             metadata = API_CLIENT.get(f"/app_metadata/{self.version}").json()

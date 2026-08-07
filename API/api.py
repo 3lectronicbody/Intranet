@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.testclient import TestClient
 from sqlalchemy import desc
+from fastapi.responses import FileResponse
 
 from database.database import Database
 from database.models import Users, Projects, ServiceProjects, ProjectItems, ProjectActivities, ProjectTodos, AppMetadata
@@ -13,6 +14,8 @@ import base64
 
 app = FastAPI()
 database = Database()
+
+DOWNLOAD_DIR = "C:/server/downloads/app"
 
 def get_db():
     session = database.session()
@@ -57,6 +60,18 @@ def get_app_metadata(db = Depends(get_db)):
 @app.get("/app_metadata/{current_version}")
 def get_app_metadata(current_version: str, db = Depends(get_db)):
     return db.query(AppMetadata).filter(AppMetadata.version == current_version).first()
+@app.get("/app_metadata/download/latest")
+def download_latest_version(db = Depends(get_db)):
+    latest_version = db.query(AppMetadata).order_by(desc(AppMetadata.id)).first()
+    if latest_version is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No application version found"
+        )
+    path = latest_version.download_url
+    filename = latest_version.filename
+    return FileResponse(path=path, media_type="application/octet-stream", filename=filename)
+@app.get("/app_metadata/download/{version}")
 
 # Projects Page routes
 @app.get("/projects", response_model=list[ProjectSchema])

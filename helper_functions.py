@@ -5,6 +5,7 @@ import sys
 from database.models import ServiceProjects, Projects
 from API.api import API_CLIENT
 import json
+import metadata
 
 
 def clear_layout(layout, grid_layout=False):
@@ -86,8 +87,8 @@ def project_summary_pdf(project_id):
 def check_for_updates():
     # Function check if there is an update available
 
-    with open("version.json", "r") as f:
-        app_version_id = json.load(f)["id"]
+
+    app_version_id = metadata.VERSION_ID
     app_metadata = API_CLIENT.get("/app_metadata/latest_version")
     if app_metadata.status_code == 200:
         latest_version_id = app_metadata.json()["id"]
