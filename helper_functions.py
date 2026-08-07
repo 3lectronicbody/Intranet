@@ -51,8 +51,9 @@ def create_pdf_form(database,project_id):
         project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
         session.commit()
 def project_summary_pdf(project_id):
+    # Todo : project_summary
 
-    items = API_CLIENT.get(f"/projects/{project_id}/items/").json()
+    """items = API_CLIENT.get(f"/projects/{project_id}/items/").json()
     items = [SimpleNamespace(**item) for item in items]
     activities = API_CLIENT.get(f"/projects/{project_id}/activities/").json()
     activities = [SimpleNamespace(**activity) for activity in activities]
@@ -82,7 +83,7 @@ def project_summary_pdf(project_id):
         project = session.get(Projects, project_id)
         raw_bytes = temp_file.getvalue()
         project.summary_pdf = raw_bytes
-        session.commit()
+        session.commit()"""
 def check_for_updates():
     # Function check if there is an update available
     metadata = API_CLIENT.get("/app_metadata").json()
@@ -113,6 +114,8 @@ def check_for_updates():
 
         else:
             return True
+    else:
+        return True
 
 
 
