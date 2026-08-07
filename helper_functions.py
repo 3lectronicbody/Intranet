@@ -5,7 +5,7 @@ from fpdf import FPDF
 import io
 from database.models import ServiceProjects, Projects
 from API.api import API_CLIENT
-from config import APP_VERSION
+import json
 
 
 def clear_layout(layout, grid_layout=False):
@@ -86,36 +86,11 @@ def project_summary_pdf(project_id):
         session.commit()"""
 def check_for_updates():
     # Function check if there is an update available
-    metadata = API_CLIENT.get("/app_metadata").json()
-    if metadata:
-        metadata = SimpleNamespace(**metadata)
+    # TODO: Check for updates function
+    raise NotImplementedError
 
-        if metadata.version != APP_VERSION:
-            msg_box = QMessageBox()
-            msg_box.setIcon(QMessageBox.Information)
-            msg_box.setWindowTitle("Update Available")
-            if metadata.mandatory_update:
-                msg_box.setText(
-                    f"A mandatory update to version {metadata.version} is available. You must update to continue using the application.")
-                msg_box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
-                if msg_box.exec() == QMessageBox.Ok:
-                    API_CLIENT.post("/app_metadata/update/")
-                    return True
-                else:
-                    return False
-            else:
-                msg_box.setText("    There is new version available.\nDo you want to update to version " + metadata.version + " ?")
-                msg_box.setStandardButtons(QMessageBox.Yes| QMessageBox.No)
 
-                if msg_box.exec() == QMessageBox.No:
-                    return True
-                elif msg_box.exec() == QMessageBox.Yes:
-                    API_CLIENT.post("/app_metadata/update/")
 
-        else:
-            return True
-    else:
-        return True
 
 
 

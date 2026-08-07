@@ -6,8 +6,7 @@ from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from API.api import API_CLIENT
 from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
-from datetime import datetime
-from config import APP_VERSION
+import json
 
 
 
@@ -21,6 +20,9 @@ class MenuBar(QMenuBar):
         self.project_id = project_id
         self.user_id = user_id
         self.flag = flag
+        with open("config.json", "r") as f:
+            config = json.load(f)
+            self.app_version = config["APP_VERSION"]
 
         self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
         # ADD FILE MENU TO MENU BAR
@@ -97,7 +99,7 @@ class MenuBar(QMenuBar):
             self.name_label = QLabel("Project Management System")
             self.layout.addWidget(self.name_label)
 
-            self.version_label = QLabel(f"Version: {APP_VERSION}")
+            self.version_label = QLabel(f"Version: {self.app_version}" or "Unknown")
             self.layout.addWidget(self.version_label)
 
             self.created_label = QLabel("_load_creation_date")
@@ -120,8 +122,8 @@ class MenuBar(QMenuBar):
             self.refresh_data()
 
         def refresh_data(self):
-            current_version = APP_VERSION
-            metadata = API_CLIENT.get(f"/app_metadata/{current_version}").json()
+
+            metadata = API_CLIENT.get(f"/app_metadata/{self.app_version}").json()
 
 
 

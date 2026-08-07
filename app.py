@@ -5,8 +5,8 @@ import sys
 from helper_functions import check_for_updates
 
 
-# TODO: Order system for project and service project items with user notification
-# TODO: updater.exe
+
+
 
 if __name__ == "__main__":
 
@@ -22,12 +22,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         pass
 
-    check_for_update = check_for_updates()
-    if not check_for_update:
-        sys.exit()
-    else:
-        pass
-        #TODO: update_app()
+
 
 
     root = MainFrame()
