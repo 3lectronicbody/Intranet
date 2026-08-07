@@ -26,7 +26,8 @@ if __name__ == "__main__":
     if not check_for_update:
         sys.exit()
     else:
-        update_app()
+        pass
+        #TODO: update_app()
 
 
     root = MainFrame()

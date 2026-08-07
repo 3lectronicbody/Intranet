@@ -1,0 +1,1 @@
+# TODO: config.json -> (preferences, UI options, etc.), version.json - > actual_version_information, rust_updater
