@@ -18,7 +18,7 @@ if __name__ == "__main__":
         app.setStyleSheet(current_style + "\n" + custom_css + custom_css_gemini)
     except FileNotFoundError:
         pass
-
+    # TODO: check for update comment
     """check_for_update = check_for_updates()
     if check_for_update:
         confirmation  = confirmation_dialog(None, "Update Available", "A new version of the application is available. Do you want to update now?")
