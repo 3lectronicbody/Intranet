@@ -19,12 +19,12 @@ if __name__ == "__main__":
     except FileNotFoundError:
         pass
 
-    check_for_update = check_for_updates()
+    """check_for_update = check_for_updates()
     if check_for_update:
         confirmation  = confirmation_dialog(None, "Update Available", "A new version of the application is available. Do you want to update now?")
         if confirmation == QMessageBox.Yes:
             os.startfile("updater.exe")
-            sys.exit(0)
+            sys.exit(0)"""
 
 
     root = MainFrame()
