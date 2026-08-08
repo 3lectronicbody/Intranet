@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 class AppMetadataSchema(BaseModel):
     id: int
-    name: str | None = None
+    filename: str | None = None
     version: str
     download_url: str
     mandatory_update: bool

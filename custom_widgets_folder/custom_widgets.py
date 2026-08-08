@@ -7,9 +7,8 @@ from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
 from API.api import API_CLIENT
 from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
-import json
-from helper_functions import confirmation_dialog, get_app_version
-
+import metadata
+from helper_functions import confirmation_dialog, check_for_updates
 
 
 class MenuBar(QMenuBar):
@@ -22,9 +21,7 @@ class MenuBar(QMenuBar):
         self.project_id = project_id
         self.user_id = user_id
         self.flag = flag
-        with open("version.json", "r") as f:
-            config = json.load(f)
-            self.app_version = config["version"]
+        self.app_version = metadata.VERSION
 
         self.setStyleSheet("background-color: #2c3e50; border-radius: 2px;")
         # ADD FILE MENU TO MENU BAR
@@ -44,7 +41,6 @@ class MenuBar(QMenuBar):
 
         self.check_for_updates = self.file_menu.addAction("Check for Updates...")
         self.check_for_updates.triggered.connect(self.update_handler)
-
 
 
     def export_project_handler(self):
@@ -96,14 +92,20 @@ class MenuBar(QMenuBar):
         if app_instance:
             app_instance.quit()
     def update_handler(self):
-        confirmation = confirmation_dialog(self,title="Update", message="Are you sure you want to update the app?")
-        if confirmation == QMessageBox.Yes:
-            os.startfile("updater.exe")
-            QApplication.quit()
+        check = check_for_updates()
+        if check:
+            confirmation = confirmation_dialog(self, "Update Available", "A new version of the application is available. Do you want to update now?")
+            if confirmation == QMessageBox.Yes:
+                os.startfile("updater.exe")
+                QApplication.quit()
+        else:
+            message = QMessageBox()
+            message.setText("No updates available")
+            message.exec()
     class AboutDialog(QDialog):
         def __init__(self, parent=None):
             super().__init__(parent)
-            self.version = get_app_version(flag="version")
+            self.version = metadata.VERSION
             self.setWindowTitle("About")
             self.layout = QVBoxLayout()
             self.setLayout(self.layout)
@@ -134,16 +136,24 @@ class MenuBar(QMenuBar):
 
             self.refresh_data()
         def refresh_data(self):
-
-            metadata = API_CLIENT.get(f"/app_metadata/{self.version}").json()
-
-            self.name_label.setText(metadata["name"])
-            self.version_label.setText(f"Version: {metadata["version"]}" or "Unknown")
-            created_at  = metadata["created_at"]
+            self.name_label.setText(metadata.NAME)
+            self.version_label.setText(f"Version: {metadata.VERSION}")
+            created_at  = metadata.CREATED_AT
             self.created_label.setText(created_at)
-            self.release_notes_label.setText(metadata["release_notes"])
+            self.release_notes_label.setText(metadata.RELEASE_NOTES)
+
+        @staticmethod
         def update_button_handler(self):
-            pass
+            check = check_for_updates()
+            if check:
+                #TODO: When updater will be ready, uncomment this line
+                """os.startfile("updater.exe")
+                QApplication.quit()"""
+                pass
+            else:
+                message = QMessageBox()
+                message.setText("No updates available")
+                message.exec()
 
 
 class AddItem(QDialog):

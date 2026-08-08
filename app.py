@@ -2,7 +2,8 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 from pages.MainFrame import MainFrame
 from pathlib import Path
 import sys, os
-from helper_functions import check_for_updates, update_app, confirmation_dialog, get_app_version
+from helper_functions import check_for_updates,confirmation_dialog
+import metadata
 
 if __name__ == "__main__":
 

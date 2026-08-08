@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 from database.models import ServiceProjects, Projects
 from API.api import API_CLIENT
-import json
 import metadata
 
 
@@ -86,8 +85,6 @@ def project_summary_pdf(project_id):
         session.commit()"""
 def check_for_updates():
     # Function check if there is an update available
-
-
     app_version_id = metadata.VERSION_ID
     app_metadata = API_CLIENT.get("/app_metadata/latest_version")
     if app_metadata.status_code == 200:
@@ -109,20 +106,13 @@ def check_for_updates():
         return False
     return False
 def get_app_version(flag=None):
-    version_path = Path(__file__).resolve().parent / "version.json"
-    if not version_path.exists():
-        QMessageBox.critical(None, "Error", "Version file not found. Please reinstall the app.\n"
-                                                        "If the problem persists, contact support.")
-        sys.exit(0)
-    with open(version_path, "r") as f:
-        json_file = json.load(f)
-
+    # Function returns the app version
     if flag == "id":
-        return json_file['id']
-    elif flag == "version":
-        return json_file['version']
+        return metadata.VERSION_ID
+    elif flag == "number":
+        return metadata.VERSION
     else:
-        return json_file
+        return f"{metadata.VERSION} (ID: {metadata.VERSION_ID})"
 
 
 def update_app():

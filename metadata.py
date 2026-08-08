@@ -1,6 +1,7 @@
 VERSION = "1.0.0"
 VERSION_ID = 1
 NAME = "Intranet"
-AUTHOR = ""
+AUTHOR = "Dominik Jarmocik"
 RELEASE_NOTES = ""
 FILE_HASH = ""
+CREATED_AT = "2023-03-22 12:00:00"
