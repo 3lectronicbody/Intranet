@@ -9,6 +9,7 @@ from API.api import API_CLIENT
 from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
 import metadata
 from helper_functions import confirmation_dialog, check_for_updates
+import requests
 
 
 class MenuBar(QMenuBar):
@@ -247,15 +248,16 @@ class AddItem(QDialog):
             return
 
 
-        new_item = ProjectItemSchema(project_id=self.project_id,
-                             name=name,
-                             code=code,
-                             quantity=quantity,
-                             unit=unit,
-                             description=description)
-        API_CLIENT.post("/projects/project/items/new", json=new_item.model_dump())
-        self.accept()
-        self.save_signal.emit()
+        new_item = {"project_id": self.project_id,
+                    'name': name,
+                    'code': code,
+                    'quantity': quantity,
+                    'unit': unit,
+                    'description': description}
+        response = requests.post("/projects/project/items/new", json=new_item)
+        if response.ok:
+            self.accept()
+            self.save_signal.emit()
 class EditItem(QDialog):
     save_signal = Signal()
 

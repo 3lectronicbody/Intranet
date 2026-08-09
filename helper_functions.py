@@ -1,10 +1,9 @@
-from types import SimpleNamespace
+import os
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
-import sys
-from database.models import ServiceProjects, Projects
-from API.api import API_CLIENT
+from database.models import ServiceProjects
 import metadata
+import requests
 
 
 def clear_layout(layout, grid_layout=False):
@@ -86,7 +85,7 @@ def project_summary_pdf(project_id):
 def check_for_updates():
     # Function check if there is an update available
     app_version_id = metadata.VERSION_ID
-    app_metadata = API_CLIENT.get("/app_metadata/latest_version")
+    app_metadata = requests.get(F"{metadata.API_PATH}/app_metadata/latest_version")
     if app_metadata.status_code == 200:
         latest_version_id = app_metadata.json()["id"]
         latest_version_number = app_metadata.json()["version"]
@@ -116,8 +115,7 @@ def get_app_version(flag=None):
 
 
 def update_app():
-    # TODO: Write in Rust
-    print("Updating app...")
+    os.startfile("updater.exe")
 
 
 
