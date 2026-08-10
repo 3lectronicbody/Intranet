@@ -5,9 +5,8 @@ from PySide6.QtWidgets import QVBoxLayout, QDialog, QGridLayout, QLabel, QLineEd
     QMenuBar, QFileDialog, QMessageBox, QApplication, QTextEdit
 from PySide6.QtCore import Signal, Qt
 from fpdf import FPDF
-from API.api import API_CLIENT
-from API.pydantic_models import ProjectItemSchema, ProjectActivitySchema
 import metadata
+from config import API_PATH
 from helper_functions import confirmation_dialog, check_for_updates
 import requests
 
@@ -52,11 +51,11 @@ class MenuBar(QMenuBar):
             pdf.set_font("Arial", size=12)
 
 
-            items = API_CLIENT.get(f"/projects/{self.project_id}/items/").json()
+            items = requests.get(f"{API_PATH}/projects/{self.project_id}/items/").json()
             items = [SimpleNamespace(**item) for item in items]
-            activities = API_CLIENT.get(f"/projects/{self.project_id}/activities/").json()
+            activities = requests.get(f"{API_PATH}/projects/{self.project_id}/activities/").json()
             activities = [SimpleNamespace(**activity) for activity in activities]
-            project_name = API_CLIENT.get(f"/projects/{self.project_id}").json()["name"]
+            project_name = requests.get(f"{API_PATH}/projects/{self.project_id}").json()["name"]
 
             item_column_width = {"name": 60, "quantity": 20, "code": 40, "unit": 20}
 
@@ -269,7 +268,7 @@ class EditItem(QDialog):
         self.setWindowTitle("Edit Item")
 
 
-        edited_item: dict = API_CLIENT.get(f"/projects/project/items/{self.item_id}").json()
+        edited_item: dict = requests.get(f"{API_PATH}/projects/project/items/{self.item_id}").json()
 
         item = SimpleNamespace(**edited_item)
 
@@ -366,7 +365,7 @@ class EditItem(QDialog):
             self.quantity_input.setFocus()
             return
 
-        API_CLIENT.patch(f"/projects/project/items/{self.item_id}/update/",
+        requests.patch(f"{API_PATH}/projects/project/items/{self.item_id}/update/",
                          json={"name": name,"quantity": quantity,"code": code,"unit": unit})
 
         self.accept()
@@ -454,12 +453,11 @@ class AddActivity(QDialog):
             return
 
 
-
-        new = ProjectActivitySchema(project_id=self.project_id,
-                             name=name,
-                             time=time,
-                             description=description)
-        API_CLIENT.post("/projects/project/activities/new", json=new.model_dump())
+        new_activity = {"project_id": self.project_id,
+               'name': name,
+               'time': time,
+               'description': description}
+        requests.post(f"{API_PATH}/projects/project/activities/new", json=new_activity)
 
         self.save_signal.emit()
         self.accept()
@@ -474,7 +472,7 @@ class EditActivity(QDialog):
         self.activity_id = item_id
         self.setWindowTitle("Edit Activity")
 
-        edited_activity: dict = API_CLIENT.get(f"/projects/project/activities/{self.activity_id}").json()
+        edited_activity: dict = requests.get(f"{API_PATH}/projects/project/activities/{self.activity_id}").json()
 
         activity = SimpleNamespace(**edited_activity)
 
@@ -557,15 +555,18 @@ class EditActivity(QDialog):
             self.quantity_input.setFocus()
             return
 
-
-        API_CLIENT.patch(f"/projects/project/activities/{self.activity_id}/update/", json={
+        edited_activity = {
             "name": name,
             "time": time,
             "description": description
-        })
-        print(f"Activity {self.activity_id} updated")
-        self.accept()
-        self.save_signal.emit()
+        }
+        response = requests.patch(f"/projects/project/activities/{self.activity_id}/update/", json=edited_activity)
+        if response.ok:
+            self.accept()
+            self.save_signal.emit()
+        else:
+            QMessageBox.critical(None, "Error", f"An error occurred while updating the activity")
+
 class AddToDo(QDialog):
     save_signal = Signal()
 
@@ -649,13 +650,16 @@ class AddToDo(QDialog):
         todo = self.name_input.text().strip()
         time = self.quantity_input.text().strip().replace(",", ".")
         description = self.description_input.toPlainText().strip() or ""
-        new_todo = ProjectActivitySchema(name=todo,
-                                         time=float(time),
-                                         description=description,
-                                         project_id=self.project_id)
-        API_CLIENT.post("projects/project/todos/new", json=new_todo.model_dump())
-        self.accept()
-        self.save_signal.emit()
+        new_todo = {"name":todo,
+                    "time":float(time),
+                    "description":description,
+                    "project_id":self.project_id}
+        response = requests.post("projects/project/todos/new", json=new_todo)
+        if response.ok:
+            self.accept()
+            self.save_signal.emit()
+        else:
+            QMessageBox.critical(None, "Error", f"An error occurred while adding item")
 class EditToDo(QDialog):
     save_signal = Signal()
 
@@ -667,7 +671,7 @@ class EditToDo(QDialog):
         self.todo_id = todo_id
         self.setWindowTitle("Edit Item")
 
-        fetched_todo = API_CLIENT.get(f"/projects/project/todos/{self.todo_id}").json()
+        fetched_todo = requests.get(f"/projects/project/todos/{self.todo_id}").json()
         todo = SimpleNamespace(**fetched_todo)
 
         self.layout = QVBoxLayout()
@@ -737,13 +741,16 @@ class EditToDo(QDialog):
             self.quantity_input.setStyleSheet("border: 2px solid red;")
             self.quantity_input.setFocus()
             return
-
-        API_CLIENT.patch(f"/projects/project/todos/{self.todo_id}/update/",
-                         json={"name": name,
-                                "time": time,
-                                "project_id": self.project_id})
-        self.accept()
-        self.save_signal.emit()
+        edited_todo = {"name": name,
+                        "time": time,
+                        "project_id": self.project_id}
+        response = requests.patch(f"/projects/project/todos/{self.todo_id}/update/",
+                         json=edited_todo)
+        if response.ok:
+            self.accept()
+            self.save_signal.emit()
+        else:
+            QMessageBox.critical(None, "Error", f"An error occurred while updating item")
 class CustomPushButton(QPushButton):
     # Added "Enter" key press event to the button"
     def __init__(self, text, parent=None):
