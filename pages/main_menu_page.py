@@ -1,8 +1,6 @@
+import requests
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QMessageBox, QLabel
-from database.models import Role
-from API.api import API_CLIENT
-from API.pydantic_models import UsersSchema
 
 
 
@@ -69,10 +67,10 @@ class MainMenuPage(QWidget):
         if not self.user_id:
             return
 
-        res = API_CLIENT.get(f"/users/{self.user_id}")
+        user = requests.get(f"/users/{self.user_id}")
 
         # Only parse if the request actually succeeded
-        if res.status_code != 200:
+        if user.status_code != 200:
             print(f"Failed to fetch user {self.user_id}: status {res.status_code}, body: {res.text}")
             return
 
