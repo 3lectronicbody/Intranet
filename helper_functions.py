@@ -1,7 +1,7 @@
 import os
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
-from database.models import ServiceProjects
+
 import metadata
 import requests
 
