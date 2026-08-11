@@ -1,14 +1,11 @@
+import requests
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QLabel, QPushButton, QDialog, QVBoxLayout, QTabWidget, QHBoxLayout, QMessageBox
-
-
-from database.models import Projects
+from config import API_PATH
 from pages.project.tabs import ItemsTab, ActivitiesTab, ToDoTab
 from custom_widgets_folder.custom_widgets import AddActivity, AddItem, AddToDo, MenuBar
 from helper_functions import confirmation_dialog, project_summary_pdf
-from API.api import API_CLIENT
 from types import SimpleNamespace
-
 
 
 
@@ -24,7 +21,7 @@ class ProjectPage(QDialog):
         self.add_item_dialog = None
         self.add_todo_dialog = None
 
-        project = API_CLIENT.get(f"/projects/{project_id}").json()
+        project = requests.get(f"{API_PATH}/projects/{project_id}").json()
         project = SimpleNamespace(**project)
 
 
@@ -110,7 +107,7 @@ class ProjectPage(QDialog):
             self.add_button.setText("Add To Do")
             self.todo_tab.load_data()
     def refresh_page(self):
-        project = API_CLIENT.get(f"/projects/{self.project_id}").json()
+        project = requests.get(f"{API_PATH}/projects/{self.project_id}").json()
         if not project['is_active']:
             self.complete_project_button.hide()
             self.activate_project_button.show()
@@ -148,11 +145,9 @@ class ProjectPage(QDialog):
         if confirmation == QMessageBox.Yes:
             pdf_summary_confirmation = confirmation_dialog(self, title="Pdf Summary", message="Do You want to create summary file")
             if pdf_summary_confirmation == QMessageBox.Yes:
-                project_summary_pdf(self.database, self.project_id)
-            with self.database.session() as session:
-                project = session.get(Projects, self.project_id)
-                project.is_active = False
-                session.commit()
+                pass
+                #Todo: create pdf summary file
+            # TODO: patch project to complete it -> projec.is_active = False
             self.refresh_page()
 
         else:

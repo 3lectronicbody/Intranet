@@ -34,7 +34,7 @@ def confirmation_dialog(parent, title, message,):
     dialog.setText(message)
     dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
     return dialog.exec()
-def create_pdf_form(database,project_id):
+def create_pdf_form(project_id):
     import io
     import pypdf
     project = requests.get(f"{config.API_PATH}/projects/{project_id}").json()
