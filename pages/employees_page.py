@@ -1,10 +1,11 @@
 from functools import partial
-
+from types import SimpleNamespace
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox
 from helper_functions import clear_layout
-from API.api import API_CLIENT
-from API.pydantic_models import UsersSchema, Role
+import requests
+from config import API_PATH
+from config import Role
 
 
 
@@ -30,8 +31,8 @@ class EmployeesPage(QWidget):
         self.back_button.clicked.connect(self.back_signal.emit)
     def refresh_data(self):
         clear_layout(self.data_layout, grid_layout=True)
-        response = API_CLIENT.get("/users").json()
-        employees = [UsersSchema.model_validate(emp) for emp in response]
+        response = requests.get(f"{API_PATH}/users").json()
+        employees = [SimpleNamespace(**emp) for emp in response]
         counter = 0
         for emp in employees:
             label = QLabel(f"{emp.name or "Unknown name"} : {emp.email}")
@@ -69,7 +70,7 @@ class EmployeesPage(QWidget):
             counter += 1
     @staticmethod
     def dropdown_menu_handler(user_id, new_role_text):
-        API_CLIENT.patch(f"/users/{user_id}", json={"role": new_role_text})
+        requests.patch(f"/users/{user_id}", json={"role": new_role_text})
     def load_user(self, user_id):
         self.user_id = user_id
 

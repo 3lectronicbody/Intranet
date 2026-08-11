@@ -1,12 +1,15 @@
+from types import SimpleNamespace
+
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QComboBox, QLabel, QHBoxLayout, QLineEdit, QPushButton
-from API.pydantic_models import ServiceProjectSchema
 from helper_functions import clear_layout
 from custom_widgets_folder.CreateServiceProjectDialog import CreateServiceProject
 from custom_widgets_folder.ServiceProjectEditor import ServiceProjectDialog
 from datetime import datetime
-from API.api import API_CLIENT
+import requests
+from config import API_PATH
+
 
 
 
@@ -96,9 +99,9 @@ class ServiceProjectsPage(QWidget):
         selected_filter = self.dropdown_service_projects.currentText()
         searched_text = self.search_input.text().strip().lower()
         # Api database request
-        response = API_CLIENT.get("/service_projects").json()
+        response = requests.get(f"{API_PATH}/service_projects").json()
 
-        projects = [ServiceProjectSchema(**data) for data in response]
+        projects = [SimpleNamespace(**data) for data in response]
 
         if selected_filter == "All":
             projects = projects

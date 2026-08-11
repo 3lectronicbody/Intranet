@@ -4,7 +4,8 @@ from helper_functions import clear_layout
 from custom_widgets_folder.custom_widgets import EditItem, EditActivity, EditToDo
 from helper_functions import confirmation_dialog
 from PySide6.QtGui import Qt
-from API.api import API_CLIENT
+import requests
+from config import API_PATH
 from types import SimpleNamespace
 
 
@@ -45,7 +46,7 @@ class ItemsTab(QWidget):
 
 
         counter = 2
-        project_items = API_CLIENT.get(f"/projects/{self.project_id}/items/").json()
+        project_items = requests.get(f"{API_PATH}/projects/{self.project_id}/items/").json()
         items = [SimpleNamespace(**item) for item in project_items]
         for item in items:
             name_label = QLabel(item.name)
@@ -75,7 +76,7 @@ class ItemsTab(QWidget):
     def delete_button_handler(self, item_id):
         confirmation = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this item?")
         if confirmation == QMessageBox.Yes:
-            API_CLIENT.delete(f"/projects/project/items/{item_id}/delete")
+            requests.delete(f"{API_PATH}/projects/{self.project_id}/items/{item_id}/delete")
             self.load_data()
             return
 
@@ -108,7 +109,7 @@ class ActivitiesTab(QWidget):
         hor_line.setFrameShadow(QFrame.Sunken)
         self.main_layout.addWidget(hor_line, 1, 0, 1, 5)
 
-        project_activities = API_CLIENT.get(f"/projects/{self.project_id}/activities/").json()
+        project_activities = requests.get(f"{API_PATH}/projects/{self.project_id}/activities/").json()
         counter = 2
         activities = [SimpleNamespace(**activity) for activity in project_activities]
         for activity in activities:
@@ -132,7 +133,7 @@ class ActivitiesTab(QWidget):
     def delete_button_handler(self, activity_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to delete this activity?")
         if confirm == QMessageBox.Yes:
-            API_CLIENT.delete(f"/projects/project/activities/{activity_id}/delete")
+            requests.delete(f"{API_PATH}/projects/{self.project_id}/activities/{activity_id}/delete")
             self.load_data()
 
 class ToDoTab(QWidget):
@@ -157,7 +158,7 @@ class ToDoTab(QWidget):
 
     def load_data(self):
         clear_layout(self.main_layout, grid_layout=True)
-        project_todos = API_CLIENT.get(f"/projects/{self.project_id}/todos/").json()
+        project_todos = requests.get(f"{API_PATH}/projects/{self.project_id}/todos/").json()
 
         if project_todos:
             todos = [SimpleNamespace(**todo) for todo in project_todos]
@@ -186,12 +187,12 @@ class ToDoTab(QWidget):
     def complete_button_handler(self, todo_id):
         confirm = confirmation_dialog(self, title="Warning", message="Are you sure you want to complete this item?")
         if confirm == QMessageBox.Yes:
-            deleted_todo = API_CLIENT.delete(f"/projects/project/todos/{todo_id}/delete").json()
+            deleted_todo = requests.delete(f"{API_PATH}/projects/{self.project_id}/todos/{todo_id}/delete").json()
             todo = SimpleNamespace(**deleted_todo)
-            API_CLIENT.post("/projects/project/activities/new", json={"name": todo.name,
-                                                                      "time": todo.time,
-                                                                      "description": todo.description,
-                                                                      "project_id": self.project_id})
+            requests.post(f"{API_PATH}/projects/{self.project_id}/activities/new", json={"name": todo.name,
+                                                                                          "time": todo.time,
+                                                                                          "description": todo.description,
+                                                                                          "project_id": self.project_id})
             self.load_data()
 
     def edit_button_handler(self, item_id):
