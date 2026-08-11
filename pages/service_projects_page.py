@@ -197,11 +197,13 @@ class ServiceProjectsPage(QWidget):
             item_label = QLabel(item)
             self.data_layout.addWidget(item_label, index, 2)
             # START DATE LABEL
-            start_date_label = QLabel(project.start_date.strftime("%d/%m/%Y"))
+            formatted_date = datetime.fromisoformat(project.start_date)
+            start_date_label: str = QLabel(formatted_date.strftime("%Y-%m-%d"))
             self.data_layout.addWidget(start_date_label, index, 3)
             # END DATE LABEL
             if project.end_date:
-                end_date_label = QLabel(project.end_date.strftime("%d/%m/%Y"))
+                formatted_end_date = datetime.fromisoformat(project.end_date)
+                end_date_label = QLabel(formatted_end_date.strftime("%Y-%m-%d"))
                 end_date_label.setStyleSheet("font-weight: bold;")
             else:
                 end_date_label = QLabel("Pending...")

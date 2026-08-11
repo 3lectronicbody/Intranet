@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
 import sys
-import config
+from config import API_PATH
 import metadata
 import requests
 
@@ -35,7 +35,7 @@ def confirmation_dialog(parent, title, message,):
 def create_pdf_form(project_id):
     import io
     import pypdf
-    project = requests.get(f"{config.API_PATH}/projects/{project_id}").json()
+    project = requests.get(f"{API_PATH}/projects/{project_id}").json()
     project = SimpleNamespace(**project)
     empty_pdf_form_path = Path("files/service_form.pdf")
     reader = pypdf.PdfReader(empty_pdf_form_path)
@@ -87,10 +87,14 @@ def project_summary_pdf(project_id):
 def check_for_updates():
     # Function check if there is an update available
     app_version_id = metadata.VERSION_ID
-    app_metadata = requests.get(F"{metadata.API_PATH}/app_metadata/latest_version")
-    if app_metadata.status_code == 200:
-        latest_version_id = app_metadata.json()["id"]
-        latest_version_number = app_metadata.json()["version"]
+    app_metadata = requests.get(f"{API_PATH}/app_metadata/latest_version")
+    if app_metadata.json() is not None and app_metadata.ok:
+        try:
+            app_metadata = app_metadata.json()
+        except ValueError:
+            return False
+        latest_version_id = app_metadata["id"]
+        latest_version_number = app_metadata["version"]
     else:
         return False
     # Compare actual version id with latest version id from the API

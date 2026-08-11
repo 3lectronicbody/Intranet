@@ -1,14 +1,13 @@
 import io
 from datetime import datetime
 from pathlib import Path
-
 import pypdf
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QTextEdit, QHBoxLayout, QPushButton, \
     QMessageBox
-
-from API.api import API_CLIENT
 from helper_functions import confirmation_dialog
+import requests
+from config import API_PATH
 
 
 class CreateServiceProject(QDialog):
@@ -36,7 +35,7 @@ class CreateServiceProject(QDialog):
         self.layout.addWidget(self.number_title_label, 0, 0)
         
         # We need an endpoint for last service project number, or we can use the list of service projects
-        response = API_CLIENT.get("/service_projects")
+        response = requests.get(f"{API_PATH}/service_projects")
         service_projects = response.json()
         
         if service_projects:
@@ -146,7 +145,7 @@ class CreateServiceProject(QDialog):
             }
 
             # Use json= instead of params= to send data in the request body
-            API_CLIENT.post("/service_projects/new", json=new_project)
+            requests.post(f"{API_PATH}/service_projects/new", json=new_project)
 
             self.save_signal.emit()
             self.accept()
@@ -157,7 +156,7 @@ class CreateServiceProject(QDialog):
     def create_pdf_form(self, project_id):
         confirmation = confirmation_dialog(self, "Confirmation", "Are you sure you want to generate the PDF form?")
         if confirmation == QMessageBox.StandardButton.Yes:
-            response = API_CLIENT.get(f"/service_projects/{project_id}")
+            response = requests.get(f"{API_PATH}/service_projects/{project_id}")
             project = response.json()
             if not project:
                 return
@@ -190,11 +189,8 @@ class CreateServiceProject(QDialog):
             bytes_stream = io.BytesIO()  # create a BytesIO object
             writer.write(bytes_stream)  # write pdf content to the BytesIO object
             
-            # We need to upload this PDF back to the server
+            # Upload pdf back to server
             import base64
-            # Actually api.py doesn't have a specific endpoint for uploading PDF yet, 
-            # let's use PATCH /service_project/{id} if it can handle bytes or just skip for now 
-            # as I don't want to overcomplicate without a clear endpoint for large binary
-            # But the user asked to refactor it.
-            # I will add a patch call.
-            API_CLIENT.patch(f"/service_project/{project_id}", json={"pdf_form": base64.b64encode(bytes_stream.getvalue()).decode('utf-8')})
+            encoded_pdf = base64.b64encode(bytes_stream.getvalue()).decode('utf-8')
+
+            requests.patch(f"{API_PATH}/service_project/{project_id}", json={"pdf_form": encoded_pdf})
