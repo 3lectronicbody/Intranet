@@ -1,7 +1,11 @@
 import os
+from types import SimpleNamespace
+
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
+import sys
 
+import config
 import metadata
 import requests
 
@@ -33,21 +37,21 @@ def confirmation_dialog(parent, title, message,):
 def create_pdf_form(database,project_id):
     import io
     import pypdf
-    with database.session() as session:
-        project = session.query(ServiceProjects).get(project_id)
-        empty_pdf_form_path = Path("files/service_form.pdf")
-        reader = pypdf.PdfReader(empty_pdf_form_path)
-        writer = pypdf.PdfWriter()
-        writer.append(reader)
-        data = {"number": project.number,
-                "owner": project.owner,
-                "phone_number": project.phone_number}
-        writer.update_page_form_field_values(writer.pages[0],data)
-        # Saving the Pdf to a BytesIO object and then to a database field
-        bytes_stream = io.BytesIO() # create a BytesIO object
-        writer.write(bytes_stream) # write pdf content to the BytesIO object
-        project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
-        session.commit()
+    project = requests.get(f"{config.API_PATH}/projects/{project_id}").json()
+    project = SimpleNamespace(**project)
+    empty_pdf_form_path = Path("files/service_form.pdf")
+    reader = pypdf.PdfReader(empty_pdf_form_path)
+    writer = pypdf.PdfWriter()
+    writer.append(reader)
+    data = {"number": project.number,
+            "owner": project.owner,
+            "phone_number": project.phone_number}
+    writer.update_page_form_field_values(writer.pages[0],data)
+    # Saving the Pdf to a BytesIO object and then to a database field
+    bytes_stream = io.BytesIO() # create a BytesIO object
+    writer.write(bytes_stream) # write pdf content to the BytesIO object
+    project.pdf_form = bytes_stream.getvalue() # get the content of the BytesIO object
+
 def project_summary_pdf(project_id):
     # Todo : project_summary
 
@@ -104,6 +108,9 @@ def check_for_updates():
             return True
         return False
     return False
+def updater():
+    os.startfile("updater.exe")
+    sys.exit(0)
 def get_app_version(flag=None):
     # Function returns the app version
     if flag == "id":
