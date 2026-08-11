@@ -1,10 +1,8 @@
 import os
 from types import SimpleNamespace
-
 from PySide6.QtWidgets import QMessageBox
 from pathlib import Path
 import sys
-
 import config
 import metadata
 import requests
