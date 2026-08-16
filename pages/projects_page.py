@@ -45,7 +45,7 @@ class ProjectsPage(QWidget):
         clear_layout(self.data_layout, grid_layout=True)
 
         # API response to get all projects
-        projects = requests.get("/projects").json()
+        projects = requests.get(f"{API_PATH}/projects").json()
         # SimpleNamespace to make the data more accessible (e.g. project.name instead of project["name"])
         projects = [SimpleNamespace(**project) for project in projects]
 

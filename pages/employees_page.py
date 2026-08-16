@@ -8,9 +8,6 @@ from config import API_PATH
 from config import Role
 
 
-
-
-
 class EmployeesPage(QWidget):
     back_signal = Signal()
     def __init__(self):
@@ -70,7 +67,7 @@ class EmployeesPage(QWidget):
             counter += 1
     @staticmethod
     def dropdown_menu_handler(user_id, new_role_text):
-        requests.patch(f"/users/{user_id}", json={"role": new_role_text})
+        requests.patch(f"{API_PATH}/users/{user_id}", json={"role": new_role_text})
     def load_user(self, user_id):
         self.user_id = user_id
 
