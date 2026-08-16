@@ -49,6 +49,8 @@ class CreateProjectPage(QWidget):
         self.cancel_button.clicked.connect(lambda _: self.cancel_signal.emit(self.user_id))
 
 
+
+
     def refresh_data(self):
         last_number = requests.get(f"{API_PATH}/projects/last_project_number").json()
         self.formatted_number = f"{last_number:03d}"
@@ -66,13 +68,16 @@ class CreateProjectPage(QWidget):
             self.name_input.setFocus()
             return
 
+        user = requests.get(f"{API_PATH}/users/{self.user_id}").json()
+        user = user["email"]
         data = {
             "name": name,
             "number": number,
             "description": description,
-            "project_owner": self.user_id
-        }
-        response = requests.post(f"{API_PATH}/projects/new", json=data)
+            "project_owner": user}
+
+        response = requests.post(f"{API_PATH}/new_project", json=data)
+
 
         if response.status_code == 200:
             self.name_input.setText("")
