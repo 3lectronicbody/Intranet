@@ -8,6 +8,7 @@ from config import API_PATH
 import requests
 
 
+
 class LoginPage(QWidget):
     login_signal = Signal(int)
     close_signal = Signal()
