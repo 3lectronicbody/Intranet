@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-API_PATH = "http://192.168.0.4:8000"
+API_PATH = "..." # TODO ! ! !
 
 class Role(Enum):
     DEVELOPER = "developer"

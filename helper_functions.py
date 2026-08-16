@@ -110,9 +110,7 @@ def check_for_updates():
             return True
         return False
     return False
-def updater():
-    os.startfile("updater.exe")
-    sys.exit(0)
+
 def get_app_version(flag=None):
     # Function returns the app version
     if flag == "id":

@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QApplication, QMessageBox
 from pages.MainFrame import MainFrame
 from pathlib import Path
-import sys
-from helper_functions import check_for_updates,confirmation_dialog, updater
+import sys, os
+from helper_functions import check_for_updates,confirmation_dialog
 
 
 if __name__ == "__main__":
@@ -23,7 +23,10 @@ if __name__ == "__main__":
     if check_for_update:
         confirmation  = confirmation_dialog(None, "Update Available", "A new version of the application is available. Do you want to update now?")
         if confirmation == QMessageBox.Yes:
-            updater()
+            try:
+                os.startfile("updater.exe")
+            except FileNotFoundError:
+                QMessageBox.critical(None, "Warning", "Update process aborted. Please reinstall application and try again")
 
 
     root = MainFrame()
