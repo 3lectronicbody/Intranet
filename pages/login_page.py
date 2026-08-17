@@ -1,11 +1,11 @@
-from PySide6.QtCore import Signal, Qt, QTimer
+from PySide6.QtCore import Signal, Qt, QTimer, QThread
 from PySide6.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QLineEdit, QHBoxLayout, \
     QMessageBox
 from custom_widgets_folder.custom_widgets import CustomPushButton
 import platform
 import ctypes
 from config import API_PATH
-import requests
+from api_thread import ApiWorker
 
 
 
@@ -17,15 +17,15 @@ class LoginPage(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.login_worker = None
+        self.login_thread = None
+
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
 
         self.caps_timer = QTimer(self)
         self.caps_timer.timeout.connect(self.check_caps_lock)
         self.caps_timer.start(100)  # Checks every 100 milliseconds
-
-
-
 
         self.email_label = QLabel("Email: ")
         self.email_input = QLineEdit()
@@ -84,20 +84,34 @@ class LoginPage(QWidget):
     def login_handler(self):
         email = self.email_input.text()
         password = self.password_input.text()
-        # Role is set default in database model
 
-        response = requests.get(f"{API_PATH}/login", params={"user_email": email, "user_password": password})
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, dict) and "user_id" in data:
-                # Emit signal only when user is found
-                self.login_signal.emit(data["user_id"])
-            self.email_input.setText("")
-            self.password_input.setText("")
-        else:
+        self.login_worker = ApiWorker("GET",f"{API_PATH}/login/",params={"email": email, "password": password})
+        self.login_worker.success_signal.connect(self.api_success_handler)
+        self.login_worker.fail_signal.connect(self.api_fail_handler)
+        self.login_thread = QThread()
+        self.login_worker.moveToThread(self.login_thread)
+        self.login_thread.started.connect(self.login_worker.run)
+        self.login_worker.success_signal.connect(
+            self.login_thread.quit
+        )
+        self.login_worker.fail_signal.connect(
+            self.login_thread.quit
+        )
+        self.login_thread.finished.connect(self.login_thread.deleteLater)
+        self.login_thread.finished.connect(self.login_worker.deleteLater)
+
+        self.login_thread.start()
+
+
+
+    def api_fail_handler(self, error_message):
+        QMessageBox.warning(self, "Error", error_message)
+    def api_success_handler(self, user_id:dict):
+        # user = user_id.json()
+        if not user_id:
             QMessageBox.warning(self, "Error", "Invalid email or password")
-            self.email_input.setText("")
-            self.password_input.setText("")
+            return
+        self.login_signal.emit(user_id["user_id"])
     def cancel_handler(self):
         self.close_signal.emit()
     def sign_up_handler(self):
