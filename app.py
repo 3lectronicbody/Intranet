@@ -1,11 +1,25 @@
+import subprocess
+import requests
+
 from PySide6.QtWidgets import QApplication, QMessageBox
 from pages.MainFrame import MainFrame
 from pathlib import Path
 import sys, os
 from helper_functions import check_for_updates,confirmation_dialog
+from config import API_PATH
+
+def api_checker(path):
+    try:
+        response = requests.get(path, timeout=3)
+        response.raise_for_status()
+        return True
+    except requests.RequestException:
+        sys.exit("API is not running")
 
 
 if __name__ == "__main__":
+    api_checker(API_PATH)
+
 
     app = QApplication(sys.argv)
 
