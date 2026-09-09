@@ -14,7 +14,10 @@ def api_checker(path):
         response.raise_for_status()
         return True
     except requests.RequestException:
-        sys.exit("API is not running")
+        sys.exit("""API is not running
+        Check the connection to the internet and the API server.
+        Chock the endpoint path in the config.py file.""")
+
 
 
 if __name__ == "__main__":
