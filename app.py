@@ -10,13 +10,12 @@ from config import API_PATH
 
 def api_checker(path):
     try:
-        response = requests.get(path, timeout=3)
-        response.raise_for_status()
-        return True
-    except requests.RequestException:
+        requests.get(API_PATH, timeout=3)
+    except Exception as e:
+        print(f"EXCEPTION OCCURRED - {e}")
         sys.exit("""API is not running
-        Check the connection to the internet and the API server.
-        Chock the endpoint path in the config.py file.""")
+Check the connection to the internet and the API server.
+Chock the endpoint path in the config.py file.""")
 
 
 
